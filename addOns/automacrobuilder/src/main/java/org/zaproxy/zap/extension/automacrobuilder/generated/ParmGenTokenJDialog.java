@@ -237,19 +237,22 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
         }
 
         // Duplicate registration parameter deletion
-        List<AppParmsIni> resultlist = new ArrayList<>();
+        List<AppParmsIni> resultlist = ParmGen.parmcsv;
+
         if ( ParmGen.parmcsv!= null && newparms != null) {
+            List<AppParmsIni> merged = new ArrayList<>();
             newparms.stream().forEach(newpini -> {
                 long samecnt = ParmGen.parmcsv.stream().filter(oldpini ->
                         newpini.isSameContents(oldpini)
                 ).count();
                 if (samecnt <= 0) {
-                    resultlist.add(newpini);
+                    merged.add(newpini);
                 }
             });
+            resultlist = merged;
             resultlist.addAll(ParmGen.parmcsv);
-        } else if (ParmGen.parmcsv == null || ParmGen.parmcsv.isEmpty()) { // May be redundant
-            resultlist.addAll(newparms);
+        } else if (newparms !=null && !newparms.isEmpty()) { // ParmGen.parmcsv == null && !newparms.isEmpty()
+            resultlist = newparms;
         }
 
         ParmGenJSONSave csv = new ParmGenJSONSave(resultlist, pmt);
