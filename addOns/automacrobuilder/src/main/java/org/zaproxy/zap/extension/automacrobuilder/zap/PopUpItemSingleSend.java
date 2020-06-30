@@ -63,6 +63,12 @@ public class PopUpItemSingleSend extends JMenuItem {
                                     }
                                 });
                 t.start();
+                try {
+                    t.join();
+                } catch (InterruptedException ex) {
+                    LOGGER4J.error("", ex);
+                }
+                f_mbui.updateCurrentReqRes();
             }
 
         });

@@ -161,7 +161,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int cpos = pmt.getCurrentRequestPos();
         if (rlist != null) {
             PRequestResponse pqr = rlist.get(cpos);
-            if(pmt.isMBmonitorofprocessing()){
+
                 String reqstr = pqr.request.getMessage();
                 int len = ParmVars.getDisplayLength() > reqstr.length()?reqstr.length():ParmVars.getDisplayLength();
                 Document  reqdoc = ParmGenUtil.createDoc(reqstr.substring(0,len));
@@ -175,7 +175,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 if(resdoc!=null){
                     MacroResponse.setDocument(resdoc);
                 }
-            }
 
             MacroComments.setText(pqr.getComments());
         }
