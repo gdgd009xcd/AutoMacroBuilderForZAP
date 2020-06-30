@@ -248,6 +248,8 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
                 }
             });
             resultlist.addAll(ParmGen.parmcsv);
+        } else if (ParmGen.parmcsv == null || ParmGen.parmcsv.isEmpty()) { // May be redundant
+            resultlist.addAll(newparms);
         }
 
         ParmGenJSONSave csv = new ParmGenJSONSave(resultlist, pmt);

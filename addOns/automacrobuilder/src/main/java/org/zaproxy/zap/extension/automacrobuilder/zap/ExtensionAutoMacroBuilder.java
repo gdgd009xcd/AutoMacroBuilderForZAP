@@ -100,7 +100,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             // extensionHook.getHookMenu().addToolsMenuItem(getMenuExample());
             // extensionHook.getHookMenu().addPopupMenuItem(getPopupMsgMenuExample());
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuAdd2MacroBuilder());
-            extensionHook.getHookView().addStatusPanel(getStatusPanel());
+            // extensionHook.getHookView().addStatusPanel(getStatusPanel());
             extensionHook
                     .getHookView()
                     .addWorkPanel(
