@@ -1,13 +1,10 @@
-This project contains add-ons for the [OWASP Zed Attack Proxy](https://github.com/zaproxy/zaproxy) (ZAP).
+AutoMacrobuilder for OWASP ZAPROXY.
 
-If you are using the latest version of ZAP then you can browse and download add-ons from within ZAP by clicking on this button in the toolbar:
+AutoMacroBuilder is an extension for ZAPROXY. This Extension records the http request sequence of the web application in the macro, tracks the anti-CSRF token, and tests it by ZAPROXY tools(ActiveScan).
 
-![Image](https://github.com/zaproxy/zap-extensions/wiki/images/zap-screenshot-browse-addons.png)
-
-You can also import add-ons you have downloaded manually from https://github.com/zaproxy/zap-extensions/releases via the "File / Load Add-on File..." menu option.
-
-Please see the [wiki](https://github.com/zaproxy/zap-extensions/wiki) for more details.
-
+Click here below:　<BR>
+　　<A href="https://github.com/gdgd009xcd/AutoMacroBuilder/wiki/1.0.-OverView">English</A><BR>
+　　<A href="https://github.com/gdgd009xcd/AutoMacroBuilder/wiki/2.0.%E6%A6%82%E8%A6%81%EF%BC%88%E6%97%A5%E6%9C%AC%E8%AA%9E%EF%BC%89">Japanese</A> <BR>
 ## Building
 
 The add-ons are built with [Gradle], each add-on has its own project which is located under the `addOns` project/directory.
