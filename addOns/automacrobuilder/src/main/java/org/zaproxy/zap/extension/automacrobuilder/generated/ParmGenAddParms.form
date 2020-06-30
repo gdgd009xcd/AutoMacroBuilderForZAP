@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="2"/>
+    <Property name="title" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="burp/Bundle.properties" key="&#x30d1;&#x30e9;&#x30e1;&#x30fc;&#x30bf;&#x9078;&#x629e;&#x753b;&#x9762;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+    </Property>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLabel1" alignment="0" max="32767" attributes="0"/>
+                          <Component id="Select_ReplaceTargetURL" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="Add" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="Cancel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel5" min="-2" pref="247" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="jScrollPane8" pref="474" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="Select_ReplaceTargetURL" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                  <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+              <Component id="jScrollPane8" pref="105" max="32767" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Add" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Cancel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JLabel" name="jLabel5">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="2"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="burp/Bundle.properties" key="jLabel5" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+        </Property>
+        <Property name="verticalAlignment" type="int" value="1"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane8">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTable" name="ReqParsedTable">
+          <Properties>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="3" rowCount="6">
+                <Column editable="true" title="&#x4f4d;&#x7f6e;" type="java.lang.String">
+                  <Data value="path"/>
+                  <Data value="query"/>
+                  <Data value="body"/>
+                  <Data value="body"/>
+                  <Data value="body"/>
+                  <Data value="body"/>
+                </Column>
+                <Column editable="true" title="parameter" type="java.lang.String">
+                  <Data value=""/>
+                  <Data value="search"/>
+                  <Data value="name"/>
+                  <Data value="password"/>
+                  <Data value=""/>
+                  <Data value="null"/>
+                </Column>
+                <Column editable="true" title="value" type="java.lang.String">
+                  <Data value="/input.php"/>
+                  <Data value="aiueo"/>
+                  <Data value="chikara"/>
+                  <Data value="secret"/>
+                  <Data value="null"/>
+                  <Data value="null"/>
+                </Column>
+              </Table>
+            </Property>
+            <Property name="autoResizeMode" type="int" value="0"/>
+            <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+              <TableColumnModel selectionModel="0">
+                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                  <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                    <ResourceString bundle="burp/Bundle.properties" key="position" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+                  </Title>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+              </TableColumnModel>
+            </Property>
+            <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+              <TableHeader reorderingAllowed="false" resizingAllowed="true"/>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JButton" name="Add">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="burp/Bundle.properties" key="&#x8ffd;&#x52a0;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="AddActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Cancel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="burp/Bundle.properties" key="&#x53d6;&#x6d88;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CancelActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="Select_ReplaceTargetURL">
+      <Properties>
+        <Property name="editable" type="boolean" value="true"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="4">
+            <StringItem index="0" value="Item 1"/>
+            <StringItem index="1" value="Item 2"/>
+            <StringItem index="2" value="Item 3"/>
+            <StringItem index="3" value="Item 4"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Select_ReplaceTargetURLActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="burp/Bundle.properties" key="&#x7f6e;&#x63db;&#x5bfe;&#x8c61;&#x30d1;&#x30b9;&#xff1a;&#x3000;&#x65e2;&#x8a2d;&#x5b9a;&#x5024;&#x306b;&#x623b;&#x3059;&#x5834;&#x5408;&#x306f;&#x3001;&#x4e0b;&#x8a18;&#x306e;&#x30d7;&#x30eb;&#x30c0;&#x30a6;&#x30f3;&#x3067;&#x9078;&#x629e;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JPanel" name="jPanel1">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="&lt;jPanel1.border&gt;">
+              <ResourceString PropertyName="titleX" bundle="burp/Bundle.properties" key="jPanel1.border" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+            </TitledBorder>
+          </Border>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="ValReplacePart" pref="140" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="ValReplacePart" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="0" pref="10" max="32767" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JComboBox" name="ValReplacePart">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="comboModel" type="code"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="&lt;HTML&gt;value&#x5024;&#x306e;&#x4ee5;&#x4e0b;&#x306e;&#x6587;&#x5b57;&#x5217;&#x304c;&#x7f6e;&#x63db;&#x5bfe;&#x8c61;&#x3068;&#x306a;&#x308b;&lt;BR&gt;&#xa;&#x6570;&#x5024;&#x56fa;&#x5b9a;&#x9577;&#x3000;&#x3000;&#x3000;&#x3000;&#x4f8b;&#xff1a;&#x3000;n=test0001a  -&gt; &quot;0001&quot;&#x306e;&#x6570;&#x5024;&#x90e8;&#x5206;&#x56fa;&#x5b9a;&#x9577;&#xff14;&#x6841;&lt;BR&gt;&#xa;&#x6587;&#x5b57;&#x5217;&#x56fa;&#x5b9a;&#x9577;&#x3000;&#x3000; &#x4f8b;&#xff1a;&#x3000;n=test0001a  -&gt; &quot;test0001a&quot;&#x82f1;&#x6570;&#x5b57;&#x5168;&#x4f53;&#x56fa;&#x5b9a;&#x9577;&#xff19;&#x6841;&lt;BR&gt;&#xa;&#x6570;&#x5024;&#x4efb;&#x610f;&#x9577;&#x3000;&#x3000;&#x3000;&#x3000;&#x4f8b;&#xff1a;&#x3000;n=test123a, n=test0000999b -&gt; &quot;123&quot;, &quot;0000999&quot;&#x306e;&#x6570;&#x5024;&#x90e8;&#x5206;&#x4efb;&#x610f;&#x9577;&lt;BR&gt;&#xa;&#x6587;&#x5b57;&#x5217;&#x4efb;&#x610f;&#x9577;&#x3000;&#x3000; &#x4f8b;&#xff1a;&#x3000;n=test123a, n=real0000101b =&gt; &quot;test123a&quot;, &quot;real0000101b&quot;&#x3000;&#x82f1;&#x6570;&#x5b57;&#x5168;&#x4f53;&#x4efb;&#x610f;&#x9577;"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ValReplacePartActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+          </AuxValues>
+        </Component>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>

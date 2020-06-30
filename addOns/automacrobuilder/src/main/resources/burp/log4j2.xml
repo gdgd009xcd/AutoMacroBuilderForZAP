@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>  
+<Configuration status="off">
+
+	<!-- Properties name attribute may be reference as variables. (Propertiesは、nameの値を変数として使える )-->
+    <Properties>
+        <Property name="format1">%d{yyyy/MM/dd HH:mm:ss.SSS} [%t] %-6p %c{10} %m%n</Property>
+       <!-- log format 
+   		Date         %d{date syntax... } 
+   		thread name  %t
+   		LogLevel   %-6p   (LogLevel name is represented 6 characters left justified   ”-” means left justified )
+   		Logger classname  %c{x}
+   		Message  %m
+   		LineFeed %n
+      -->
+        <Property name="logfile">${sys:user.home}/Desktop/ZAPPROXY/amb.log</Property>
+        <Property name="logfile-archive">${sys:user.home}/Desktop/ZAPPROXY/amb_%d{yyyy-MM-dd}-%i.log</Property>
+    </Properties>
+    
+	<Appenders>
+		<!-- Console output  -->
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout>
+				<pattern>${format1}</pattern>
+			</PatternLayout>
+		</Console>
+
+		<!-- File output -->
+		<RollingFile name="logfile001" append="true" fileName="${logfile}"
+			filePattern="${logfile-archive}">
+			<PatternLayout>
+				<pattern>${format1}</pattern>
+			</PatternLayout>
+			<Policies>
+				//　When the file size exceeds 1KB, the file will be rotated.
+				<SizeBasedTriggeringPolicy size="1KB"/>
+			</Policies>
+			//　There are "3" rotation files
+			<DefaultRolloverStrategy max="3"/>
+		</RollingFile>
+	</Appenders>
+	
+	<Loggers>
+		// Log4j outputs up to the "info" level.
+		<Root level="info">
+			<AppenderRef ref="Console" />
+			<!-- AppenderRef ref="logfile001" /-->
+		</Root>
+            <Logger name="someclassname.." level="debug" additivity="false">
+                <!-- below appenderRef must specified in individual Logger tag. because does not inherit from Root. -->
+                <AppenderRef ref="Console" />
+		<AppenderRef ref="logfile001" />
+            </Logger>
+	</Loggers>
+</Configuration>
