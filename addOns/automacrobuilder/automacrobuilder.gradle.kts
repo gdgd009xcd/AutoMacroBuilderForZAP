@@ -1,7 +1,7 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "0.0.1"
-description = "Currentry, this code is skelton. No function. AutoMacroBuilder for ZAP"
+version = "0.9.0"
+description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {
     options.getDebugOptions().setDebugLevel("source,lines,vars")
