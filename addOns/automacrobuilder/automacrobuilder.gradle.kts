@@ -8,7 +8,7 @@ tasks.withType<JavaCompile> {
 }
 
 dependencies {
-    implementation("org.apache.logging.log4j:log4j-core:2.13.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.13.2")
     implementation("com.google.code.gson:gson:2.8.6")
     implementation("org.jsoup:jsoup:1.13.1")
 }
