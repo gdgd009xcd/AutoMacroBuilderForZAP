@@ -1,6 +1,6 @@
 AutoMacrobuilder for OWASP ZAPROXY.
 
-AutoMacroBuilder is an extension for ZAPROXY. This Extension records the http request sequence of the web application in the macro, tracks the anti-CSRF token, and tests it by ZAPROXY tools(ActiveScan).
+AutoMacroBuilder is an extension for ZAPROXY. This Extension generate the http request sequence of the web application which is saved as the macro, tracks the anti-CSRF token, and tests it by ZAPROXY tools(ActiveScan).
 
 
  
