@@ -1,10 +1,7 @@
 plugins {
-    id("com.diffplug.gradle.spotless")
+    id("com.diffplug.gradle.spotless") version "3.27.2"
     id("com.github.ben-manes.versions") version "0.27.0"
 }
-
-apply(from = "$rootDir/gradle/travis-ci.gradle.kts")
-apply(from = "$rootDir/gradle/lgtm.gradle.kts")
 
 allprojects {
     apply(plugin = "com.diffplug.gradle.spotless")
@@ -22,7 +19,7 @@ allprojects {
         project.plugins.withType(JavaPlugin::class) {
             java {
                 licenseHeaderFile("$rootDir/gradle/spotless/license.java")
-                googleJavaFormatAosp(project)
+                googleJavaFormat().aosp()
             }
         }
     }
