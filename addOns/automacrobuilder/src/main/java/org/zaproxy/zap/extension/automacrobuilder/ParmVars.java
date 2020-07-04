@@ -41,7 +41,7 @@ public class ParmVars {
             formdataenc; // iso8859-1 encoding is fully  mapped binaries for form-data binaries.
     // Proxy Authentication
     // Basic username:password(base64 encoded)
-    // String ProxyAuth = "Basic Y2hpa2FyYV8xLmRhaWtlOjdyOXR5QDRxMQ==";
+    // String ProxyAuth = "Basic Z2RnZDAwOXhjZDpzb3JyeSxwYXNzd29yZCBoYXMgY2hhbmdlZC4=";
     static String ProxyAuth;
     public static ParmGenSession session;
     static int displaylength = 10000; // JTextArea/JTextPaneç­swingã®è¡¨ç¤ºãã¤ãæ°
