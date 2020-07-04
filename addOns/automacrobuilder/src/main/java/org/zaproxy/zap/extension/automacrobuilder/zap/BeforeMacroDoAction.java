@@ -1,5 +1,8 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceAction;
@@ -10,11 +13,6 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 public class BeforeMacroDoAction implements InterfaceDoAction {
 
     private static final org.apache.logging.log4j.Logger LOGGER4J =
@@ -22,8 +20,7 @@ public class BeforeMacroDoAction implements InterfaceDoAction {
 
     private ThreadLocal<List<InterfaceAction>> ACTION_LIST = new ThreadLocal<>();
 
-    BeforeMacroDoAction() {
-    }
+    BeforeMacroDoAction() {}
 
     /**
      * set parameters to be passed to StartBeforeMacroDoAction
@@ -32,9 +29,12 @@ public class BeforeMacroDoAction implements InterfaceDoAction {
      * @param initiator
      * @param sender
      */
-    void setParameters(StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
+    void setParameters(
+            StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
         // newly create ParmGenMacroTrace
-        final ParmGenMacroTrace pmt = ParmGenMacroTraceProvider.getNewParmGenMacroTraceInstance(sender, acon.getParmGenMacroTraceParams());
+        final ParmGenMacroTrace pmt =
+                ParmGenMacroTraceProvider.getNewParmGenMacroTraceInstance(
+                        sender, acon.getParmGenMacroTraceParams());
 
         UUID uuid = pmt.getUUID();
         // Add uuid to StartedActiveScanContainer to get ParmGenMacroTrace later
@@ -42,11 +42,12 @@ public class BeforeMacroDoAction implements InterfaceDoAction {
 
         List<InterfaceAction> actions = new CopyOnWriteArrayList<>();
 
-        actions.add((t, o) -> {
-            pmt.startBeforePreMacro(o);
-            ParmGenMacroTrace.clientrequest.startZapCurrentRequest(pmt, msg);
-            return false;
-        });
+        actions.add(
+                (t, o) -> {
+                    pmt.startBeforePreMacro(o);
+                    ParmGenMacroTrace.clientrequest.startZapCurrentRequest(pmt, msg);
+                    return false;
+                });
 
         ACTION_LIST.set(actions);
     }

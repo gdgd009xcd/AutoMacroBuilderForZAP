@@ -35,7 +35,7 @@ public class AppValue {
             org.apache.logging.log4j.LogManager.getLogger();
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
-    
+
     // valparttype,         value, token, tamattack,tamadvance,tamposition,urlencode
     // 置換位置,置換しない,  value, Name,  Attack,   Advance,   Position,   URLencode
     private String valpart; // 置換位置
@@ -45,7 +45,7 @@ public class AppValue {
     private Pattern valueregex; // リクエストパラメータの正規表現
 
     private int csvpos;
-    
+
     private UUID trackkey = null;
     private String resURL = "";
     private Pattern Pattern_resURL = null;
@@ -57,7 +57,8 @@ public class AppValue {
     //
     // 下記パラメータは、GUI操作時の一時保存値で、保存対象外。スキャン時は未使用。
     // This parameter does not use when scanning. only  temporarily use  for GUI manipulation
-    private String resFetchedValue = null; // レスポンスからフェッチしたtokenの値 Token obtained from response during tracking process
+    private String resFetchedValue =
+            null; // レスポンスからフェッチしたtokenの値 Token obtained from response during tracking process
 
     private TokenTypeNames tokentype = TokenTypeNames.INPUT;
 
@@ -74,8 +75,9 @@ public class AppValue {
     };
 
     private boolean urlencode; // Whether to  encode URL
-    
-    private ResEncodeTypes resencodetype = ResEncodeTypes.RAW; // 追跡元のエンコードタイプ Encode type of tracking param json/raw/urlencode
+
+    private ResEncodeTypes resencodetype =
+            ResEncodeTypes.RAW; // 追跡元のエンコードタイプ Encode type of tracking param json/raw/urlencode
 
     public enum ResEncodeTypes {
         RAW,
@@ -83,18 +85,16 @@ public class AppValue {
         URLENCODE,
     }
 
-    private int fromStepNo = -1; // TRACK追跡元 <0 :　無条件で追跡　>=0: 指定StepNoのリクエスト追跡 
-                                // Line number of response from which  getting tracking parameter  in RequestList sequence 
-                                // < 0: get tracking value from any response
-                                // >=0: get tracking value from specified request line number's response
-    private int toStepNo =
-            ParmVars.TOSTEPANY; // TRACK:更新先
-                                // 　>0:指定したStepNoのリクエスト更新
-                                // Line number of request to which setting tracking paramter  in RequestList sequence 
-                                //  <0 : No Operation. 
-                                //  >=0 and < TOSTEPANY: set tracking value to specified line number's request
-                                //  ==TOSTEPANY: set tracking value to any request.
-    
+    private int fromStepNo = -1; // TRACK追跡元 <0 :　無条件で追跡　>=0: 指定StepNoのリクエスト追跡
+    // Line number of response from which  getting tracking parameter  in RequestList sequence
+    // < 0: get tracking value from any response
+    // >=0: get tracking value from specified request line number's response
+    private int toStepNo = ParmVars.TOSTEPANY; // TRACK:更新先
+    // 　>0:指定したStepNoのリクエスト更新
+    // Line number of request to which setting tracking paramter  in RequestList sequence
+    //  <0 : No Operation.
+    //  >=0 and < TOSTEPANY: set tracking value to specified line number's request
+    //  ==TOSTEPANY: set tracking value to any request.
 
     public static final int V_QUERY = 1;
     public static final int V_BODY = 2;
@@ -225,135 +225,132 @@ public class AppValue {
 
     /**
      * Get toStepNo: Line number of request to which setting tracking value in RequestList sequence.
-     * 
-     * @return 
+     *
+     * @return
      */
-    public int getToStepNo(){
+    public int getToStepNo() {
         return this.toStepNo;
     }
-    
+
     /**
      * Set toStepNo: line number of request to which setting tracking value in RequestList sequence.
-     * 
-     * @param toStepNo 
+     *
+     * @param toStepNo
      */
-    public void setToStepNo(int toStepNo){
+    public void setToStepNo(int toStepNo) {
         this.toStepNo = toStepNo;
     }
-    
+
     /**
-     * Get fromStepNo:  Line number of response from which  getting tracking parameter  in RequestList sequence 
-     * 
-     * @return 
+     * Get fromStepNo: Line number of response from which getting tracking parameter in RequestList
+     * sequence
+     *
+     * @return
      */
-    public int getFromStepNo(){
+    public int getFromStepNo() {
         return this.fromStepNo;
     }
-    
+
     /**
-     * Set fromStepNo:  Line number of response from which  getting tracking parameter  in RequestList sequence 
-     * 
-     * @param fromStepNo 
-     * 
+     * Set fromStepNo: Line number of response from which getting tracking parameter in RequestList
+     * sequence
+     *
+     * @param fromStepNo
      */
-    public void setFromStepNo(int fromStepNo){
+    public void setFromStepNo(int fromStepNo) {
         this.fromStepNo = fromStepNo;
     }
-    
+
     /**
      * Whether to encode URL
-     * 
-     * @return 
+     *
+     * @return
      */
-    public boolean isUrlEncode(){
+    public boolean isUrlEncode() {
         return this.urlencode;
     }
-    
+
     /**
      * Set urlencode value
-     * 
-     * @param urlencode 
+     *
+     * @param urlencode
      */
-    public void setUrlEncode(boolean urlencode){
+    public void setUrlEncode(boolean urlencode) {
         this.urlencode = urlencode;
     }
-    
-    
-    /**
-     * Get TokenType value
-     * 
-     */
-    public TokenTypeNames getTokenType(){
+
+    /** Get TokenType value */
+    public TokenTypeNames getTokenType() {
         return this.tokentype;
     }
-    
+
     /**
      * Set TokenType value
-     * 
-     * @param tokentype 
+     *
+     * @param tokentype
      */
-    public void setTokenType(TokenTypeNames tokentype){
+    public void setTokenType(TokenTypeNames tokentype) {
         this.tokentype = tokentype;
     }
-    
-    
+
     /**
-     * Get resFetchedValue 
-     * This parameter does not use when scanning. only  temporarily use  for GUI manipulation
-     * @param resFetchedValue 
+     * Get resFetchedValue This parameter does not use when scanning. only temporarily use for GUI
+     * manipulation
+     *
+     * @param resFetchedValue
      */
-    public void setResFetchedValue(String resFetchedValue){
+    public void setResFetchedValue(String resFetchedValue) {
         this.resFetchedValue = resFetchedValue;
     }
-    
-    public String getResFetchedValue(){
+
+    public String getResFetchedValue() {
         return this.resFetchedValue;
     }
-    
+
     /**
      * Set token value
-     * 
+     *
      * @param token
      */
-    public void setToken(String token){
+    public void setToken(String token) {
         this.token = token;
     }
-    
+
     /**
      * Get token value
-     * 
-     * @return 
+     *
+     * @return
      */
-    public String getToken(){
+    public String getToken() {
         return this.token;
     }
-    
+
     /**
      * Get csvpos value
-     * 
-     * @return 
+     *
+     * @return
      */
-    public int getCsvpos(){
+    public int getCsvpos() {
         return this.csvpos;
     }
-    
+
     /**
      * Set csvpos value
-     * 
-     * @param csvpos 
+     *
+     * @param csvpos
      */
-    public void setCsvpos(int csvpos){
+    public void setCsvpos(int csvpos) {
         this.csvpos = csvpos;
     }
 
     /**
      * Get the key. If the key has a null value, the key is created
-     * 
-     * @return UUID 
+     *
+     * @return UUID
      */
-    synchronized public UUID getTrackKey() {
-        if( trackkey == null ) {
-             trackkey = UUIDGenerator.getUUID();
+    public synchronized UUID getTrackKey() {
+        if (trackkey == null) {
+            trackkey = UUIDGenerator.getUUID();
         }
         return trackkey;
     }
@@ -375,16 +372,17 @@ public class AppValue {
 
     /**
      * Get ResEncodeTypes : response page content type JSON/RAW/URLENCODE..
-     * @return 
+     *
+     * @return
      */
-    public ResEncodeTypes getResEncodeType(){
+    public ResEncodeTypes getResEncodeType() {
         return this.resencodetype;
     }
-    
+
     /**
      * Convert string representation to ResEncodeType and set its value to resencodetype parameter
-     * 
-     * @param t 
+     *
+     * @param t
      */
     public void setResEncodeTypeFromString(String t) {
         resencodetype = parseResEncodeTypeString(t);
@@ -392,9 +390,9 @@ public class AppValue {
 
     /**
      * Convert string represantation to ResEncodeTypes
-     * 
+     *
      * @param t
-     * @return 
+     * @return
      */
     public ResEncodeTypes parseResEncodeTypeString(String t) {
         ResEncodeTypes[] encarray = ResEncodeTypes.values();
@@ -506,26 +504,26 @@ public class AppValue {
 
     /**
      * Get resRegexPos value
-     * 
-     * @return 
+     *
+     * @return
      */
-    public int getResRegexPos(){
+    public int getResRegexPos() {
         return this.resRegexPos;
     }
-    
+
     /**
      * Set resRegexPos value
-     * 
-     * @param resRegexPos 
+     *
+     * @param resRegexPos
      */
-    public void setResRegexPos(int resRegexPos){
+    public void setResRegexPos(int resRegexPos) {
         this.resRegexPos = resRegexPos;
     }
-    
+
     /**
      * Set String number to resRegexPos
-     * 
-     * @param _resregexpos 
+     *
+     * @param _resregexpos
      */
     public void setResRegexPosFromString(String _resregexpos) {
         this.resRegexPos = Integer.parseInt(_resregexpos);
@@ -726,8 +724,7 @@ public class AppValue {
                         + resRegex
                         + " TokenName:"
                         + token;
-        ParmGenTokenKey errorhash_key =
-                new ParmGenTokenKey(TokenTypeNames.DEFAULT, errKeyName, 0);
+        ParmGenTokenKey errorhash_key = new ParmGenTokenKey(TokenTypeNames.DEFAULT, errKeyName, 0);
         Matcher m = valueregex.matcher(contents);
         Matcher m_org = null;
 
@@ -840,20 +837,20 @@ public class AppValue {
      * @return
      */
     public boolean isSameContents(AppValue app) {
-        if ( ParmGenUtil.nullableStringEquals(this.valpart, app.valpart)
-            && this.valparttype == app.valparttype
-            && ParmGenUtil.nullableStringEquals(this.value, app.value)
-            && this.csvpos == app.csvpos
-            && ParmGenUtil.nullableStringEquals(this.resURL, app.resURL)
-            && ParmGenUtil.nullableStringEquals(this.resRegex, app.resRegex)
-            && this.resPartType == app.resPartType
-            && this.resRegexPos == app.resRegexPos
-            && ParmGenUtil.nullableStringEquals(this.token, app.token)
-            && this.tokentype == app.tokentype
-            && this.urlencode == app.urlencode
-            && this.resencodetype == app.resencodetype
-            && this.fromStepNo == app.fromStepNo
-            && this.toStepNo == app.toStepNo){
+        if (ParmGenUtil.nullableStringEquals(this.valpart, app.valpart)
+                && this.valparttype == app.valparttype
+                && ParmGenUtil.nullableStringEquals(this.value, app.value)
+                && this.csvpos == app.csvpos
+                && ParmGenUtil.nullableStringEquals(this.resURL, app.resURL)
+                && ParmGenUtil.nullableStringEquals(this.resRegex, app.resRegex)
+                && this.resPartType == app.resPartType
+                && this.resRegexPos == app.resRegexPos
+                && ParmGenUtil.nullableStringEquals(this.token, app.token)
+                && this.tokentype == app.tokentype
+                && this.urlencode == app.urlencode
+                && this.resencodetype == app.resencodetype
+                && this.fromStepNo == app.fromStepNo
+                && this.toStepNo == app.toStepNo) {
             return true;
         }
         return false;

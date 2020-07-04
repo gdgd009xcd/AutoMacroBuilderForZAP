@@ -49,14 +49,14 @@ public class ParmGenParser implements DeepClone {
     public ParmGenParser(String htmltext) {
         setup(htmltext);
     }
-    
-    private void setup(String htmltext){
+
+    private void setup(String htmltext) {
         init();
 
         this.htmltext = htmltext;
         Document doc = null;
         Elements elems = null;
-        
+
         try {
             doc = Jsoup.parse(htmltext); // パース実行
             // elems =
@@ -71,7 +71,7 @@ public class ParmGenParser implements DeepClone {
             doc = null;
             elems = null;
         }
-        
+
         this.doc = doc;
         this.elems = elems;
     }
@@ -296,7 +296,7 @@ public class ParmGenParser implements DeepClone {
         }
         return null;
     }
-    
+
     @Override
     public ParmGenParser clone() {
         try {
@@ -308,7 +308,7 @@ public class ParmGenParser implements DeepClone {
         } catch (CloneNotSupportedException ex) {
             Logger.getLogger(ParmGenParser.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return null;
     }
 }

@@ -21,11 +21,9 @@ package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.util.ArrayList;
 import java.util.List;
 import org.zaproxy.zap.extension.ascan.CustomScanDialog;
 import org.zaproxy.zap.extension.ascan.CustomScanPanel;
-import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
 
 /** @author daike */
 @SuppressWarnings("serial")
@@ -33,7 +31,7 @@ public class CustomScanDialogForMacroBuilder
         extends org.zaproxy.zap.extension.ascan.CustomScanDialog {
 
     private ExtensionActiveScanWrapper extensionwrapper = null;
-    
+
     public static final String[] STD_TAB_LABELS_REF = CustomScanDialog.STD_TAB_LABELS;
 
     public CustomScanDialogForMacroBuilder(

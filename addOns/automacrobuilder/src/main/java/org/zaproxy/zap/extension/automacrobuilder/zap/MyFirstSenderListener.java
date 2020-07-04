@@ -19,7 +19,6 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
-import org.apache.log4j.Logger;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpSender;
@@ -28,7 +27,8 @@ import org.zaproxy.zap.network.HttpSenderListener;
 
 public class MyFirstSenderListener implements HttpSenderListener {
 
-    private static final org.apache.logging.log4j.Logger LOGGER4J = org.apache.logging.log4j.LogManager.getLogger();
+    private static final org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
     private StartedActiveScanContainer startedcon = null;
     private BeforeMacroDoActionProvider beforemacroprovider = new BeforeMacroDoActionProvider();
     private PostMacroDoActionProvider postmacroprovider = new PostMacroDoActionProvider();
@@ -43,7 +43,7 @@ public class MyFirstSenderListener implements HttpSenderListener {
         // ExtensionForcedUser.getListenerOrder = 9998 + 1
         return 9999;
     }
-    
+
     @Override
     public void onHttpRequestSend(HttpMessage arg0, int arg1, HttpSender arg2) {
         try {
@@ -57,7 +57,8 @@ public class MyFirstSenderListener implements HttpSenderListener {
 
             // if (this.startedcon.isSenderFromStartedActiveScanners(arg2) ) {
             if (this.startedcon.isThreadFromStartedActiveScanners(Thread.currentThread().getId())) {
-                // only call following methods when Scanner.start(Target) is called by ExtensionActiveScanWrapper
+                // only call following methods when Scanner.start(Target) is called by
+                // ExtensionActiveScanWrapper
                 // forceUser set to null for disabling authentication
                 arg0.setRequestingUser(null);
                 // run preMacro
@@ -82,11 +83,14 @@ public class MyFirstSenderListener implements HttpSenderListener {
                             + getURL(arg0)
                             + "]");
             if (this.startedcon.isThreadFromStartedActiveScanners(Thread.currentThread().getId())) {
-                // only call following methods when Scanner.start(Target) is called by ExtensionActiveScanWrapper
+                // only call following methods when Scanner.start(Target) is called by
+                // ExtensionActiveScanWrapper
                 // run postMacro
                 postmacroprovider.setParameters(this.startedcon, arg0, arg1, arg2);
                 ThreadManagerProvider.getThreadManager().beginProcess(postmacroprovider);
-                LOGGER4J.debug("onHttpRequestReceive Sender is originated from StartedActiveScan. scanid:" + arg2);
+                LOGGER4J.debug(
+                        "onHttpRequestReceive Sender is originated from StartedActiveScan. scanid:"
+                                + arg2);
             }
         } finally {
             this.startedcon.removeThreadid(); // always keep clean.

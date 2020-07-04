@@ -69,7 +69,7 @@ public class MyFirstScannerHook implements ScannerHook {
             this.startedcon.addParmGenMacroTraceParams(arg2);
             // to senderListner.
         } else {
-           LOGGER4J.debug("differ scanId:" + arg2.getId());
+            LOGGER4J.debug("differ scanId:" + arg2.getId());
         }
     }
 
@@ -86,8 +86,8 @@ public class MyFirstScannerHook implements ScannerHook {
      *
      * @param hpros HostProcess
      */
-    private void disableFollowRedirection(HostProcess hpros){
-        Class<HostProcess> clazz = CastUtils.castToType(hpros.getClass()); 
+    private void disableFollowRedirection(HostProcess hpros) {
+        Class<HostProcess> clazz = CastUtils.castToType(hpros.getClass());
         try {
             Field rconfigfield = clazz.getDeclaredField("redirectRequestConfig");
             rconfigfield.setAccessible(true);
@@ -99,13 +99,17 @@ public class MyFirstScannerHook implements ScannerHook {
                 rconfigfield.set(hpros, newconfig);
             }
         } catch (NoSuchFieldException ex) {
-            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName())
+                    .log(Level.SEVERE, null, ex);
         } catch (SecurityException ex) {
-            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName())
+                    .log(Level.SEVERE, null, ex);
         } catch (IllegalArgumentException ex) {
-            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName())
+                    .log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MyFirstScannerHook.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
     }
 

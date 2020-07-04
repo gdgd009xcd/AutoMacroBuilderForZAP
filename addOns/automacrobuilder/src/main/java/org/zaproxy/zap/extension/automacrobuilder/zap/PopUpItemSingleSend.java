@@ -1,7 +1,10 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
+import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.PREFIX;
+
+import java.io.IOException;
+import javax.swing.*;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
@@ -9,17 +12,9 @@ import org.parosproxy.paros.extension.history.ExtensionHistory;
 import org.parosproxy.paros.model.HistoryReference;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.*;
-import org.zaproxy.zap.ZapGetMethod;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
-import org.zaproxy.zap.users.User;
-
-import javax.swing.*;
-
-import java.io.IOException;
-
-import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.PREFIX;
 
 @SuppressWarnings("serial")
 public class PopUpItemSingleSend extends JMenuItem {
@@ -32,92 +27,106 @@ public class PopUpItemSingleSend extends JMenuItem {
     private BeforeMacroDoActionProvider beforemacroprovider = new BeforeMacroDoActionProvider();
     private PostMacroDoActionProvider postmacroprovider = new PostMacroDoActionProvider();
 
-    PopUpItemSingleSend(MacroBuilderUI mbui, StartedActiveScanContainer acon){
+    PopUpItemSingleSend(MacroBuilderUI mbui, StartedActiveScanContainer acon) {
         super(Constant.messages.getString(PREFIX + ".popup.title.PopUpSingleSendForMacroBuilder"));
 
         final StartedActiveScanContainer f_acon = acon;
         final MacroBuilderUI f_mbui = mbui;
 
-        addActionListener(e ->{
-            HttpMessage htmess = ZapUtil.getCurrentHttpMessage(f_mbui);
-            int pos = f_mbui.getCurrentSelectedRequestIndex();
+        addActionListener(
+                e -> {
+                    HttpMessage htmess = ZapUtil.getCurrentHttpMessage(f_mbui);
+                    int pos = f_mbui.getCurrentSelectedRequestIndex();
 
-            if (htmess != null) {
-                final Thread t =
-                        new Thread(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
-                                            pmtParams.setSelectedRequestNo(pos);
-                                            f_acon.addParmGenMacroTraceParams(pmtParams);
-                                            HttpSender sender = getHttpSenderInstance();
-                                            beforemacroprovider.setParameters(f_acon, htmess, HttpSender.MANUAL_REQUEST_INITIATOR, sender);
-                                            ThreadManagerProvider.getThreadManager().beginProcess(beforemacroprovider);
-                                            send(htmess);
-                                            postmacroprovider.setParameters(f_acon, htmess, HttpSender.MANUAL_REQUEST_INITIATOR, sender);
-                                            ThreadManagerProvider.getThreadManager().beginProcess(postmacroprovider);
-                                            ((ExtensionHistory)Control.getSingleton()
-                                                    .getExtensionLoader()
-                                                    .getExtension(ExtensionHistory.NAME)).addHistory(htmess, HistoryReference.TYPE_PROXIED);
-                                        } catch (IOException ioException) {
-                                            LOGGER4J.error("", ioException);
-                                        } finally {
-                                            shutdownHttpSender();
-                                        }
-                                    }
+                    if (htmess != null) {
+                        final Thread t =
+                                new Thread(
+                                        new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    ParmGenMacroTraceParams pmtParams =
+                                                            new ParmGenMacroTraceParams();
+                                                    pmtParams.setSelectedRequestNo(pos);
+                                                    f_acon.addParmGenMacroTraceParams(pmtParams);
+                                                    HttpSender sender = getHttpSenderInstance();
+                                                    beforemacroprovider.setParameters(
+                                                            f_acon,
+                                                            htmess,
+                                                            HttpSender.MANUAL_REQUEST_INITIATOR,
+                                                            sender);
+                                                    ThreadManagerProvider.getThreadManager()
+                                                            .beginProcess(beforemacroprovider);
+                                                    send(htmess);
+                                                    postmacroprovider.setParameters(
+                                                            f_acon,
+                                                            htmess,
+                                                            HttpSender.MANUAL_REQUEST_INITIATOR,
+                                                            sender);
+                                                    ThreadManagerProvider.getThreadManager()
+                                                            .beginProcess(postmacroprovider);
+                                                    ((ExtensionHistory)
+                                                                    Control.getSingleton()
+                                                                            .getExtensionLoader()
+                                                                            .getExtension(
+                                                                                    ExtensionHistory
+                                                                                            .NAME))
+                                                            .addHistory(
+                                                                    htmess,
+                                                                    HistoryReference.TYPE_PROXIED);
+                                                } catch (IOException ioException) {
+                                                    LOGGER4J.error("", ioException);
+                                                } finally {
+                                                    shutdownHttpSender();
+                                                }
+                                            }
+                                        });
+                        t.start();
+                        try {
+                            t.join();
+                        } catch (InterruptedException ex) {
+                            LOGGER4J.error("", ex);
+                        }
+                        SwingUtilities.invokeLater(
+                                () -> {
+                                    f_mbui.updateCurrentReqRes();
                                 });
-                t.start();
-                try {
-                    t.join();
-                } catch (InterruptedException ex) {
-                    LOGGER4J.error("", ex);
-                }
-                SwingUtilities.invokeLater(() -> {
-                    f_mbui.updateCurrentReqRes();
+                    }
                 });
-            }
-
-        });
     }
-
 
     /**
      * Get HttpSender Instance
-     * You should call shutdown() after sendAndRecv.
      *
+     * <p>You should call shutdown() after sendAndRecv.
      */
-    public HttpSender getHttpSenderInstance(){
+    public HttpSender getHttpSenderInstance() {
         if (sender == null) {
             ConnectionParam cparam = Model.getSingleton().getOptionsParam().getConnectionParam();
             int sec = cparam.getTimeoutInSecs();
             LOGGER4J.debug("DefaultTimeout: " + sec);
-            cparam.setHttpStateEnabled(false); // HttpState No used. i.e. cookie management disabled provided by ZAP.
+            cparam.setHttpStateEnabled(
+                    false); // HttpState No used. i.e. cookie management disabled provided by ZAP.
 
-            sender =
-                    new HttpSender(
-                            cparam,
-                            false,
-                            HttpSender.MANUAL_REQUEST_INITIATOR);
+            sender = new HttpSender(cparam, false, HttpSender.MANUAL_REQUEST_INITIATOR);
             // setUseCookies(false); // since zap 2.9.0
         }
         return sender;
     }
 
     /**
-     * shudown HttpSender instance and initialize it's parameter to null
+     * shudown HttpSender instance
      *
+     * <p>and initialize it's parameter to null
      */
-    public void shutdownHttpSender(){
+    public void shutdownHttpSender() {
         if (sender != null) {
             sender.shutdown();
             sender = null;
         }
     }
 
-    private HttpMethod runMethod(HttpMessage msg)
-            throws IOException {
+    private HttpMethod runMethod(HttpMessage msg) throws IOException {
         HttpMethod method = null;
 
         // HttpMethodParams params = new HttpMethodParams();
@@ -141,8 +150,7 @@ public class PopUpItemSingleSend extends JMenuItem {
         return method;
     }
 
-    private void send(HttpMessage msg)
-            throws IOException {
+    private void send(HttpMessage msg) throws IOException {
         boolean isFollowRedirect = false;
         HttpMethod method = null;
         HttpResponseHeader resHeader = null;
@@ -179,7 +187,7 @@ public class PopUpItemSingleSend extends JMenuItem {
             // shutdownHttpSender();
             LOGGER4J.debug("release Connection and shutdown completed.");
             long endtime = System.currentTimeMillis();
-            LOGGER4J.debug("runMethod lapse : " + (endtime - starttime)/1000 + "sec.");
+            LOGGER4J.debug("runMethod lapse : " + (endtime - starttime) / 1000 + "sec.");
         }
     }
 }

@@ -20,7 +20,6 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.awt.*;
-
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionHook;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
@@ -32,7 +31,8 @@ import org.zaproxy.zap.extension.tab.Tab;
 public class MyWorkPanel extends AbstractPanel implements Tab {
 
     private ParmGenMacroTrace pmt = null;
-    private static final org.apache.logging.log4j.Logger LOGGER4J = org.apache.logging.log4j.LogManager.getLogger();
+    private static final org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
 
     MyWorkPanel(
             ExtensionActiveScanWrapper extscanwrapper,
@@ -55,17 +55,15 @@ public class MyWorkPanel extends AbstractPanel implements Tab {
 
         exthook.addOptionsParamSet(extscanwrapper.getScannerParam());
 
-        PopUpItemActiveScan popupitemscan =
-                new PopUpItemActiveScan(mbui, extscanwrapper);
+        PopUpItemActiveScan popupitemscan = new PopUpItemActiveScan(mbui, extscanwrapper);
 
-        PopUpItemSingleSend popupitemsingle = new PopUpItemSingleSend(mbui, extscanwrapper.getStartedActiveScanContainer());
+        PopUpItemSingleSend popupitemsingle =
+                new PopUpItemSingleSend(mbui, extscanwrapper.getStartedActiveScanContainer());
 
         requestlistpopupmenu.remove(0); // remove "SendTo" menu that is only used in burp
 
         requestlistpopupmenu.add(popupitemscan);
         requestlistpopupmenu.add(popupitemsingle);
-
-
 
         // scanmacrobtn.setEnabled(true);
         scanmacrobtn.addActionListener(

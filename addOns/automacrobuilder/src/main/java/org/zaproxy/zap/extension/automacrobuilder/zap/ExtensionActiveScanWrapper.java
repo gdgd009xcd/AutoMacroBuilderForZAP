@@ -32,19 +32,17 @@ import org.zaproxy.zap.users.User;
 public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
     private ScannerParam scannerParam = new ScannerParam();
-    private ExtensionActiveScan extension = Control.getSingleton()
-            .getExtensionLoader()
-            .getExtension(ExtensionActiveScan.class);
+    private ExtensionActiveScan extension =
+            Control.getSingleton().getExtensionLoader().getExtension(ExtensionActiveScan.class);
     private StartedActiveScanContainer startedascan = new StartedActiveScanContainer();
     private ParmGenMacroTraceParams targetStepNo = null;
 
-    ExtensionActiveScanWrapper() {
-    }
+    ExtensionActiveScanWrapper() {}
 
-    protected StartedActiveScanContainer getStartedActiveScanContainer(){
+    protected StartedActiveScanContainer getStartedActiveScanContainer() {
         return this.startedascan;
     }
-    
+
     protected ExtensionActiveScan getExtensionActiveScan() {
         return this.extension; // Singleton
     }
@@ -61,9 +59,9 @@ public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
     @Override
     public int startScan(Target target, User user, Object[] contextSpecificObjects) {
-        for(Object o: contextSpecificObjects){
-            if ( o instanceof ScannerParam ) {
-                ((ScannerParam)o).setHandleAntiCSRFTokens(false);
+        for (Object o : contextSpecificObjects) {
+            if (o instanceof ScannerParam) {
+                ((ScannerParam) o).setHandleAntiCSRFTokens(false);
                 break;
             }
         }
@@ -73,12 +71,14 @@ public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
         // START scan.
         // below start method can multipre call per targetStepNo.
-        return this.startedascan.startScan(() -> {
-            int id = this.extension.startScan(target, null, contextSpecificObjects);
-            return this.getScan(id);
-        }, tsno);
+        return this.startedascan.startScan(
+                () -> {
+                    int id = this.extension.startScan(target, null, contextSpecificObjects);
+                    return this.getScan(id);
+                },
+                tsno);
     }
-    
+
     @Override
     public ActiveScan getScan(int id) {
         return this.extension.getScan(id);
@@ -86,11 +86,10 @@ public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
     /**
      * Set targetStepNo pass to StartedActiveScan
+     *
      * @param targetStepNo
      */
     public void setTargetStepNo(ParmGenMacroTraceParams targetStepNo) {
         this.targetStepNo = targetStepNo;
-
     }
-     
 }

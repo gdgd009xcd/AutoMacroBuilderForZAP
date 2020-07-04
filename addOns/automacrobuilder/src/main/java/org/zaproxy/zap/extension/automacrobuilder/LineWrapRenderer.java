@@ -29,7 +29,7 @@ import javax.swing.table.TableCellRenderer;
 public class LineWrapRenderer extends JTextArea implements TableCellRenderer {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
-    
+
     public LineWrapRenderer() {
         super();
         setLineWrap(true);
@@ -46,13 +46,11 @@ public class LineWrapRenderer extends JTextArea implements TableCellRenderer {
             setBackground(table.getBackground());
         }
         setText((value == null) ? "" : value.toString());
-        
+
         // Set the component width to match the width of its table cell
         // and make the height arbitrarily large to accomodate all the contents
         setSize(table.getColumnModel().getColumn(column).getWidth(), Short.MAX_VALUE);
-        
-        
-        
+
         // Now get the JTextArea's fitted height for the given width
         int rowHeight = this.getPreferredSize().height;
 
@@ -63,7 +61,8 @@ public class LineWrapRenderer extends JTextArea implements TableCellRenderer {
         // Important to check if this has been done already
         // to prevent a never-ending loop.
         if (rowHeight != actualRowHeight) {
-            LOGGER4J.debug("setRowHeight: rowHeight" + rowHeight + "!=actuaRowHeight:" + actualRowHeight);
+            LOGGER4J.debug(
+                    "setRowHeight: rowHeight" + rowHeight + "!=actuaRowHeight:" + actualRowHeight);
             table.setRowHeight(row, rowHeight);
         }
         return this;

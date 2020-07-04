@@ -29,6 +29,7 @@ import java.util.List;
 public interface InterfaceDoAction {
     /**
      * start action (synchronized)
+     *
      * <PRE>
      * This function is "synchronized" called  where:
      *      synchronized OneThreadProcessor getProcess(InterfaceDoActionProvider provider)
@@ -42,6 +43,7 @@ public interface InterfaceDoAction {
      * with the number specified by InterfaceDoActionProvider.getActionNo()
      *
      * </PRE>
+     *
      * @param tm
      * @param otp
      * @return
@@ -50,6 +52,7 @@ public interface InterfaceDoAction {
 
     /**
      * {@code List<InterfaceAction>} getActionList();
+     *
      * <PRE>
      * end action (synchronized)
      * This function is "synchronized" called  where:
@@ -57,9 +60,10 @@ public interface InterfaceDoAction {
      * purpose: do some result save/update or post-processing etc... after startAction has done.
      *
      * </PRE>
+     *
      * @param tm
      * @param otp
      * @return
      */
-     InterfaceEndAction endAction(ThreadManager tm, OneThreadProcessor otp);
+    InterfaceEndAction endAction(ThreadManager tm, OneThreadProcessor otp);
 }

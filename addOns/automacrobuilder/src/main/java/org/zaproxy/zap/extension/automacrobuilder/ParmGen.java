@@ -633,8 +633,8 @@ public class ParmGen {
     }
 
     /**
-     * Set tracked cookie and token in request argument
-     * this function for Burp version
+     * Set tracked cookie and token in request argument this function for Burp version
+     *
      * @param _h
      * @param port
      * @param isSSL
@@ -836,8 +836,7 @@ public class ParmGen {
     }
 
     /**
-     * Set tracked cookie and token in request argument
-     * This function for Zap-extension
+     * Set tracked cookie and token in request argument This function for Zap-extension
      *
      * @param prequest
      * @return
@@ -937,14 +936,14 @@ public class ParmGen {
                             AppValue av = pt.next();
                             if (av.isEnabled()) {
                                 if ((tempreq =
-                                        ParseRequest(
-                                                prequest,
-                                                org_Request,
-                                                boundaryarray,
-                                                contarray,
-                                                pini,
-                                                av,
-                                                errorhash))
+                                                ParseRequest(
+                                                        prequest,
+                                                        org_Request,
+                                                        boundaryarray,
+                                                        contarray,
+                                                        pini,
+                                                        av,
+                                                        errorhash))
                                         != null) {
                                     modreq = tempreq;
                                     prequest = tempreq;
@@ -1051,7 +1050,6 @@ public class ParmGen {
 
         PResponse presponse = new PResponse(response_bytes, _pageenc);
         return ResponseRun(url, presponse);
-
     }
 
     /**
@@ -1119,23 +1117,24 @@ public class ParmGen {
      * @param minpos
      * @param maxpos
      */
-
     public static void exchangeStepNo(int minpos, int maxpos) {
         if (parmcsv != null && !parmcsv.isEmpty()) {
-            parmcsv.stream().forEach(pini_filtered -> {
-                int settostep = pini_filtered.getSetToStep();
-                if ( settostep == minpos ) {
-                    pini_filtered.setSetToStep(maxpos);
-                } else if (settostep == maxpos) {
-                    pini_filtered.setSetToStep(minpos);
-                }
-                int fromstep = pini_filtered.getTrackFromStep();
-                if ( fromstep == minpos ) {
-                    pini_filtered.setTrackFromStep(maxpos);
-                } else if ( fromstep == maxpos) {
-                    pini_filtered.setTrackFromStep(minpos);
-                }
-            });
+            parmcsv.stream()
+                    .forEach(
+                            pini_filtered -> {
+                                int settostep = pini_filtered.getSetToStep();
+                                if (settostep == minpos) {
+                                    pini_filtered.setSetToStep(maxpos);
+                                } else if (settostep == maxpos) {
+                                    pini_filtered.setSetToStep(minpos);
+                                }
+                                int fromstep = pini_filtered.getTrackFromStep();
+                                if (fromstep == minpos) {
+                                    pini_filtered.setTrackFromStep(maxpos);
+                                } else if (fromstep == maxpos) {
+                                    pini_filtered.setTrackFromStep(minpos);
+                                }
+                            });
         }
     }
 
@@ -1149,17 +1148,21 @@ public class ParmGen {
         List<AppParmsIni> hasnolist = new ArrayList<>();
 
         if (parmcsv != null && !parmcsv.isEmpty()) {
-            parmcsv.stream().filter(pini -> {
-                if( pini.getTrackFromStep() >= stepno
-                || (pini.getSetToStep() >= stepno && pini.getSetToStep()!= ParmVars.TOSTEPANY)) {
-                    return true;
-                }
-                return false;
-            }).forEach(pini_filtered -> {
-                hasnolist.add(pini_filtered);
-            });
+            parmcsv.stream()
+                    .filter(
+                            pini -> {
+                                if (pini.getTrackFromStep() >= stepno
+                                        || (pini.getSetToStep() >= stepno
+                                                && pini.getSetToStep() != ParmVars.TOSTEPANY)) {
+                                    return true;
+                                }
+                                return false;
+                            })
+                    .forEach(
+                            pini_filtered -> {
+                                hasnolist.add(pini_filtered);
+                            });
         }
         return hasnolist;
     }
-
 }

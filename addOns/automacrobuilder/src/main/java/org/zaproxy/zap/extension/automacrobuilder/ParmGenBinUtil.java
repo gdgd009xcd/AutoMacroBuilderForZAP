@@ -130,10 +130,7 @@ public class ParmGenBinUtil {
         return indexOf(b, 0);
     }
 
-    /**
-     * clear data
-     *
-     */
+    /** clear data */
     public void clear() {
         bstream.reset();
     }

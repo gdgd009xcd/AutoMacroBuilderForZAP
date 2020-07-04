@@ -6,27 +6,27 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 /**
+ * InterfaceClientDependantMessage
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public interface InterfaceClientDependantMessage<T> {
-    
+
     public T getClientDpendMessage();
-    
+
     public void setClientDependMessage(T t);
-    
+
     public String getHost();
-    
+
     public int getPort();
-    
+
     public boolean isSSL();
-    
+
     public byte[] getRequestByte();
-    
+
     public byte[] getResponseByte();
-    
+
     public Encode getRequestEncode();
-    
+
     public Encode getResponseEncode();
-    
 }

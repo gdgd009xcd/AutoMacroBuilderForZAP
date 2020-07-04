@@ -275,7 +275,9 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="&#x5bfe;&#x8c61;&#x6a5f;&#x80fd;"/>
+            <TitledBorder title="target scope">
+              <ResourceString PropertyName="titleX" bundle="burp/Bundle.properties" key="typeoftool" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+            </TitledBorder>
           </Border>
         </Property>
       </Properties>

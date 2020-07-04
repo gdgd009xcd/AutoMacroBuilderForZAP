@@ -43,7 +43,7 @@ public class ClientDependMessageContainer
 
     /**
      * Get HistoryReference of this RequestResponse
-     * 
+     *
      * @return HistoryReference
      */
     @Override
@@ -53,7 +53,7 @@ public class ClientDependMessageContainer
 
     /**
      * Set HistoryReference of this RequestResponse
-     * 
+     *
      * @param t HistoryReference
      */
     @Override
@@ -111,8 +111,8 @@ public class ClientDependMessageContainer
                     this.href
                             .getHttpMessage()
                             .getRequestHeader()
-                            .toString();// getPrimeHeader() + mLineDelimiter + mMsgHeader +
-                                        // mLineDelimiter;
+                            .toString(); // getPrimeHeader() + mLineDelimiter + mMsgHeader +
+            // mLineDelimiter;
             byte[] bodybin = this.href.getHttpMessage().getRequestBody().getBytes();
             ParmGenBinUtil pbinutil = new ParmGenBinUtil(reqheader.getBytes());
             pbinutil.concat(bodybin);
@@ -131,16 +131,18 @@ public class ClientDependMessageContainer
                     this.href
                             .getHttpMessage()
                             .getResponseHeader()
-                            .toString();// getPrimeHeader() + mLineDelimiter + mMsgHeader +
-                                        // mLineDelimiter;
+                            .toString(); // getPrimeHeader() + mLineDelimiter + mMsgHeader +
+            // mLineDelimiter;
             byte[] bodybin = this.href.getHttpMessage().getResponseBody().getBytes();
             ParmGenBinUtil pbinutil = new ParmGenBinUtil(resheader.getBytes());
             pbinutil.concat(bodybin);
             return pbinutil.getBytes();
         } catch (HttpMalformedHeaderException ex) {
-            Logger.getLogger(ClientDependMessageContainer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientDependMessageContainer.class.getName())
+                    .log(Level.SEVERE, null, ex);
         } catch (DatabaseException ex) {
-            Logger.getLogger(ClientDependMessageContainer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientDependMessageContainer.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -150,16 +152,16 @@ public class ClientDependMessageContainer
         String charsetname;
         try {
             charsetname = this.href.getHttpMessage().getRequestHeader().getCharset();
-            if(Encode.isExistEnc(charsetname)){
+            if (Encode.isExistEnc(charsetname)) {
                 return Encode.getEnum(charsetname);
             }
         } catch (HttpMalformedHeaderException ex) {
-            Logger.getLogger(ClientDependMessageContainer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientDependMessageContainer.class.getName())
+                    .log(Level.SEVERE, null, ex);
         } catch (DatabaseException ex) {
-            Logger.getLogger(ClientDependMessageContainer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientDependMessageContainer.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
-        
-        
         return null;
     }
 
@@ -168,19 +170,16 @@ public class ClientDependMessageContainer
         String charsetname;
         try {
             charsetname = this.href.getHttpMessage().getResponseHeader().getCharset();
-            if(Encode.isExistEnc(charsetname)){
+            if (Encode.isExistEnc(charsetname)) {
                 return Encode.getEnum(charsetname);
             }
         } catch (HttpMalformedHeaderException ex) {
-            Logger.getLogger(ClientDependMessageContainer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientDependMessageContainer.class.getName())
+                    .log(Level.SEVERE, null, ex);
         } catch (DatabaseException ex) {
-            Logger.getLogger(ClientDependMessageContainer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientDependMessageContainer.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
-        
-        
         return null;
     }
-
-    
-    
 }

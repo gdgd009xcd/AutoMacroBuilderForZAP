@@ -8,7 +8,8 @@ import org.zaproxy.zap.extension.automacrobuilder.InterfaceDoActionProvider;
 public class PostMacroDoActionProvider implements InterfaceDoActionProvider {
     private PostMacroDoAction doactioninstance = new PostMacroDoAction();
 
-    public void setParameters(StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
+    public void setParameters(
+            StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
         doactioninstance.setParameters(acon, msg, initiator, sender);
     }
 

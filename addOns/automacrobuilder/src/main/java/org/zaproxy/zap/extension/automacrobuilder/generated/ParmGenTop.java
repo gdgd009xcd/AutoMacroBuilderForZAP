@@ -358,7 +358,7 @@ public class ParmGenTop extends javax.swing.JFrame {
             }
         });
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("対象機能"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenTop.typeoftool.text"))); // NOI18N
 
         ProxyScope.setText(bundle.getString("ParmGenTop.PROXY.text")); // NOI18N
         ProxyScope.setEnabled(false);

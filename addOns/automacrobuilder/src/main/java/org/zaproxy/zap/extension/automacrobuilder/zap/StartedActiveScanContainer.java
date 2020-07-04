@@ -11,11 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.parosproxy.paros.core.scanner.Scanner;
 import org.zaproxy.zap.extension.ascan.ActiveScan;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGen;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 
 /**
+ * StartedActiveScanContainer
  *
  * @author daike
  */
@@ -27,18 +26,20 @@ public class StartedActiveScanContainer {
     private Map<ActiveScan, ParmGenMacroTraceParams> ascanmap = null;
     private static final ThreadLocal<Long> STARTED_THREADS = new ThreadLocal<Long>();
     private static final ThreadLocal<UUID> STARTED_UUIDS = new ThreadLocal<>();
-    private static final ThreadLocal<ParmGenMacroTraceParams> STARTED_PMTPARAMS = new ThreadLocal<>();
+    private static final ThreadLocal<ParmGenMacroTraceParams> STARTED_PMTPARAMS =
+            new ThreadLocal<>();
 
-    StartedActiveScanContainer(){
+    StartedActiveScanContainer() {
         ascanmap = new ConcurrentHashMap<>();
     }
-    
+
     /**
      * Start ActiveScan and add it to list.
+     *
      * @param startscan
      * @return int id
      */
-    protected int startScan(InterfaceStartScan startscan, ParmGenMacroTraceParams tstep){
+    protected int startScan(InterfaceStartScan startscan, ParmGenMacroTraceParams tstep) {
         int id = -1;
         try {
             cleanupStoppedActiveScan();
@@ -50,14 +51,19 @@ public class StartedActiveScanContainer {
         }
         return id;
     }
-    
-    /**
-     * remove Stopped ActiveAcan from list
-     */
-    private void cleanupStoppedActiveScan(){
-        Map<ActiveScan, ParmGenMacroTraceParams> cleanupmap = ascanmap.entrySet().stream().filter(ent -> !ent.getKey().isStopped()).collect(Collectors.toMap(ent -> ent.getKey(), ent -> ent.getValue()));
 
-        if ( cleanupmap != null && cleanupmap.size() > 0) {
+    /**
+     * remove Stopped ActiveAcan
+     *
+     * <p>from list
+     */
+    private void cleanupStoppedActiveScan() {
+        Map<ActiveScan, ParmGenMacroTraceParams> cleanupmap =
+                ascanmap.entrySet().stream()
+                        .filter(ent -> !ent.getKey().isStopped())
+                        .collect(Collectors.toMap(ent -> ent.getKey(), ent -> ent.getValue()));
+
+        if (cleanupmap != null && cleanupmap.size() > 0) {
             ascanmap = cleanupmap;
             LOGGER4J.debug("cleanup running scans:" + ascanmap.size());
         } else {
@@ -67,22 +73,22 @@ public class StartedActiveScanContainer {
     }
 
     /**
-     * return true if ascan  started from this Extension
+     * return true if ascan started from this Extension
      *
      * @param ascan
-     * @return boolean 
+     * @return boolean
      */
-    public boolean isStartedActiveScan(Scanner ascan){
+    public boolean isStartedActiveScan(Scanner ascan) {
         boolean result = false;
         try {
             result = ascanmap.containsKey(ascan);
-        }finally {
+        } finally {
         }
         return result;
     }
 
     /**
-     * Set ParmGenMacroTrace  parameters.
+     * Set ParmGenMacroTrace parameters.
      *
      * @param ascan
      */
@@ -95,7 +101,7 @@ public class StartedActiveScanContainer {
     }
 
     /**
-     * Get ParmGenMacroTrace  parameters.
+     * Get ParmGenMacroTrace parameters.
      *
      * @return return value at first call only.
      */
@@ -109,35 +115,35 @@ public class StartedActiveScanContainer {
 
     /**
      * Add thread id to STARTED_THREADS
-     * this method called  at ScannerHook's beforeScan
      *
+     * <p>this method called at ScannerHook's beforeScan
      */
-    public void addTheadid(){
+    public void addTheadid() {
         STARTED_THREADS.set(Thread.currentThread().getId());
     }
 
     /**
      * Remove thread id from STARTED_THREADS
-     * this method called in onHttpRequestSend after called  isThreadFromStartedActiveScanners
+     *
+     * <p>this method called in onHttpRequestSend after called isThreadFromStartedActiveScanners
      */
-    public void removeThreadid(){
+    public void removeThreadid() {
         STARTED_THREADS.remove();
     }
 
     /**
-     * return true if sender started from this Extension.
-     * this method called in onHttpRequestSend
+     * return true if sender started from this Extension. this method called in onHttpRequestSend
+     *
      * @param id
      * @return
      */
-    public boolean isThreadFromStartedActiveScanners(long id){
+    public boolean isThreadFromStartedActiveScanners(long id) {
         // return threadidscanhash.containsKey(id);
         Long hooked_id = STARTED_THREADS.get();
-        if ( hooked_id != null ) {
+        if (hooked_id != null) {
             return true;
         }
         return false;
-
     }
 
     /**
@@ -150,9 +156,11 @@ public class StartedActiveScanContainer {
     }
 
     /**
-     * Remove UUID which is generated by ParmGenMacroTraceProvider for currentthread
+     * Remove UUID which is generated
+     *
+     * <p>by ParmGenMacroTraceProvider for currentthread
      */
-    public void removeUUID(){
+    public void removeUUID() {
         STARTED_UUIDS.remove();
     }
 
@@ -160,9 +168,8 @@ public class StartedActiveScanContainer {
      * Get UUID which is generated by ParmGenMacroTraceProvider for currentthread
      *
      * @return UUID or null
-     *
      */
-    public UUID getUUID(){
+    public UUID getUUID() {
         return STARTED_UUIDS.get();
     }
 }

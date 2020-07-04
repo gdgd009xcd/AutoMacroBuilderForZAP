@@ -110,7 +110,8 @@ public class ParmGenTextDoc {
         if (tcompo != null) {
             Document blank = new DefaultStyledDocument();
 
-            // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot display contents. this problem occur only ZAP.
+            // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
+            // display contents. this problem occur only ZAP.
             // Thus you must get original Document from JEditorPane for Setting Text.
             doc = tcompo.getDocument();
 

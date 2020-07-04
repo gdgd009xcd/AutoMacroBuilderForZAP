@@ -50,7 +50,8 @@ public class ParmGenMacroTraceProvider {
      * @param sender
      * @return ParmGenMacroTrace
      */
-    public static <T> ParmGenMacroTrace getNewParmGenMacroTraceInstance(T sender, ParmGenMacroTraceParams pmtParams) {
+    public static <T> ParmGenMacroTrace getNewParmGenMacroTraceInstance(
+            T sender, ParmGenMacroTraceParams pmtParams) {
         ParmGenMacroTrace newpmt = pmt_originalbase.getScanInstance(sender, pmtParams);
         pmtmap.put(newpmt.getUUID(), newpmt);
         return newpmt;

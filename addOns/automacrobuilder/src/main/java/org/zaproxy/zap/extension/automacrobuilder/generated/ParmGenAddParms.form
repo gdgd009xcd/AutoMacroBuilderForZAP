@@ -236,7 +236,9 @@
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="comboModel" type="code"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="&lt;HTML&gt;value&#x5024;&#x306e;&#x4ee5;&#x4e0b;&#x306e;&#x6587;&#x5b57;&#x5217;&#x304c;&#x7f6e;&#x63db;&#x5bfe;&#x8c61;&#x3068;&#x306a;&#x308b;&lt;BR&gt;&#xa;&#x6570;&#x5024;&#x56fa;&#x5b9a;&#x9577;&#x3000;&#x3000;&#x3000;&#x3000;&#x4f8b;&#xff1a;&#x3000;n=test0001a  -&gt; &quot;0001&quot;&#x306e;&#x6570;&#x5024;&#x90e8;&#x5206;&#x56fa;&#x5b9a;&#x9577;&#xff14;&#x6841;&lt;BR&gt;&#xa;&#x6587;&#x5b57;&#x5217;&#x56fa;&#x5b9a;&#x9577;&#x3000;&#x3000; &#x4f8b;&#xff1a;&#x3000;n=test0001a  -&gt; &quot;test0001a&quot;&#x82f1;&#x6570;&#x5b57;&#x5168;&#x4f53;&#x56fa;&#x5b9a;&#x9577;&#xff19;&#x6841;&lt;BR&gt;&#xa;&#x6570;&#x5024;&#x4efb;&#x610f;&#x9577;&#x3000;&#x3000;&#x3000;&#x3000;&#x4f8b;&#xff1a;&#x3000;n=test123a, n=test0000999b -&gt; &quot;123&quot;, &quot;0000999&quot;&#x306e;&#x6570;&#x5024;&#x90e8;&#x5206;&#x4efb;&#x610f;&#x9577;&lt;BR&gt;&#xa;&#x6587;&#x5b57;&#x5217;&#x4efb;&#x610f;&#x9577;&#x3000;&#x3000; &#x4f8b;&#xff1a;&#x3000;n=test123a, n=real0000101b =&gt; &quot;test123a&quot;, &quot;real0000101b&quot;&#x3000;&#x82f1;&#x6570;&#x5b57;&#x5168;&#x4f53;&#x4efb;&#x610f;&#x9577;"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="burp/Bundle.properties" key="numbertooltip" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ValReplacePartActionPerformed"/>

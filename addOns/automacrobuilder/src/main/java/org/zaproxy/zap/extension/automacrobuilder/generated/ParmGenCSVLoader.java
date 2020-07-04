@@ -106,8 +106,12 @@ public class ParmGenCSVLoader extends javax.swing.JFrame {
                 return types [columnIndex];
             }
         });
-        ColumnTable.setToolTipText("<HTML>\n追加するカラムを選択し、ＯＫボタンを押す。");
+        ColumnTable.setToolTipText(bundle.getString("ParmGenCSVLoader.tooltip.text")); // NOI18N
         jScrollPane1.setViewportView(ColumnTable);
+        if (ColumnTable.getColumnModel().getColumnCount() > 0) {
+            ColumnTable.getColumnModel().getColumn(0).setHeaderValue(bundle.getString("ParmGenCSVLoader.columntitle.text")); // NOI18N
+            ColumnTable.getColumnModel().getColumn(1).setHeaderValue(bundle.getString("ParmGenCSVLoader.columnvalue.text")); // NOI18N
+        }
 
         jLabel1.setText(bundle.getString("ParmGenCSVLoader.<HTML> カラムを下記一覧から選択し、選択ボタンを押す。.text")); // NOI18N
 

@@ -16,8 +16,9 @@ public class BeforeMacroDoActionProvider implements InterfaceDoActionProvider {
      * @param initiator
      * @param sender
      */
-    public void setParameters(StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
-      doactioninstance.setParameters(acon,msg,initiator,sender);
+    public void setParameters(
+            StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
+        doactioninstance.setParameters(acon, msg, initiator, sender);
     }
 
     @Override

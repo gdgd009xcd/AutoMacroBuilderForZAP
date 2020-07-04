@@ -315,7 +315,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenAddParms.jPanel1.border.text"))); // NOI18N
 
         ValReplacePart.setModel(comboModel);
-        ValReplacePart.setToolTipText("<HTML>value値の以下の文字列が置換対象となる<BR>\n数値固定長　　　　例：　n=test0001a  -> \"0001\"の数値部分固定長４桁<BR>\n文字列固定長　　 例：　n=test0001a  -> \"test0001a\"英数字全体固定長９桁<BR>\n数値任意長　　　　例：　n=test123a, n=test0000999b -> \"123\", \"0000999\"の数値部分任意長<BR>\n文字列任意長　　 例：　n=test123a, n=real0000101b => \"test123a\", \"real0000101b\"　英数字全体任意長");
+        ValReplacePart.setToolTipText(bundle.getString("ParmGenAddParms.numbertooltip.text")); // NOI18N
         ValReplacePart.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ValReplacePartActionPerformed(evt);

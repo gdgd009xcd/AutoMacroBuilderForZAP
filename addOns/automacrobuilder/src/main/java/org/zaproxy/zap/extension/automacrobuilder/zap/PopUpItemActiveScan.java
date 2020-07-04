@@ -22,10 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder.zap;
 import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.PREFIX;
 
 import java.awt.Dimension;
-import static java.lang.Thread.sleep;
-
 import javax.swing.JMenuItem;
-
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.history.ExtensionHistory;
@@ -51,7 +48,7 @@ public class PopUpItemActiveScan extends JMenuItem {
     private CustomScanDialogForMacroBuilder customScanDialog = null;
     private ExtensionHistory extHistory = null;
     private ExtensionForcedUser extForce = null;
-    private final static org.apache.logging.log4j.Logger LOGGER4J =
+    private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
     PopUpItemActiveScan(MacroBuilderUI mbui, ExtensionActiveScanWrapper extension) {
@@ -72,9 +69,12 @@ public class PopUpItemActiveScan extends JMenuItem {
 
                         PRequestResponse prr = pmt.getCurrentRequestResponse();
                         ClientDependMessageContainer cdmcon = prr.getClientDependMessageContainer();
-                        HistoryReference href = cdmcon != null ? cdmcon.getClientDpendMessage() : null;
+                        HistoryReference href =
+                                cdmcon != null ? cdmcon.getClientDpendMessage() : null;
                         SiteNode sn = null;
-                        if (href == null || getExtensionHistory().getHistoryReference(href.getHistoryId()) == null) {
+                        if (href == null
+                                || getExtensionHistory().getHistoryReference(href.getHistoryId())
+                                        == null) {
                             // add RequestResponse to HistoryReference
                             HttpMessage htmess = addPRequestResponse2HistoryReference(prr);
                             if (htmess != null) {
@@ -106,16 +106,15 @@ public class PopUpItemActiveScan extends JMenuItem {
                     }
                 });
     }
-    
-   
 
     /**
-     * Add specified paramter's request/response message to HistoryReference. Returns HttpMessage Object which was added to HistoryReference.
-     * 
+     * Add specified paramter's request/response message to HistoryReference. Returns HttpMessage
+     * Object which was added to HistoryReference.
+     *
      * @param ppr
-     * @return HttpMessage 
+     * @return HttpMessage
      */
-    private HttpMessage addPRequestResponse2HistoryReference(PRequestResponse ppr){
+    private HttpMessage addPRequestResponse2HistoryReference(PRequestResponse ppr) {
 
         HttpMessage htmess = ZapUtil.getHttpMessage(ppr);
 
@@ -123,21 +122,18 @@ public class PopUpItemActiveScan extends JMenuItem {
 
         return htmess;
     }
-    
+
     /**
-     * Add a HistoryReference to  siteTree, then returns SiteNode which was added to siteTree Model.
-     * 
+     * Add a HistoryReference to siteTree, then returns SiteNode which was added to siteTree Model.
+     *
      * @param href
      */
-    private  SiteNode addHistoryReferenceAndMakeNode(HistoryReference href){
+    private SiteNode addHistoryReferenceAndMakeNode(HistoryReference href) {
 
         SiteNode startNode = null;
 
-        Model.getSingleton()
-                .getSession()
-                .getSiteTree()
-                .addPath(href);
- 
+        Model.getSingleton().getSession().getSiteTree().addPath(href);
+
         startNode = getSiteNode(href);
 
         return startNode;
@@ -145,13 +141,14 @@ public class PopUpItemActiveScan extends JMenuItem {
 
     /**
      * Get the SiteNode object to which the HistoryReference object belongs.
-     * 
+     *
      * @param historyReference
      * @return SiteNode
      */
     private SiteNode getSiteNode(HistoryReference historyReference) {
         if (historyReference == null) return null;
-        SiteNode sn = historyReference.getSiteNode();// internal cached SiteNode. may be already deleted?
+        SiteNode sn =
+                historyReference.getSiteNode(); // internal cached SiteNode. may be already deleted?
         if (sn == null) {
             sn =
                     Model.getSingleton()
@@ -208,30 +205,30 @@ public class PopUpItemActiveScan extends JMenuItem {
         }
         customScanDialog.setVisible(true);
     }
-    
+
     /**
      * Get ExtensionHistory
-     * 
+     *
      * @return ExtensionHistory
      */
-    private ExtensionHistory getExtensionHistory(){
-        if(this.extHistory ==null){
+    private ExtensionHistory getExtensionHistory() {
+        if (this.extHistory == null) {
             this.extHistory =
-                ((ExtensionHistory)
-                        Control.getSingleton()
-                                .getExtensionLoader()
-                                .getExtension(ExtensionHistory.NAME));
+                    ((ExtensionHistory)
+                            Control.getSingleton()
+                                    .getExtensionLoader()
+                                    .getExtension(ExtensionHistory.NAME));
         }
         return this.extHistory;
     }
-    
-    private ExtensionForcedUser getExtensionForcedUser(){
-        if(this.extForce ==null){
+
+    private ExtensionForcedUser getExtensionForcedUser() {
+        if (this.extForce == null) {
             this.extForce =
-                ((ExtensionForcedUser)
-                        Control.getSingleton()
-                                .getExtensionLoader()
-                                .getExtension(ExtensionForcedUser.NAME));
+                    ((ExtensionForcedUser)
+                            Control.getSingleton()
+                                    .getExtensionLoader()
+                                    .getExtension(ExtensionForcedUser.NAME));
         }
         return this.extForce;
     }

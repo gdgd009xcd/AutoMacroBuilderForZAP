@@ -105,7 +105,11 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
                     .getHookView()
                     .addWorkPanel(
                             new MyWorkPanel(
-                                    extwrapper, this.mbui, this.pmt, "MacroBuilder", extensionHook));
+                                    extwrapper,
+                                    this.mbui,
+                                    this.pmt,
+                                    "MacroBuilder",
+                                    extensionHook));
             // extensionHook.getHookView().addStatusPanel(new MyWorkPanel("StatusPanel", LOGGER));
             // extensionHook.getHookView().addSelectPanel(new MyWorkPanel("SelectPanel", LOGGER));
         }

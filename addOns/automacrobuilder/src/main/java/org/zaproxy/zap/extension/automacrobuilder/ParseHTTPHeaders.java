@@ -1406,7 +1406,7 @@ class ParseHTTPHeaders implements DeepClone {
         }
         return null;
     }
-    
+
     public void setParamsCustomHeader(ParmGenMacroTraceParams pmtParams) {
         setHeader(CUSTOM_PARAMS_HEADERNAME, pmtParams.toString());
     }
@@ -1419,7 +1419,7 @@ class ParseHTTPHeaders implements DeepClone {
         }
         return pmtParams;
     }
-    
+
     @Override
     public ParseHTTPHeaders clone() {
         try {

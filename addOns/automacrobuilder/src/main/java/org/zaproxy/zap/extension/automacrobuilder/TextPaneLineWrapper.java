@@ -41,9 +41,7 @@ import javax.swing.text.ViewFactory;
 @SuppressWarnings("serial")
 public class TextPaneLineWrapper extends StyledEditorKit {
     ViewFactory defaultFactory = new WrapColumnFactory();
-    
 
-    
     public ViewFactory getViewFactory() {
         return defaultFactory;
     }
@@ -53,10 +51,9 @@ class WrapColumnFactory implements ViewFactory {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    
     public View create(Element elem) {
         String kind = elem.getName();
-        LOGGER4J.debug("elem:" + kind );
+        LOGGER4J.debug("elem:" + kind);
         if (kind != null) {
             if (kind.equals(AbstractDocument.ContentElementName)) {
                 return new WrapLabelView(elem);
@@ -80,9 +77,9 @@ class WrapLabelView extends LabelView {
     public WrapLabelView(Element elem) {
         super(elem);
     }
-    
+
     public static float MAX_y = 0;
-    
+
     @Override
     public float getMinimumSpan(int axis) {
 
@@ -90,7 +87,7 @@ class WrapLabelView extends LabelView {
             case View.X_AXIS:
                 return 0;
             case View.Y_AXIS:
-                return 0;// super.getMinimumSpan(axis);
+                return 0; // super.getMinimumSpan(axis);
             default:
                 throw new IllegalArgumentException("Invalid axis: " + axis);
         }
@@ -100,19 +97,21 @@ class WrapLabelView extends LabelView {
 class MyParagraphView extends ParagraphView {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
+
     public MyParagraphView(Element elem) {
         super(elem);
     }
+
     protected void layout(int width, int height) {
-        long start=System.currentTimeMillis();
-        if (width<Integer.MAX_VALUE) {
+        long start = System.currentTimeMillis();
+        if (width < Integer.MAX_VALUE) {
             super.layout(width, height);
         }
-        long end=System.currentTimeMillis();
-        
-        LOGGER4J.debug("w="+width+" h="+height+" time="+(end-start));
+        long end = System.currentTimeMillis();
+
+        LOGGER4J.debug("w=" + width + " h=" + height + " time=" + (end - start));
     }
-    
+
     @Override
     public float getMinimumSpan(int axis) {
         switch (axis) {
@@ -125,4 +124,3 @@ class MyParagraphView extends ParagraphView {
         }
     }
 }
-

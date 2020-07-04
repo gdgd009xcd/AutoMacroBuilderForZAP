@@ -31,7 +31,7 @@ import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.AppValue_List;
 
 /**
  * This class Used only when saving parameter settings.
- * 
+ *
  * @author daike
  */
 public class ParmGenJSONSave {
@@ -49,18 +49,26 @@ public class ParmGenJSONSave {
         saveParmGenSetUp(_pmt, null);
         selected_messages = new ArrayList<PRequestResponse>();
         proxy_messages = _selected_messages;
-        if(proxy_messages==null||proxy_messages.isEmpty()) {
+        if (proxy_messages == null || proxy_messages.isEmpty()) {
             // create dummy message
-            String requeststr = "GET /index.php?DB=1 HTTP/1.1\r\n"
-                    + "Host: test\r\n"
-                    + "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0\r\n\r\n"
-                    ;
-            String responsestr = "HTTP/1.1 200 OK\r\n"
-                    + "Date: Sat, 20 Jun 2020 01:10:28 GMT\r\n"
-                    + "Content-Length: 0\r\n"
-                    + "Content-Type: text/html; charset=UTF-8\r\n\r\n";
+            String requeststr =
+                    "GET /index.php?DB=1 HTTP/1.1\r\n"
+                            + "Host: test\r\n"
+                            + "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0\r\n\r\n";
+            String responsestr =
+                    "HTTP/1.1 200 OK\r\n"
+                            + "Date: Sat, 20 Jun 2020 01:10:28 GMT\r\n"
+                            + "Content-Length: 0\r\n"
+                            + "Content-Type: text/html; charset=UTF-8\r\n\r\n";
 
-            PRequestResponse dummy = new PRequestResponse("localhost" , 80, false, requeststr.getBytes(), responsestr.getBytes(), ParmVars.enc);
+            PRequestResponse dummy =
+                    new PRequestResponse(
+                            "localhost",
+                            80,
+                            false,
+                            requeststr.getBytes(),
+                            responsestr.getBytes(),
+                            ParmVars.enc);
             proxy_messages = proxy_messages == null ? new ArrayList<>() : proxy_messages;
             proxy_messages.add(dummy);
         }

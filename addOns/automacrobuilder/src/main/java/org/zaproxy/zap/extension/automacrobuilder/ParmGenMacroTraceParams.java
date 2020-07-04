@@ -17,6 +17,7 @@ public class ParmGenMacroTraceParams {
 
     /**
      * Get Scan target request stepno in ParmGenMacroTrace.
+     *
      * @return
      */
     public int getSelectedRequestNo() {
@@ -24,8 +25,9 @@ public class ParmGenMacroTraceParams {
     }
 
     /**
-     * Set last perform request step in ParmGenMacroTrace.
-     * if this value == -1 then perform request entire ParmGenMacroTrace.rlist requests.
+     * Set last perform request step in ParmGenMacroTrace. if this value == -1 then perform request
+     * entire ParmGenMacroTrace.rlist requests.
+     *
      * @param last
      */
     public void setLastStepNo(int last) {
@@ -33,19 +35,19 @@ public class ParmGenMacroTraceParams {
     }
 
     /**
-     * Get last perform request step in ParmGenMacroTrace.
-     * if this value == -1 then perform request entire ParmGenMacroTrace.rlist requests.
+     * Get last perform request step in ParmGenMacroTrace. if this value == -1 then perform request
+     * entire ParmGenMacroTrace.rlist requests.
      *
      * @return
      */
     public int getLastStepNo() {
         return last_stepno;
     }
-    
+
     public String toString() {
         return Integer.toString(selected_request) + "|" + Integer.toString(last_stepno);
     }
-    
+
     public void setString(String s) {
         if (s != null) {
             String[] nv = s.split("\\|");

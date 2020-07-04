@@ -19,30 +19,19 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.mdepend;
 
+import java.io.IOException;
+import java.util.UUID;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpMethodHelper;
-import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpResponseHeader;
 import org.parosproxy.paros.network.HttpSender;
-import org.zaproxy.zap.ZapGetMethod;
-import org.zaproxy.zap.extension.automacrobuilder.Encode;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGen;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 import org.zaproxy.zap.extension.automacrobuilder.UUIDGenerator;
-import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
-import org.zaproxy.zap.network.HttpRequestBody;
-import org.zaproxy.zap.network.HttpResponseBody;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.UUID;
 
 /** @author daike */
 public class ClientDependent {
@@ -53,7 +42,7 @@ public class ClientDependent {
     public static final String LOG4JXML_DIR = Constant.getZapHome();
 
     private String comments = "";
-    
+
     private boolean iserror = false;
 
     private UUID uuid = null;
@@ -64,8 +53,9 @@ public class ClientDependent {
     private static HttpMethodHelper helper = new HttpMethodHelper();
 
     /**
-     * initialize this members. members no need copy.
+     * initialize this members.
      *
+     * <p>members no need copy.
      */
     private void init() {
         comments = "";
@@ -87,21 +77,19 @@ public class ClientDependent {
     protected void burpSendToIntruder(String host, int port, boolean useHttps, byte[] messages) {}
 
     protected PRequestResponse clientHttpRequest(PRequest request) {
-      return null;
+        return null;
     }
 
     /**
-     * Modified version runMethod. this method based on HttpSender class′s method
-     * No follow redirects
-     * No authentication
+     * Modified version runMethod. this method based on HttpSender class′s method No follow
+     * redirects No authentication
      *
      * @param sender
      * @param msg
      * @return
      * @throws IOException
      */
-    private HttpMethod runMethod(HttpSender sender, HttpMessage msg)
-            throws IOException {
+    private HttpMethod runMethod(HttpSender sender, HttpMessage msg) throws IOException {
         HttpMethod method = null;
 
         // HttpMethodParams params = new HttpMethodParams();
@@ -126,15 +114,14 @@ public class ClientDependent {
     }
 
     /**
-     * Send HttpMessage using specified sender. this method based on HttpSender class′s method
-     * No follow redirects
-     * No authentication
+     * Send HttpMessage using specified sender. this method based on HttpSender class′s method No
+     * follow redirects No authentication
+     *
      * @param sender
      * @param msg
      * @throws IOException
      */
-    public void send(HttpSender sender, HttpMessage msg)
-            throws IOException {
+    public void send(HttpSender sender, HttpMessage msg) throws IOException {
         boolean isFollowRedirect = false;
         HttpMethod method = null;
         HttpResponseHeader resHeader = null;
@@ -163,14 +150,14 @@ public class ClientDependent {
             // ZAP: set method to retrieve upgraded channel later
             // if (method instanceof ZapGetMethod) {
             //    msg.setUserObject(method);
-            //}
+            // }
         } finally {
             if (method != null) {
                 method.releaseConnection();
             }
             LOGGER4J.debug("release Connection and shutdown completed.");
             long endtime = System.currentTimeMillis();
-            LOGGER4J.debug("runMethod lapse : " + (endtime - starttime)/1000 + "sec.");
+            LOGGER4J.debug("runMethod lapse : " + (endtime - starttime) / 1000 + "sec.");
         }
     }
 
@@ -182,8 +169,8 @@ public class ClientDependent {
     protected void scanQueNull() {}
 
     /**
-     * set UUID custom header
-     * unused function
+     * set UUID custom header unused function
+     *
      * @param preq
      */
     protected void setUUID2CustomHeader(PRequest preq) {
@@ -192,17 +179,19 @@ public class ClientDependent {
 
     /**
      * set UUID unique that represents this instance
+     *
      * @param uuid
      */
-    private void setUUID(UUID uuid){
+    private void setUUID(UUID uuid) {
         this.uuid = uuid;
     }
 
     /**
      * get UUID unique that represents this instance
+     *
      * @return
      */
-    public UUID getUUID(){
+    public UUID getUUID() {
         return this.uuid;
     }
 

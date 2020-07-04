@@ -27,17 +27,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Document;
-import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenRegex;
 
-/** @author tms783 */
+/** @author gdgd009xcd */
 public class ParmGenUtil {
     private static String LFSIGN = "<!_DO_NOT_MODIFY_124kdsaoi2k_LF>\n";
     private static String LFSIGNEX = "\\<\\!_DO_NOT_MODIFY_124kdsaoi2k_LF\\>\\n";

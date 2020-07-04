@@ -22,7 +22,6 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.net.HttpCookie;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.PRequestResponses;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
@@ -54,7 +53,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     // ============== instance unique members(copy per thread) END ==========
 
-    private Map<Integer,PRequestResponse> savelist = null; // scannned requestresponse results.
+    private Map<Integer, PRequestResponse> savelist = null; // scannned requestresponse results.
 
     long threadid = -1; // thread id
 
@@ -140,7 +139,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         nobj.rlist = this.rlist; // reference
         nobj.originalrlist = this.originalrlist; // reference
         nobj.selected_request = pmtParams.getSelectedRequestNo(); // specified scan target request
-        nobj.last_stepno = pmtParams.getLastStepNo() == -1 ? nobj.rlist.size() -1 : pmtParams.getLastStepNo();
+        nobj.last_stepno =
+                pmtParams.getLastStepNo() == -1 ? nobj.rlist.size() - 1 : pmtParams.getLastStepNo();
         nobj.fetchResVal = this.fetchResVal != null ? this.fetchResVal.clone() : null; // deepclone
         nobj.cookieMan = this.cookieMan != null ? this.cookieMan.clone() : null; // deepclone
         nobj.savelist = new HashMap<>();
@@ -491,7 +491,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                 if (cit != null && oit != null) {
                     int n = stepno;
                     while (cit.hasNext() && oit.hasNext()) {
-                        if ( n > last_stepno) break;
+                        if (n > last_stepno) break;
                         stepno = n;
                         if (TWaiter != null) {
                             TWaiter.TWait();
@@ -619,18 +619,22 @@ public class ParmGenMacroTrace extends ClientDependent {
         int osiz = this.rlist != null ? this.rlist.size() : 0;
         int ssiz = pmt.savelist != null ? pmt.savelist.size() : 0;
 
-        if ( ssiz > 0 ) {
-            List<Map.Entry<Integer, PRequestResponse>> listents = pmt.savelist.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toList());
+        if (ssiz > 0) {
+            List<Map.Entry<Integer, PRequestResponse>> listents =
+                    pmt.savelist.entrySet().stream()
+                            .sorted(Map.Entry.comparingByKey())
+                            .collect(Collectors.toList());
             if (this.rlist == null) {
-               this.rlist = new ArrayList<>();
+                this.rlist = new ArrayList<>();
             }
 
-            listents.forEach(ent -> {
-                int i = ent.getKey();
-                if (i < this.rlist.size()) {
-                    this.rlist.set(i, ent.getValue());
-                }
-            });
+            listents.forEach(
+                    ent -> {
+                        int i = ent.getKey();
+                        if (i < this.rlist.size()) {
+                            this.rlist.set(i, ent.getValue());
+                        }
+                    });
 
             // so update is omitted.
             this.ui.updaterlist(this.rlist);
@@ -642,7 +646,6 @@ public class ParmGenMacroTrace extends ClientDependent {
             this.toolbaseline = pmt.toolbaseline;
             LOGGER4J.debug("result update succeeded. size:" + ssiz);
         }
-
     }
 
     void macroStarted() {
