@@ -162,19 +162,19 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if (rlist != null) {
             PRequestResponse pqr = rlist.get(cpos);
 
-                String reqstr = pqr.request.getMessage();
-                int len = ParmVars.getDisplayLength() > reqstr.length()?reqstr.length():ParmVars.getDisplayLength();
-                Document  reqdoc = ParmGenUtil.createDoc(reqstr.substring(0,len));
-                if(reqdoc!=null){
-                    MacroRequest.setDocument(reqdoc);
-                }
+            String reqstr = pqr.request.getMessage();
+            int len = ParmVars.getDisplayLength() > reqstr.length()?reqstr.length():ParmVars.getDisplayLength();
+            ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
+            if ( len > 0 ) {
+                reqdoc.setText(reqstr.substring(0,len));
+            }
 
-                String resstr = pqr.response.getMessage();
-                len = ParmVars.getDisplayLength() > resstr.length() ? resstr.length():ParmVars.getDisplayLength();
-                Document resdoc = ParmGenUtil.createDoc(resstr.substring(0,len));
-                if(resdoc!=null){
-                    MacroResponse.setDocument(resdoc);
-                }
+            String resstr = pqr.response.getMessage();
+            len = ParmVars.getDisplayLength() > resstr.length() ? resstr.length():ParmVars.getDisplayLength();
+            ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
+            if ( len > 0) {
+                resdoc.setText(resstr.substring(0,len));
+            }
 
             MacroComments.setText(pqr.getComments());
         }

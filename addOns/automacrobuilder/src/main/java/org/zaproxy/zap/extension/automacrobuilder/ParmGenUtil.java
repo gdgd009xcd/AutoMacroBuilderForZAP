@@ -313,17 +313,6 @@ public class ParmGenUtil {
         return false;
     }
 
-    public static Document createDoc(String v) {
-        Document newdoc = new DefaultStyledDocument();
-        try {
-            newdoc.insertString(0, v, null);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
-            newdoc = null;
-        }
-        return newdoc;
-    }
-
     public static Pattern Pattern_compile(String regex) {
         return Pattern_compile(regex, 0);
     }

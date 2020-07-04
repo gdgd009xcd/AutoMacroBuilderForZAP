@@ -4,6 +4,9 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.parosproxy.paros.Constant;
+import org.parosproxy.paros.control.Control;
+import org.parosproxy.paros.extension.history.ExtensionHistory;
+import org.parosproxy.paros.model.HistoryReference;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.*;
 import org.zaproxy.zap.ZapGetMethod;
@@ -55,6 +58,9 @@ public class PopUpItemSingleSend extends JMenuItem {
                                             send(htmess);
                                             postmacroprovider.setParameters(f_acon, htmess, HttpSender.MANUAL_REQUEST_INITIATOR, sender);
                                             ThreadManagerProvider.getThreadManager().beginProcess(postmacroprovider);
+                                            ((ExtensionHistory)Control.getSingleton()
+                                                    .getExtensionLoader()
+                                                    .getExtension(ExtensionHistory.NAME)).addHistory(htmess, HistoryReference.TYPE_PROXIED);
                                         } catch (IOException ioException) {
                                             LOGGER4J.error("", ioException);
                                         } finally {
@@ -68,7 +74,9 @@ public class PopUpItemSingleSend extends JMenuItem {
                 } catch (InterruptedException ex) {
                     LOGGER4J.error("", ex);
                 }
-                f_mbui.updateCurrentReqRes();
+                SwingUtilities.invokeLater(() -> {
+                    f_mbui.updateCurrentReqRes();
+                });
             }
 
         });

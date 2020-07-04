@@ -151,6 +151,9 @@ public class ClientRequest implements InterfaceClientRequest {
                     String responseheaders = finalresponse.getHeaderOnly();
                     byte[] responsebody = finalresponse.getBodyBytes();
                     currentmessage.setResponseHeader(responseheaders);
+                    if ( responsebody == null || responsebody.length < 1) {
+                        responsebody = "".getBytes(); // not null zero length bytes.
+                    }
                     currentmessage.setResponseBody(responsebody);
                 } catch (HttpMalformedHeaderException e) {
                     LOGGER4J.error("", e);
