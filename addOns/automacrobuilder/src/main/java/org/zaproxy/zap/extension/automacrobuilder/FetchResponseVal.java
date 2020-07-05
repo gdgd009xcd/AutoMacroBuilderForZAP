@@ -603,39 +603,3 @@ class FetchResponseVal implements DeepClone {
         return nobj;
     }
 }
-
-// Request request = connection.getRequest();
-// Response response = connection.getResponse();
-// String url = request.getURL().toString();
-// global.Location.clearResponse();
-
-// for TEST
-// if(global.Location.bodymatch(url, response, 0, 0, true)){//
-// }
-
-// ２）指定したポジションr,cのレスポンスマッチを指定
-// カートＩＤ 削除
-// if(global.Location.bodymatch(url, response, 0, 0, false)){
-//	global.Location.copyLocVal(0, 0, 0, 1, false);
-//	global.Location.copyLocVal(0, 0, 0, 2, false);
-//	global.Location.copyLocVal(0, 0, 0, 4, false);
-//	global.Location.copyLocVal(0, 0, 1, 0, false);
-//	global.Location.copyLocVal(0, 0, 1, 1, false);
-// }
-
-// みんなのわんこ Set-Cookie取得
-// if(global.Location.headermatch(url, response, 1, 9, false)){//LocationヘッダーのあるレスポンスのCookieを取得
-//	if(global.Location.headermatch(url, response, 1, 0, false)){
-//	}
-//	if(global.Location.headermatch(url, response, 1, 1, false)){
-//	}
-// }
-
-// if(global.Location.bodymatch(url, response, 0, 0, true)){//
-// }
-
-// global.Location.clearResponse();
-// request = null;
-// response = null;
-// url = null;
-// connection = null;

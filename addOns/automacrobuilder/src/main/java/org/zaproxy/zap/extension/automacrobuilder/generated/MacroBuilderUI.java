@@ -1099,7 +1099,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
                             ParmGenRequestToken query_token = pqrs.request.getRequestQueryToken(token);
                             ParmGenRequestToken body_token = pqrs.request.getRequestBodyToken(token);
-                            ParmVars.plog.debuglog(0, "phase:" + phase +" token[" + token + "] value[" + value + "]");
+                            logger4j.debug("phase:" + phase +" token[" + token + "] value[" + value + "]");
                             //phase==0: token name & value matched
                             //phase==1: token name matched only. we don't care value.
                             if (pqrs.request.hasQueryParam(token, value) || pqrs.request.hasBodyParam(token, value)
@@ -1114,7 +1114,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     ParmGenParseURL _pdesturl = new ParmGenParseURL(pqrs.request.getURL());
                                     String srcurl = _psrcurl.getPath();
                                     String desturl = _pdesturl.getPath();
-                                    ParmVars.plog.debuglog(0, "srcurl|desturl:[" + srcurl + "]|[" + desturl + "]");
+                                    logger4j.debug( "srcurl|desturl:[" + srcurl + "]|[" + desturl + "]");
                                     if(desturl.indexOf(srcurl)!=-1){// ACTION SRC/HREF attribute's path == destination request path
                                         _RToken = tkn;
                                         if(query_token !=null){
@@ -1375,14 +1375,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     }
                     //### skip end
                 }else{
-                    ParmVars.plog.debuglog(0, "automacro:Response analysis skipped stepno:" + pos + " MIMEtype:" + res_contentMimeType);
+                    logger4j.debug("automacro:Response analysis skipped stepno:" + pos + " MIMEtype:" + res_contentMimeType);
                 }
                 
                 
                 pos++;
             }
             
-            ParmVars.plog.debuglog(0, "newparms.size=" + newparms.size());
+            logger4j.debug("newparms.size=" + newparms.size());
             new ParmGenTokenJDialog(null, false, newparms, pmt).setVisible(true);
         }
     }//GEN-LAST:event_ParamTrackingActionPerformed

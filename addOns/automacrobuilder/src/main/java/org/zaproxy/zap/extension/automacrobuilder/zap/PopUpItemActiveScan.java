@@ -117,7 +117,7 @@ public class PopUpItemActiveScan extends JMenuItem {
     private HttpMessage addPRequestResponse2HistoryReference(PRequestResponse ppr) {
 
         HttpMessage htmess = ZapUtil.getHttpMessage(ppr);
-
+        htmess.setTimeSentMillis(System.currentTimeMillis());
         getExtensionHistory().addHistory(htmess, HistoryReference.TYPE_PROXIED);
 
         return htmess;

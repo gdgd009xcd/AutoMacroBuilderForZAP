@@ -74,9 +74,9 @@ public class ParmGenTextDoc {
         editor.setDocument(blank);
         try {
             // Editor.setPage(rfile.toURI().toURL());
-            ParmVars.plog.debuglog(0, "before insert ");
+
             doc.insertString(0, display, null);
-            ParmVars.plog.debuglog(0, "insert done");
+
             editor.setDocument(doc);
             // TextArea.setText(filestring);
             // Editor.setText(filestring);

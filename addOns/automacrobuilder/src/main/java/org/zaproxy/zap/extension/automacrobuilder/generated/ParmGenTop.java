@@ -123,7 +123,6 @@ public class ParmGenTop extends javax.swing.JFrame {
                         }
                     }
                 }
-                ParmVars.plog.debuglog(0, v);
               }
             }
           });

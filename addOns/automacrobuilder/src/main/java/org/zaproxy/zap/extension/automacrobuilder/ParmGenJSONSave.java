@@ -138,7 +138,6 @@ public class ParmGenJSONSave {
 
     public void GSONsave() {
         // ファイル初期化
-        ParmVars.plog.debuglog(0, "gsonsave called.");
         try {
             FileInfo finfo = new FileInfo(ParmVars.parmfile);
             pfile = new ParmGenWriteFile(finfo.getFullFileName());

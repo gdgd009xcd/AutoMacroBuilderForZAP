@@ -743,7 +743,7 @@ class ParseHTTPHeaders implements DeepClone {
             cookiedata += nv[0] + "=" + nv[1];
         }
         setHeader("Cookie", cookiedata);
-        ParmVars.plog.debuglog(0, "Cookie:" + cookiedata);
+
         message = null;
         isHeaderModified = true;
     }
@@ -764,8 +764,7 @@ class ParseHTTPHeaders implements DeepClone {
             String[] nv = it.next();
             CookieKey ckey = new CookieKey(domain, nv[0]);
             ArrayList<CookiePathValue> cpvlist = cookiemap.get(ckey);
-            ParmVars.plog.debuglog(
-                    0,
+            LOGGER4J.debug(
                     "setCookies: domain:"
                             + domain
                             + " name="
@@ -820,7 +819,7 @@ class ParseHTTPHeaders implements DeepClone {
         }
         if (cookiemodified) {
             setHeader("Cookie", cookiedata);
-            ParmVars.plog.debuglog(0, "Cookie: " + cookiedata);
+            LOGGER4J.debug("Cookie: " + cookiedata);
             isHeaderModified = true;
             message = null;
             int l = getParsedHeaderLength();
