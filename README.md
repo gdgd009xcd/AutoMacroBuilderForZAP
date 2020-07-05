@@ -5,6 +5,7 @@ AutoMacro Builder is an extension of ZAPROXY. You can test applications that nee
 ![LANG](https://img.shields.io/github/languages/top/gdgd009xcd/AutoMacroBuilderForZAP)
 ![LICENSE](https://img.shields.io/github/license/gdgd009xcd/AutoMacroBuilderForZAP)
 
+![screenshot](https://raw.githubusercontent.com/gdgd009xcd/RELEASES/master/IMG/ZAP/AutoMacroBuilderForZAPMain.png)
  
 Click here below:　<BR>
 　　<A href="https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/1.0.-OverView">English</A><BR>
