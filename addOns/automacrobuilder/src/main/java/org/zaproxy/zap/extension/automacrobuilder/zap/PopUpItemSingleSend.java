@@ -57,7 +57,8 @@ public class PopUpItemSingleSend extends JMenuItem {
                                                             sender);
                                                     ThreadManagerProvider.getThreadManager()
                                                             .beginProcess(beforemacroprovider);
-                                                    htmess.setTimeSentMillis(System.currentTimeMillis());
+                                                    htmess.setTimeSentMillis(
+                                                            System.currentTimeMillis());
                                                     send(htmess);
                                                     postmacroprovider.setParameters(
                                                             f_acon,
