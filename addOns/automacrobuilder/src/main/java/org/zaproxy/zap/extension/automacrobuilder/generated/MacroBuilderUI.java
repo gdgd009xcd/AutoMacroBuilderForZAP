@@ -25,8 +25,10 @@ import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 
 import org.zaproxy.zap.extension.automacrobuilder.*;
+import org.zaproxy.zap.extension.automacrobuilder.PRequest.RequestChunk;
 
 /**
  *
@@ -48,7 +50,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     boolean EditTargetIsSSL = false;
     int EditTargetPort = 0;
     Encode EditPageEnc = Encode.ISO_8859_1;
-    static final int REQUEST_DISPMAXSIZ = 1000000;//1MB
+    static final int REQUEST_DISPMAXSIZ = 500000;//1MB
     static final int RESPONSE_DISPMAXSIZ = 1000000;//1MB
     
     private int selected_request_idx = -1;
@@ -163,18 +165,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PRequestResponse pqr = rlist.get(cpos);
 
             String reqstr = pqr.request.getMessage();
-            int len = ParmVars.getDisplayLength() > reqstr.length()?reqstr.length():ParmVars.getDisplayLength();
             ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
-            if ( len > 0 ) {
-                reqdoc.setText(reqstr.substring(0,len));
-            }
+            reqdoc.setRequestChunks(pqr.request);
 
             String resstr = pqr.response.getMessage();
-            len = ParmVars.getDisplayLength() > resstr.length() ? resstr.length():ParmVars.getDisplayLength();
             ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
-            if ( len > 0) {
-                resdoc.setText(resstr.substring(0,len));
-            }
+            resdoc.setResponseChunks(pqr.response);
 
             MacroComments.setText(pqr.getComments());
         }
@@ -220,11 +216,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         RequestList = new javax.swing.JList<>();
         paramlog = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane6 = new javax.swing.JScrollPane();
-        MacroRequest = new javax.swing.JEditorPane();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        MacroRequest = new javax.swing.JTextPane();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        MacroResponse = new javax.swing.JTextArea();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        MacroResponse = new javax.swing.JTextPane();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         MacroComments = new javax.swing.JTextArea();
@@ -377,8 +373,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
-        jScrollPane6.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
         MacroRequest.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 MacroRequestMousePressed(evt);
@@ -390,28 +384,24 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 MacroRequestMouseClicked(evt);
             }
         });
-        jScrollPane6.setViewportView(MacroRequest);
+        jScrollPane4.setViewportView(MacroRequest);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
         paramlog.addTab(bundle.getString("MacroBuilderUI.リクエスト.text"), jPanel1); // NOI18N
 
-        jScrollPane3.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        MacroResponse.setColumns(20);
-        MacroResponse.setLineWrap(true);
-        MacroResponse.setRows(5);
         MacroResponse.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 MacroResponseMousePressed(evt);
@@ -423,17 +413,17 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 MacroResponseMouseClicked(evt);
             }
         });
-        jScrollPane3.setViewportView(MacroResponse);
+        jScrollPane6.setViewportView(MacroResponse);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
         paramlog.addTab(bundle.getString("MacroBuilderUI.レスポンス.text"), jPanel2); // NOI18N
@@ -826,15 +816,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
             ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
 
-            String reqmess = "";
-            if (pqr.request.getBodyContentLength() < REQUEST_DISPMAXSIZ) {
-                reqmess = pqr.request.getMessage();
-            } else { // Content-Length < REQUEST_DISPMAXSIZ then no display body contents.. sorry this dirty work.
-                reqmess = pqr.request.getHeaderOnly();
-                reqmess = reqmess + "\r\n" + ".........omitted displaying body content......";
-            }
+            reqdoc.setRequestChunks(pqr.request);
 
-            reqdoc.setText(reqmess);
             isLoadedMacroRequestContents = true;
         }
     }
@@ -843,19 +826,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 
         if(selected_request_idx!=-1&&!isLoadedMacroResponseContents){
             PRequestResponse pqr = rlist.get(selected_request_idx);
-            String res_contentMimeType = pqr.response.getContentMimeType();// Content-Type's Mimetype: ex. "text/html"
-
-            // Content-Type/subtype matched excludeMimeType or Content-Length < RESPONSE_DISPMAXSIZ then no display body contents..
-            String resmess = "";
-
-            if((!ParmVars.isMimeTypeExcluded(res_contentMimeType)) && (pqr.response.getBodyContentLength() <  RESPONSE_DISPMAXSIZ)){
-                resmess = pqr.response.getMessage();
-            }else{
-                resmess = pqr.response.getHeaderOnly();
-                resmess = resmess + "\r\n" + ".........omitted displaying body content......";
-            }
+            
             ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
-            resdoc.setText(resmess);
+            resdoc.setResponseChunks(pqr.response);
             isLoadedMacroResponseContents = true;
         }
     }
@@ -1488,27 +1461,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         
     }//GEN-LAST:event_SaveActionPerformed
 
-    private void MacroRequestMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMousePressed
-        // TODO add your handling code here:
-        logger4j.debug("MacroRequestMousePressed...start");
-        if (evt.isPopupTrigger()) {
-            logger4j.debug("MacroRequestMousePressed PopupTriggered.");
-            RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
-        logger4j.debug("MacroRequestMousePressed...end");
-        
-    }//GEN-LAST:event_MacroRequestMousePressed
-
-    private void MacroResponseMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMousePressed
-        // TODO add your handling code here:
-        logger4j.debug( "MacroResponseMousePressed...start");
-        if (evt.isPopupTrigger()) {
-            logger4j.debug("MacroResponseMousePressed PopupTriggered.");
-            ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
-        logger4j.debug("MacroResponseMousePressed...end");
-    }//GEN-LAST:event_MacroResponseMousePressed
-
     private void editActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editActionPerformed
         // TODO add your handling code here:
         String reg = "";
@@ -1539,38 +1491,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         OriginalEditTarget = -1;
         new ParmGenRegex(this,reg,orig).setVisible(true);
     }//GEN-LAST:event_showActionPerformed
-
-    private void MacroRequestMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMouseClicked
-        // TODO add your handling code here:
-        if (evt.isPopupTrigger()) {// popup menu trigger occured.
-            logger4j.debug("MacroRequestMouseClicked PopupTriggered.");
-            RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
-    }//GEN-LAST:event_MacroRequestMouseClicked
-
-    private void MacroRequestMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMouseReleased
-        // TODO add your handling code here:
-        if (evt.isPopupTrigger()) {// popup menu trigger occured. 
-            logger4j.debug("MacroRequestMouseReleased PopupTriggered.");
-            RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
-    }//GEN-LAST:event_MacroRequestMouseReleased
-
-    private void MacroResponseMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMouseClicked
-        // TODO add your handling code here:
-        if (evt.isPopupTrigger()) {// popup menu trigger occured. 
-            logger4j.debug("MacroResponseMouseClicked PoupupTriggered.");
-            ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
-    }//GEN-LAST:event_MacroResponseMouseClicked
-
-    private void MacroResponseMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMouseReleased
-        // TODO add your handling code here:
-        if (evt.isPopupTrigger()) {// popup menu trigger occured. 
-            logger4j.debug("MacroResponseMouseReleased PopupTriggered.");
-            ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
-    }//GEN-LAST:event_MacroResponseMouseReleased
 
     private void StartScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartScanActionPerformed
         // TODO add your handling code here:
@@ -1740,6 +1660,58 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
     }//GEN-LAST:event_deleteRequestActionPerformed
 
+    private void MacroRequestMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMouseClicked
+        // TODO add your handling code here:
+        if (evt.isPopupTrigger()) {// popup menu trigger occured.
+            logger4j.debug("MacroRequestMouseClicked PopupTriggered.");
+            RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_MacroRequestMouseClicked
+
+    private void MacroRequestMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMousePressed
+        // TODO add your handling code here:
+        logger4j.debug("MacroRequestMousePressed...start");
+        if (evt.isPopupTrigger()) {
+            logger4j.debug("MacroRequestMousePressed PopupTriggered.");
+            RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+        logger4j.debug("MacroRequestMousePressed...end");
+    }//GEN-LAST:event_MacroRequestMousePressed
+
+    private void MacroRequestMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMouseReleased
+        // TODO add your handling code here:
+        if (evt.isPopupTrigger()) {// popup menu trigger occured. 
+            logger4j.debug("MacroRequestMouseReleased PopupTriggered.");
+            RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_MacroRequestMouseReleased
+
+    private void MacroResponseMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMouseClicked
+        // TODO add your handling code here:
+        if (evt.isPopupTrigger()) {// popup menu trigger occured. 
+            logger4j.debug("MacroResponseMouseClicked PoupupTriggered.");
+            ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_MacroResponseMouseClicked
+
+    private void MacroResponseMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMousePressed
+        // TODO add your handling code here:
+        logger4j.debug( "MacroResponseMousePressed...start");
+        if (evt.isPopupTrigger()) {
+            logger4j.debug("MacroResponseMousePressed PopupTriggered.");
+            ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+        logger4j.debug("MacroResponseMousePressed...end");
+    }//GEN-LAST:event_MacroResponseMousePressed
+
+    private void MacroResponseMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMouseReleased
+        // TODO add your handling code here:
+        if (evt.isPopupTrigger()) {// popup menu trigger occured. 
+            logger4j.debug("MacroResponseMouseReleased PopupTriggered.");
+            ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_MacroResponseMouseReleased
+
     /**
      * get current selected request index in RequestList.
      * 
@@ -1747,6 +1719,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      */
     public int getCurrentSelectedRequestIndex(){
         return RequestList.getSelectedIndex();
+    }
+
+    public StyledDocument getMacroRequestStyledDocument() {
+        return MacroRequest.getStyledDocument();
+    }
+    
+    public String getMacroRequest() {
+        return MacroRequest.getText();
     }
     
     @Override
@@ -1802,8 +1782,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JCheckBox MBsettokenfromcache;
     private javax.swing.JCheckBox MBtoStepNo;
     private javax.swing.JTextArea MacroComments;
-    private javax.swing.JEditorPane MacroRequest;
-    private javax.swing.JTextArea MacroResponse;
+    private javax.swing.JTextPane MacroRequest;
+    private javax.swing.JTextPane MacroResponse;
     private javax.swing.JButton ParamTracking;
     private javax.swing.JPopupMenu PopupMenuForRequestList;
     private javax.swing.JMenuItem Repeater;
@@ -1836,7 +1816,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;

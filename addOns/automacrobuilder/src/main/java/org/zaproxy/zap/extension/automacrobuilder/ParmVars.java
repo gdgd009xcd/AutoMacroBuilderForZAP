@@ -52,6 +52,7 @@ public class ParmVars {
     static List<String> ExcludeMimeTypes = null;
     private static List<Pattern> ExcludeMimeTypesPatterns = null;
     private static org.apache.logging.log4j.Logger logger4j;
+
     //
     // static: Runs only once at startup
     //

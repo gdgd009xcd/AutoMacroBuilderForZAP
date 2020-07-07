@@ -96,23 +96,19 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
 
         PRequestResponse mess = ParmGenJSONSave.proxy_messages.get(0);
         String _url = mess.request.getURL();
-        String _requestmess = mess.request.getMessage();
 
         selected_requestURL.setText(_url);
         
         SwingUtilities.invokeLater(() -> {
-            Document doc = RequestArea.getDocument();
-
             try {
-                doc.insertString(0, _requestmess, null);
-            } catch (BadLocationException ex) {
+                ParmGenTextDoc reqdoc = new ParmGenTextDoc(RequestArea);
+                reqdoc.setRequestChunks(mess.request);
+            } catch (Exception ex) {
                 Logger.getLogger(ParmGenNew.class.getName()).log(Level.SEVERE, null, ex);
             }
            
         });
         
-        
-
         current_model = P_NUMBERMODEL;
 
         if(_rec!=null){
@@ -288,14 +284,18 @@ private void setAppParmsIni(){
                 ParmVars.session.put(ParmGenSession.K_REQUESTURLREGEX, TargetURLRegex);
                 selected_requestURL.setText(rs.request.getURL());
                 ParmVars.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.request.getHeaderLength()));
-                RequestArea.setText(rs.request.getMessage());
+                // RequestArea.setText(rs.request.getMessage());
+                ParmGenTextDoc reqdoc = new ParmGenTextDoc(RequestArea);
+                reqdoc.setRequestChunks(rs.request);
                 RequestArea.setCaretPosition(0);
                 break;
             case P_RESPONSETAB:
                 ParmVars.session.put(ParmGenSession.K_RESPONSEURLREGEX, TargetURLRegex);
                 ParmVars.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.response.getHeaderLength()));
                 selected_responseURL.setText(rs.request.getURL());
-                ResponseArea.setText(rs.response.getMessage());
+                // ResponseArea.setText(rs.response.getMessage());
+                ParmGenTextDoc resdoc = new ParmGenTextDoc(ResponseArea);
+                resdoc.setResponseChunks(rs.response);
                 ResponseArea.setCaretPosition(0);
                 break;
             default:

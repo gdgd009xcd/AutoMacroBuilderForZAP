@@ -13,7 +13,10 @@ import javax.swing.text.Document;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -42,6 +45,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     String curr_orig;
     InterfaceRegex parentwin =null;
     InterfaceParmGenRegexSaveCancelAction regexactionwin= null;
+    List<RegexSelectedTextPos> foundTextAttrPos = null;
     
     public static final String Escaperegex = "([\\[\\]\\{\\}\\(\\)\\*\\<\\>\\.\\?\\+\\\"\\\'\\$])";
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
@@ -102,6 +106,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
         OriginalText.setText(parentwin.getOriginal());
         OriginalText.setCaretPosition(0);
         Document rexdoc = RegexText.getDocument();
+        
+        foundTextAttrPos = new ArrayList<>();
+        
         //RegexTextのUndo/Redo
         rexdoc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
@@ -133,6 +140,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         OriginalText.setText(_Original);
         OriginalText.setCaretPosition(0);
         
+        foundTextAttrPos = new ArrayList<>();
         if(regexactionwin!=null){
             Save.setText(regexactionwin.getParmGenRegexSaveBtnText());
             Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText());
@@ -217,7 +225,8 @@ public class ParmGenRegex extends javax.swing.JDialog {
         
         ParmVars.plog.debuglog(1,"["+hex+"]\n");
     }
-    private void Search(){
+    
+    private void OldSearch(){
         // TODO add your handling code here:
         SimpleAttributeSet attr = new SimpleAttributeSet();
         
@@ -401,6 +410,154 @@ public class ParmGenRegex extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.正規表現が一致しませんでした。.text"), bundle.getString("ParmGenRegex.検索結果.text"), JOptionPane.QUESTION_MESSAGE);
         }
     }
+    
+    /**
+     * Seach text and set attributes OriginalText without remove contents
+     * from it.
+     *
+     */
+    private void NewSearch(){
+        // TODO add your handling code here:
+        SimpleAttributeSet attr = new SimpleAttributeSet();
+
+        if (foundTextAttrPos == null) {
+            foundTextAttrPos = new ArrayList<>();
+        }
+
+        String regex = RegexText.getText();
+
+        //String original = OriginalText.getText();
+        StyledDocument doc = OriginalText.getStyledDocument();
+       
+        if (foundTextAttrPos.size() > 0) {
+            StyleConstants.setForeground(attr, Color.BLACK);
+            StyleConstants.setBackground(attr, Color.WHITE);
+            
+            foundTextAttrPos.forEach(rpos -> {
+                doc.setCharacterAttributes(rpos.getStartPos(), rpos.getEndPos() - rpos.getStartPos(), attr, false);
+            });
+            
+            foundTextAttrPos.clear();
+        }
+        
+        if (regex == null || regex.isEmpty()) { // if you do it, Too many patterns matched.
+            return;
+        }
+        
+        String original = null;
+        try {
+            original = doc.getText(0, doc.getLength());
+        } catch (BadLocationException ex) {
+            Logger.getLogger(ParmGenRegex.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        init(regex, original);
+        //parse Regex
+        Pattern compiledregex = null;
+        Matcher m = null;
+        try{
+            int flags = 0;
+            if(MULTILINE.isSelected()){
+                flags |= Pattern.MULTILINE;
+            }
+            if(CASE_INSENSITIVE.isSelected()){
+                flags |= Pattern.CASE_INSENSITIVE;
+            }
+            compiledregex = ParmGenUtil.Pattern_compile(regex, flags);
+            
+            m = compiledregex.matcher(original);
+        }catch(Exception e){
+            ParmVars.plog.printException(e);
+            JOptionPane.showMessageDialog(this,bundle.getString("ParmGenRegex.正規表現が不正.text")+ e.toString() ,  bundle.getString("ParmGenRegex.正規表現エラー.text"), JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        
+        String precontents = "";
+        String postcontents = "";
+        String strcnt = null;
+        boolean found = false;
+        int cpt = 0;
+        
+        int fcount=0;
+        while (m.find()) {
+                found = true;
+                fcount++;
+                int spt0 = -1;
+                int ept0 = -1;
+                int spt = -1;
+                int ept = -1;
+                int gcnt = m.groupCount();
+                String matchval = null;
+                if ( gcnt > 0){
+                    spt0 = m.start();
+                    ept0 = m.end();
+                    for(int n = 0; n < gcnt ; n++){
+                            spt = m.start(n+1);
+                            ept = m.end(n+1);
+                            matchval = m.group(n+1);
+
+                    }
+                    if ( matchval == null){
+                        matchval = m.group();
+                    }
+                    if ( spt0 > spt){
+                        spt0 = spt;
+                    }
+                    if(ept0 < ept){
+                        ept0 = ept;
+                    }
+                    // spt0--->spt<matchval>ept-->ept0
+                }else{//Nothing Groups...
+                    spt0 = m.start();
+                    ept0 = m.end();
+                    matchval = m.group();
+                }
+                if ( spt0 >=0 && ept0 >= 0 ){
+                        
+                        try {
+                            
+                            // spt0--->spt<matchval>ept-->ept0
+
+                            if (ept0 > spt0) {
+                                StyleConstants.setForeground(attr, Color.BLUE);
+                                StyleConstants.setBackground(attr, Color.RED);
+                                doc.setCharacterAttributes(spt0, ept0-spt0, attr, false);
+                                RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt0, ept0);
+                                foundTextAttrPos.add(rpos);
+                            }
+                            
+                            if (ept > spt) {
+                                StyleConstants.setForeground(attr, Color.WHITE);
+                                StyleConstants.setBackground(attr, Color.RED);
+                                doc.setCharacterAttributes(spt, ept-spt, attr, false);
+                                RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt, ept);
+                                foundTextAttrPos.add(rpos);
+                            }
+                            
+                            //int pos = OriginalText.getCaretPosition();
+                            int pos = doc.getLength();
+                            findplist.add(ept0);
+                            if ( fidx == -1){
+                                fidx = 0;
+                            }
+			} catch (Exception e) {
+                            ParmVars.plog.printException(e);
+			}
+                }
+        }
+
+        if ( fidx != -1){
+            OriginalText.setCaretPosition(findplist.get(fidx));
+            fidx++;
+            JOptionPane.showMessageDialog(this, Integer.toString(fcount)+bundle.getString("ParmGenRegex.箇所一致しました。.text"), bundle.getString("ParmGenRegex.検索結果.text"), JOptionPane.INFORMATION_MESSAGE);
+        }else{
+            
+            java.awt.Toolkit.getDefaultToolkit().beep();
+            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.正規表現が一致しませんでした。.text"), bundle.getString("ParmGenRegex.検索結果.text"), JOptionPane.QUESTION_MESSAGE);
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -703,7 +860,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     }//GEN-LAST:event_CancelActionPerformed
 
     private void RegexTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RegexTestActionPerformed
-        Search();
+        NewSearch();
     }//GEN-LAST:event_RegexTestActionPerformed
 
     private void AddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddActionPerformed
@@ -961,6 +1118,24 @@ public class ParmGenRegex extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_OrigRedoActionPerformed
 
+    public static class RegexSelectedTextPos {
+        int st;
+        int et;
+        
+        RegexSelectedTextPos(int st, int et) {
+            this.st = st;
+            this.et = et;
+        }
+        
+        int getStartPos() {
+            return this.st;
+        }
+        
+        int getEndPos() {
+            return this.et;
+        }
+    
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Add;

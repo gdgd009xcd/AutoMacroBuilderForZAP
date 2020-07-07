@@ -26,21 +26,42 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
+import org.zaproxy.zap.extension.automacrobuilder.PResponse.ResponseChunk;
 
 /** @author youtube */
 public class ParmGenTextDoc {
-    private JTextComponent tcompo;
-    private static org.apache.logging.log4j.Logger logger4j =
+    private static final String RESOURCES =
+            "/org/zaproxy/zap/extension/automacrobuilder/zap/resources";
+
+    private static final URL IMGICONURL =
+            ParmGenTextDoc.class.getResource(RESOURCES + "/binary.png");
+
+    private JTextPane tcompo;
+    private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    public ParmGenTextDoc(JTextComponent tc) {
+    public ParmGenTextDoc(JTextPane tc) {
+        init();
         tcompo = tc;
+    }
+
+    private void init() {
+        tcompo = null;
     }
 
     void setdatadoc() {
@@ -106,34 +127,235 @@ public class ParmGenTextDoc {
     }
 
     public void setText(String text) {
-        Document doc = null;
+        StyledDocument doc = null;
         if (tcompo != null) {
-            Document blank = new DefaultStyledDocument();
+            StyledDocument blank = new DefaultStyledDocument();
 
             // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
             // display contents. this problem occur only ZAP.
             // Thus you must get original Document from JEditorPane for Setting Text.
-            doc = tcompo.getDocument();
+            doc = tcompo.getStyledDocument();
 
             tcompo.setDocument(blank);
             try {
-                logger4j.debug("before  remove text");
+                LOGGER4J.debug("before  remove text");
                 doc.remove(0, doc.getLength());
-                logger4j.debug("done remove text");
+                LOGGER4J.debug("done remove text");
             } catch (BadLocationException ex) {
                 Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             try {
-                logger4j.debug("before  insert text size=" + text.length());
+                LOGGER4J.debug("before  insert text size=" + text.length());
                 doc.insertString(0, text, null);
-                logger4j.debug("insert  done");
+                LOGGER4J.debug("insert  done");
             } catch (BadLocationException ex) {
                 Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
             }
-            logger4j.debug("before setDocument");
+            LOGGER4J.debug("before setDocument");
             tcompo.setDocument(doc);
-            logger4j.debug("after setDocument");
+            LOGGER4J.debug("after setDocument");
         }
+    }
+
+    /**
+     * Set request contents. large binary data representation is image icon.
+     *
+     * @param prequest
+     */
+    public void setRequestChunks(PRequest prequest) {
+        StyledDocument doc = null;
+        if (tcompo == null) return;
+        StyledDocument blank = new DefaultStyledDocument();
+
+        // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
+        // display contents. this problem occur only ZAP.
+        // Thus you must get original Document from JEditorPane for Setting Text.
+        doc = tcompo.getStyledDocument();
+        tcompo.setStyledDocument(blank);
+
+        try {
+            LOGGER4J.debug("before  remove text");
+            doc.remove(0, doc.getLength());
+            LOGGER4J.debug("done remove text");
+        } catch (BadLocationException ex) {
+            Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        doc = new DefaultStyledDocument();
+
+        Style binaryicon;
+        Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+
+        List<PRequest.RequestChunk> chunks = prequest.getRequestChunks();
+        Encode pageenc = prequest.getPageEnc();
+        int pos = 0;
+        String displayableimgtype = "";
+        try {
+            for (PRequest.RequestChunk chunk : chunks) {
+                String element = "";
+                switch (chunk.getChunkType()) {
+                    case REQUESTHEADER:
+                        element = new String(chunk.getBytes(), pageenc.getIANACharset());
+                        LOGGER4J.debug(
+                                "@REQUESTHEADER["
+                                        + new String(chunk.getBytes(), pageenc.getIANACharset())
+                                        + "]");
+                        doc.insertString(pos, element, null);
+                        pos = pos + element.length();
+                        break;
+                    case BOUNDARY:
+                        LOGGER4J.debug(
+                                "@BOUNDARY["
+                                        + new String(chunk.getBytes(), pageenc.getIANACharset())
+                                        + "]");
+                        element = new String(chunk.getBytes(), pageenc.getIANACharset());
+                        doc.insertString(pos, element, null);
+                        pos = pos + element.length();
+                        break;
+                    case BOUNDARYHEADER:
+                        LOGGER4J.debug(
+                                "@BOUNDARYHEADER["
+                                        + new String(chunk.getBytes(), pageenc.getIANACharset())
+                                        + "]");
+                        element = new String(chunk.getBytes(), pageenc.getIANACharset());
+                        displayableimgtype = "";
+                        List<String> matches =
+                                ParmGenUtil.getRegexMatchGroups(
+                                        "Content-Type: image/(jpeg|png|gif)", element);
+                        matches.forEach(s -> LOGGER4J.debug(s));
+                        if (!matches.isEmpty()) {
+                            displayableimgtype = matches.get(0);
+                        }
+                        doc.insertString(pos, element, null);
+                        pos = pos + element.length();
+                        break;
+                    case CONTENTS:
+                        element = new String(chunk.getBytes(), pageenc.getIANACharset());
+                        Style s = null;
+                        if (chunk.getBytes().length > 20000) {
+                            // s = doc.getStyle("binary");
+                            StyleConstants.setAlignment(def, StyleConstants.ALIGN_CENTER);
+
+                            String partno = "X-PARMGEN:" + chunk.getPartNo();
+                            if (displayableimgtype.isEmpty()) {
+                                StyleConstants.setIcon(def, new ImageIcon(IMGICONURL, partno));
+                            } else {
+                                StyleConstants.setIcon(
+                                        def, new ImageIcon(chunk.getBytes(), partno));
+                            }
+                            // doc.addStyle(partno, def);
+                            binaryicon = def;
+                            s = binaryicon;
+                            LOGGER4J.debug("@CONTENTS length:" + chunk.getBytes().length);
+                            element = partno;
+                        } else {
+                            s = null;
+                            LOGGER4J.debug(
+                                    "@CONTENTS["
+                                            + new String(chunk.getBytes(), pageenc.getIANACharset())
+                                            + "]");
+                        }
+
+                        doc.insertString(pos, element, s);
+                        pos = pos + element.length();
+                        break;
+                    case CONTENTSEND:
+                        LOGGER4J.debug(
+                                "@CONTENTSSEND["
+                                        + new String(chunk.getBytes(), pageenc.getIANACharset())
+                                        + "]");
+                        element = new String(chunk.getBytes(), pageenc.getIANACharset());
+                        doc.insertString(pos, element, null);
+                        pos = pos + element.length();
+                        break;
+                    case LASTBOUNDARY:
+                        LOGGER4J.debug(
+                                "@LASTBOUNDARY["
+                                        + new String(chunk.getBytes(), pageenc.getIANACharset())
+                                        + "]");
+                        element = new String(chunk.getBytes(), pageenc.getIANACharset());
+                        doc.insertString(pos, element, null);
+                        pos = pos + element.length();
+                        break;
+                }
+            }
+        } catch (BadLocationException ex) {
+            Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        tcompo.setStyledDocument(doc);
+    }
+
+    /**
+     * Set Response data through Chunks for binary large data
+     *
+     * @param presponse
+     */
+    public void setResponseChunks(PResponse presponse) {
+        LOGGER4J.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! setResponseChunks");
+        StyledDocument doc = null;
+        if (tcompo == null) return;
+        StyledDocument blank = new DefaultStyledDocument();
+
+        // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
+        // display contents. this problem occur only ZAP.
+        // Thus you must get original Document from JEditorPane for Setting Text.
+        doc = tcompo.getStyledDocument();
+        tcompo.setStyledDocument(blank);
+
+        try {
+            LOGGER4J.debug("before  remove text");
+            doc.remove(0, doc.getLength());
+            LOGGER4J.debug("done remove text");
+        } catch (BadLocationException ex) {
+            Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        doc = new DefaultStyledDocument();
+
+        Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+
+        String partno = "X-PARMGEN:0";
+        StyleConstants.setAlignment(def, StyleConstants.ALIGN_CENTER);
+
+        List<PResponse.ResponseChunk> chunks = presponse.getResponseChunks();
+        Charset charset = presponse.getPageEnc().getIANACharset();
+
+        int pos = 0;
+
+        try {
+            for (ResponseChunk chunk : chunks) {
+                Style s = null;
+                String elem;
+                switch (chunk.getChunkType()) {
+                    case CONTENTSBINARY:
+                        StyleConstants.setIcon(def, new ImageIcon(IMGICONURL, partno));
+                        s = def;
+                        elem = partno;
+                        LOGGER4J.debug("CONTENTSBINARY[" + elem + "]pos:" + pos);
+                        break;
+                    case CONTENTSIMG:
+                        StyleConstants.setIcon(def, new ImageIcon(chunk.getBytes(), partno));
+                        s = def;
+                        elem = partno;
+                        LOGGER4J.debug("CONTENTSIMG[" + elem + "]pos:" + pos);
+                        break;
+                    case RESPONSEHEADER:
+                        elem = new String(chunk.getBytes(), charset);
+                        LOGGER4J.debug("RESPONSEHEADER[" + elem + "]pos:" + pos);
+                        break;
+                    default: // CONTENTS
+                        elem = new String(chunk.getBytes(), charset);
+                        LOGGER4J.debug("CONTENTS[" + elem + "]pos:" + pos);
+                        break;
+                }
+                doc.insertString(pos, elem, s);
+                pos += elem.length();
+            }
+
+        } catch (Exception e) {
+
+        }
+        tcompo.setStyledDocument(doc);
     }
 }

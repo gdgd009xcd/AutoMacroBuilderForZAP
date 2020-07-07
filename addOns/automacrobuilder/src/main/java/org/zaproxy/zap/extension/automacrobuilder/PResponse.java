@@ -19,9 +19,14 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 public class PResponse extends ParseHTTPHeaders {
+    private static final org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
+
     private ParmGenHashMap map = null;
     private ParmGenParser htmlparser = null;
     private ParmGenGSONDecoder jsonparser = null;
@@ -126,5 +131,91 @@ public class PResponse extends ParseHTTPHeaders {
         nobj.jsonparser = this.jsonparser != null ? this.jsonparser.clone() : null;
 
         return nobj;
+    }
+
+    public static class ResponseChunk {
+        public enum CHUNKTYPE {
+            RESPONSEHEADER, // HEADER<CR><LF>HEADER<CRLF><CRLF>
+            CONTENTSBINARY, // [binary] no displayable
+            CONTENTSIMG, // displayable image
+            CONTENTS, // displayable normal contents.
+        };
+
+        CHUNKTYPE ctype;
+        byte[] data;
+
+        ResponseChunk(CHUNKTYPE ctype, byte[] data) {
+            this.ctype = ctype;
+            this.data = data;
+        }
+
+        /**
+         * Get getChunkType
+         *
+         * @return
+         */
+        public CHUNKTYPE getChunkType() {
+            return this.ctype;
+        }
+
+        /**
+         * Get byte data
+         *
+         * @return
+         */
+        public byte[] getBytes() {
+            return this.data;
+        }
+    }
+
+    /**
+     * Get List<ResponseChunk> which is parsed request contents representation
+     *
+     * @return
+     */
+    public List<PResponse.ResponseChunk> getResponseChunks() {
+        String theaders = getHeaderOnly();
+        byte[] tbodies = getBodyBytes();
+        String tcontent_type = getHeader("Content-Type");
+        return getResponseChunks(theaders, tbodies, tcontent_type);
+    }
+
+    public List<PResponse.ResponseChunk> getResponseChunks(
+            String theaders, byte[] tbodies, String tcontent_type) {
+        List<PResponse.ResponseChunk> reschunks = new ArrayList<>();
+
+        String displayablecontents = "";
+        if (tcontent_type != null && !tcontent_type.isEmpty()) {
+            List<String> matches =
+                    ParmGenUtil.getRegexMatchGroups(
+                            "Content-Type: image/(jpeg|png|gif)", tcontent_type);
+            if (matches.size() > 0) {
+                displayablecontents = matches.get(0);
+            }
+        }
+
+        int partno = 0;
+        // create responseheader chunk
+        PResponse.ResponseChunk chunk =
+                new PResponse.ResponseChunk(
+                        PResponse.ResponseChunk.CHUNKTYPE.RESPONSEHEADER, theaders.getBytes());
+        reschunks.add(chunk);
+
+        // create body chunk
+        PResponse.ResponseChunk.CHUNKTYPE chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTS;
+        if (!displayablecontents.isEmpty()) {
+            chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTSIMG;
+        } else if (tbodies != null && tbodies.length > 20000) {
+            chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTSBINARY;
+        }
+
+        if (tbodies != null && tbodies.length > 0) {
+            PResponse.ResponseChunk chunkbody = new PResponse.ResponseChunk(chntype, tbodies);
+            reschunks.add(chunkbody);
+            LOGGER4J.debug("res body[" + new String(tbodies) + "]");
+        } else {
+            LOGGER4J.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!res body is null");
+        }
+        return reschunks;
     }
 }

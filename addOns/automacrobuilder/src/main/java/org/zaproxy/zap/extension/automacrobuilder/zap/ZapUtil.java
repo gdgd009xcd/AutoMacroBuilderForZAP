@@ -1,15 +1,23 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.StyledDocument;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpResponseHeader;
 import org.zaproxy.zap.extension.automacrobuilder.Encode;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
+import org.zaproxy.zap.extension.automacrobuilder.PRequest.RequestChunk;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.network.HttpRequestBody;
 import org.zaproxy.zap.network.HttpResponseBody;
@@ -87,13 +95,86 @@ public class ZapUtil {
      */
     public static HttpMessage getCurrentHttpMessage(MacroBuilderUI mbui) {
         int pos = mbui.getCurrentSelectedRequestIndex();
+
         if (pos > -1) {
             ParmGenMacroTrace pmt = mbui.getParmGenMacroTrace();
             pmt.setCurrentRequest(pos);
             PRequestResponse prr = pmt.getCurrentRequestResponse();
+            StyledDocument doc = mbui.getMacroRequestStyledDocument();
+            List<RequestChunk> chunks = getRequestFromStyledDoc(doc, prr.request);
+            if (chunks.size() > 0) {
+                ParmGenBinUtil reqbin = new ParmGenBinUtil(chunks.get(0).getBytes());
+                for (int i = 1; i < chunks.size(); i++) {
+                    reqbin.concat(chunks.get(i).getBytes());
+                }
+                String host = prr.request.getHost();
+                int port = prr.request.getPort();
+                boolean isSSL = prr.request.isSSL();
+                PRequest request =
+                        new PRequest(
+                                host, port, isSSL, reqbin.getBytes(), prr.request.getPageEnc());
+                return getHttpMessage(request);
+            }
             return getHttpMessage(prr);
         }
         return null;
+    }
+
+    public static List<RequestChunk> getRequestFromStyledDoc(StyledDocument doc, PRequest preq) {
+        List<RequestChunk> resultchunks = new ArrayList<>();
+
+        try {
+            String docstr = doc.getText(0, doc.getLength());
+            String host = preq.getHost();
+            int port = preq.getPort();
+            boolean isSSL = preq.isSSL();
+            final Charset charset = preq.getPageEnc().getIANACharset();
+            PRequest nreq =
+                    new PRequest(host, port, isSSL, docstr.getBytes(charset), preq.getPageEnc());
+            List<RequestChunk> modchunks = nreq.getRequestChunks();
+            List<RequestChunk> orgchunks = preq.getRequestChunks();
+
+            modchunks.forEach(
+                    chunk -> {
+                        String elem = "";
+                        RequestChunk resultchunk = null;
+                        switch (chunk.getChunkType()) {
+                            case CONTENTS:
+                                elem = new String(chunk.getBytes(), charset);
+                                List<String> matches =
+                                        ParmGenUtil.getRegexMatchGroups("X-PARMGEN:([0-9]+)", elem);
+                                LOGGER4J.debug("elem[" + elem + "]");
+                                if (matches.size() > 0) {
+                                    int partno = Integer.parseInt(matches.get(0));
+                                    Optional<RequestChunk> ochunk =
+                                            orgchunks.stream()
+                                                    .filter(
+                                                            c ->
+                                                                    c.getChunkType()
+                                                                                    == PRequest
+                                                                                            .RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTS
+                                                                            && c.getPartNo()
+                                                                                    == partno)
+                                                    .findFirst();
+                                    resultchunk = ochunk.orElse(chunk);
+                                } else {
+                                    resultchunk = chunk;
+                                }
+                                break;
+                            default:
+                                resultchunk = chunk;
+                                break;
+                        }
+                        resultchunks.add(resultchunk);
+                    });
+
+        } catch (Exception ex) {
+            Logger.getLogger(ZapUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return resultchunks;
     }
 
     /**
