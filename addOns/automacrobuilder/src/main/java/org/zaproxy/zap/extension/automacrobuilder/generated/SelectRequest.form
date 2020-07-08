@@ -139,36 +139,26 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane2" pref="425" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jScrollPane6" alignment="0" pref="449" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane2" pref="192" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jScrollPane6" alignment="0" pref="216" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+            <Container class="javax.swing.JScrollPane" name="jScrollPane6">
               <AuxValues>
                 <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
               </AuxValues>
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
               <SubComponents>
-                <Component class="javax.swing.JTextArea" name="RequestEntity">
+                <Component class="javax.swing.JTextPane" name="RequestEntity">
                   <Properties>
-                    <Property name="columns" type="int" value="20"/>
-                    <Property name="rows" type="int" value="5"/>
-                    <Property name="text" type="java.lang.String" value="POST http://tss-xxxxxxxxxxx? HTTP/1.1&#xa;Host: xxxxxxxxxxxxxxxxxxxx&#xa;User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.2.23) Gecko/20110920 Firefox/3.6.23 ( .NET CLR 3.5.30729; .NET4.0E)&#xa;Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#xa;Accept-Language: ja,en-us;q=0.7,en;q=0.3&#xa;Accept-Encoding: gzip,deflate&#xa;Accept-Charset: Shift_JIS,utf-8;q=0.7,*;q=0.7&#xa;Keep-Alive: 115&#xa;Proxy-Connection: keep-alive"/>
+                    <Property name="text" type="java.lang.String" value="GET /index.php?DB=1 HTTP/1.1&#xa;Host: glide&#xa;User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0&#xa;Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#xa;Accept-Language: ja,en-US;q=0.7,en;q=0.3&#xa;Accept-Encoding: gzip, deflate&#xa;Connection: close&#xa;Upgrade-Insecure-Requests: 1&#xa;Content-Length: 0&#xa;"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -189,36 +179,21 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="412" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jScrollPane4" alignment="0" pref="449" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="169" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jScrollPane4" alignment="0" pref="216" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Container class="javax.swing.JScrollPane" name="jScrollPane3">
-              <AuxValues>
-                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-              </AuxValues>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane4">
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
               <SubComponents>
-                <Component class="javax.swing.JTextArea" name="ResponseEntity">
-                  <Properties>
-                    <Property name="columns" type="int" value="20"/>
-                    <Property name="rows" type="int" value="5"/>
-                  </Properties>
+                <Component class="javax.swing.JTextPane" name="ResponseEntity">
                 </Component>
               </SubComponents>
             </Container>

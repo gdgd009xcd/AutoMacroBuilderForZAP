@@ -258,7 +258,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
                 mpos = -1;
             }
             ParmVars.session.put(ParmGenSession.K_FROMPOS, Integer.toString(mpos));
-            String body = rs.response.getBody();
+            String body = rs.response.getBodyStringWithoutHeader();
             AppValue ap = new AppValue();
             //Locationパラメータ取得
             ParmGenArrayList tklist = new ParmGenArrayList();

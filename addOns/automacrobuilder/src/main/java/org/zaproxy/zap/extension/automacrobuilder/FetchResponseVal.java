@@ -443,7 +443,7 @@ class FetchResponseVal implements DeepClone {
                     }
                 }
             } else { // extract parameter from parse response
-                String body = presponse.getBody();
+                String body = presponse.getBodyStringWithoutHeader();
 
                 if (autotrack) {
                     // ParmGenParser parser = new ParmGenParser(body);

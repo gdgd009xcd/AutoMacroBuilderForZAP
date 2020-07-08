@@ -76,10 +76,10 @@ public class PResponse extends ParseHTTPHeaders {
             // String subtype = getContent_Subtype();
             switch (_tokentype) {
                 case JSON:
-                    jsonparser = new ParmGenGSONDecoder(body);
+                    jsonparser = new ParmGenGSONDecoder(getBodyStringWithoutHeader());
                     break;
                 default:
-                    htmlparser = new ParmGenParser(body);
+                    htmlparser = new ParmGenParser(getBodyStringWithoutHeader());
                     break;
             }
             /**
@@ -90,12 +90,12 @@ public class PResponse extends ParseHTTPHeaders {
             switch (_tokentype) {
                 case JSON:
                     if (jsonparser == null) {
-                        jsonparser = new ParmGenGSONDecoder(body);
+                        jsonparser = new ParmGenGSONDecoder(getBodyStringWithoutHeader());
                     }
                     break;
                 default:
                     if (htmlparser == null) {
-                        htmlparser = new ParmGenParser(body);
+                        htmlparser = new ParmGenParser(getBodyStringWithoutHeader());
                     }
                     break;
             }

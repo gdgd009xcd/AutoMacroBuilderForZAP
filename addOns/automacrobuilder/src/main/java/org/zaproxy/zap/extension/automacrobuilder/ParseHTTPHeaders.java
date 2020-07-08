@@ -76,7 +76,8 @@ class ParseHTTPHeaders implements DeepClone {
     private int content_length;
     boolean formdata;
 
-    String body; // encode = pageenc. maybe body's binary data != bytebody, because pageencoding
+    private String bodystring; // encode = pageenc. maybe body's binary data != bytebody, because
+    // pageencoding
     // affect it.
     byte[] bytebody; // bytes of contents without headers.
     ParmGenBinUtil binbody = null;
@@ -121,7 +122,7 @@ class ParseHTTPHeaders implements DeepClone {
     public static final String CUSTOM_PARAMS_HEADERNAME = "X-PARMGEN-PARAMS-HEADER";
 
     private void init() {
-        body = null;
+        bodystring = null;
         pageenc = Encode.ISO_8859_1;
         binbody = null;
         iso8859bodyString = null;
@@ -211,7 +212,7 @@ class ParseHTTPHeaders implements DeepClone {
         isHeaderModified = pheaders.isHeaderModified;
         content_length = pheaders.content_length;
         formdata = pheaders.formdata;
-        body = pheaders.body;
+        bodystring = pheaders.bodystring;
         bytebody = ParmGenUtil.copyBytes(pheaders.bytebody);
         binbody = pheaders.binbody != null ? new ParmGenBinUtil(pheaders.binbody.getBytes()) : null;
         iso8859bodyString = pheaders.iso8859bodyString;
@@ -284,9 +285,9 @@ class ParseHTTPHeaders implements DeepClone {
     }
 
     private int getStringBodyLength() {
-        if (body != null) {
+        if (bodystring != null) {
             try {
-                int blen = body.getBytes(pageenc.getIANACharset()).length;
+                int blen = bodystring.getBytes(pageenc.getIANACharset()).length;
                 return blen;
             } catch (Exception e) {
                 ParmVars.plog.printException(e);
@@ -356,7 +357,7 @@ class ParseHTTPHeaders implements DeepClone {
                 crlf = true;
                 int epos = m.end(gcnt);
                 parsedheaderlength = epos;
-                body = httpmessage.substring(epos);
+                bodystring = httpmessage.substring(epos);
                 break;
             } else {
                 if (frec) { // start-line
@@ -551,7 +552,7 @@ class ParseHTTPHeaders implements DeepClone {
             hashbodyparams = new HashMap<String, String>();
             if (boundary == null) {
                 // application/x-www-form-urlencoded
-                String[] parms = body.split("[&]");
+                String[] parms = bodystring.split("[&]");
                 if (parms.length >= 1) {
                     for (int i = 0; i < parms.length; i++) {
                         String[] nv = parms[i].trim().split("=");
@@ -574,7 +575,7 @@ class ParseHTTPHeaders implements DeepClone {
                 }
             } else { // multipart/form-data
                 boolean lasthyphen = true;
-                String parsebody = "\r\n" + body;
+                String parsebody = "\r\n" + bodystring;
                 String formvalue = null;
                 int bpos = -1;
                 int epos = -1;
@@ -702,7 +703,7 @@ class ParseHTTPHeaders implements DeepClone {
         }
 
         try {
-            body = new String(bytebody, pageenc.getIANACharset());
+            bodystring = new String(bytebody, pageenc.getIANACharset());
         } catch (Exception ex) {
             ParmVars.plog.printException(ex);
         }
@@ -916,8 +917,13 @@ class ParseHTTPHeaders implements DeepClone {
         return path;
     }
 
-    public String getBody() {
-        return body;
+    /**
+     * get body string without header. this is encoded enc.
+     *
+     * @return
+     */
+    public String getBodyStringWithoutHeader() {
+        return bodystring;
     }
 
     boolean isRequest() {
@@ -935,6 +941,11 @@ class ParseHTTPHeaders implements DeepClone {
         return status;
     }
 
+    /**
+     * get whole(header+body) message string.
+     *
+     * @return
+     */
     public String getMessage() { // return String in pageenc encoding
 
         if (message != null) {
@@ -958,7 +969,7 @@ class ParseHTTPHeaders implements DeepClone {
             sb.append(getHeaderLine(i) + "\r\n");
         }
         sb.append("\r\n");
-        sb.append(getBody());
+        sb.append(getBodyStringWithoutHeader());
         // ParmVars.plog.debuglog(0, "getMessage sb.len=" + sb.length());
         message = new String(sb);
         // ParmVars.plog.debuglog(0, "getMessage done.");

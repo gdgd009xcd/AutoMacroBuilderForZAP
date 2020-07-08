@@ -127,7 +127,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         }
         
         //JSON request
-        ParmGenGSONDecoder reqjdecoder = new ParmGenGSONDecoder(selected_request.getBody());
+        ParmGenGSONDecoder reqjdecoder = new ParmGenGSONDecoder(selected_request.getBodyStringWithoutHeader());
         List<ParmGenToken> reqjtklist = reqjdecoder.parseJSON2Token();
         for(ParmGenToken tk: reqjtklist){
             rcnt++;

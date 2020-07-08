@@ -320,7 +320,7 @@ private void setAppParmsIni(){
             PRequestResponse selected_message = ParmGenJSONSave.selected_messages.get(0);
             PRequest request = selected_message.request;
             String regex = "\"" + name + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)\"(.+?)\"(?:[\\t \\]\\r\\n]*)(?:,|})";
-            List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, request.getBody());
+            List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, request.getBodyStringWithoutHeader());
             boolean jsonmatched = false;
             String jsonvalue = value;
             /*for(String v: jsonmatchlist){
@@ -335,7 +335,7 @@ private void setAppParmsIni(){
             
             if(!jsonmatched){// "key": value
                 regex ="\"" + name + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)([^,:{}\\\"]+?)(?:[\\t \\]\\r\\n]*)(?:,|})";
-                jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, request.getBody());
+                jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, request.getBodyStringWithoutHeader());
                 /*for(String v: jsonmatchlist){
                     if(jsonvalue.equals(v)){
                         jsonmatched = true;
@@ -1806,7 +1806,7 @@ private void setAppParmsIni(){
         if (rowsSelected.length > 0){
             current_tablecolidx = 2;
             current_tablerowidx = rowsSelected[0];
-            new ParmGenRegex(this).setVisible(true);
+            new ParmGenRegex(this, true).setVisible(true);
         }
 
     }//GEN-LAST:event_NumberRegexTestActionPerformed
@@ -1962,7 +1962,7 @@ private void setAppParmsIni(){
                     current_tablecolidx = 4;
                 }
             }
-            new ParmGenRegex(this).setVisible(true);
+            new ParmGenRegex(this, current_tablecolidx > 2 ? false : true).setVisible(true);
         }
     }//GEN-LAST:event_jButton10ActionPerformed
 
@@ -2027,7 +2027,7 @@ private void setAppParmsIni(){
         if (rowsSelected.length > 0){
             current_tablecolidx = 3;
             current_tablerowidx = rowsSelected[0];
-            new ParmGenRegex(this).setVisible(true);
+            new ParmGenRegex(this, current_tablecolidx > 2 ? false : true).setVisible(true);
         }
     }//GEN-LAST:event_csvParamRegexTestActionPerformed
 

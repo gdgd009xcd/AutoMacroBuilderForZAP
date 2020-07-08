@@ -1048,7 +1048,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         for (ParmGenToken tkn : restoken.tracktokenlist) {
                             String token = tkn.getTokenKey().getName();
                             String value = tkn.getTokenValue().getValue();
-                            ParmGenGSONDecoder reqjdecoder = new ParmGenGSONDecoder(pqrs.request.getBody());
+                            ParmGenGSONDecoder reqjdecoder = new ParmGenGSONDecoder(pqrs.request.getBodyStringWithoutHeader());
 
                             List<ParmGenToken> reqjtklist = reqjdecoder.parseJSON2Token();
 
@@ -1215,7 +1215,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     break;
                                 case Json:
                                     regex = "\"" + ParmGenUtil.escapeRegexChars(paramname) + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)\"(.+?)\"(?:[\\t \\]\\r\\n]*)(?:,|})";
-                                    List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBody());
+                                    List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBodyStringWithoutHeader());
                                     boolean jsonmatched = false;
                                     String jsonvalue = _QToken.getValue();
                                     
@@ -1224,7 +1224,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     }
                                     if(!jsonmatched){// "key": value
                                         regex ="\"" + ParmGenUtil.escapeRegexChars(paramname) + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)([^,:{}\\\"]+?)(?:[\\t \\]\\r\\n]*)(?:,|})";
-                                        jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBody());
+                                        jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBodyStringWithoutHeader());
                                         
                                         if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
                                             jsonmatched = true;
@@ -1288,7 +1288,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
                 //respqrs = pqrs;
                 //レスポンストークン解析
-                String body = pqrs.response.getBody();
+                String body = pqrs.response.getBodyStringWithoutHeader();
                 
                 String res_contentMimeType = pqrs.response.getContentMimeType();// Content-Type's Mimetype: ex. "text/html"
                 

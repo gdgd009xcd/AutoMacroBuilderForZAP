@@ -96,7 +96,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     /**
      * Creates new form sampleFrame
      */
-    public ParmGenRegex(InterfaceRegex _parentwin) {
+    public ParmGenRegex(InterfaceRegex _parentwin, boolean showrequest) {
         initComponents();
         um = new UndoManager();
         original_um = new UndoManager();
@@ -111,9 +111,11 @@ public class ParmGenRegex extends javax.swing.JDialog {
         ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
         PRequestResponse ppr = parentwin.getOriginalRequestResponse();
         if (ppr != null) {
-            reqdoc.setRequestChunks(ppr.request);
-        } else {
-            OriginalText.setText(parentwin.getOriginal());
+            if (showrequest) {
+                reqdoc.setRequestChunks(ppr.request);
+            } else {
+                reqdoc.setResponseChunks(ppr.response);
+            }
         }
         OriginalText.setCaretPosition(0);
         Document rexdoc = RegexText.getDocument();

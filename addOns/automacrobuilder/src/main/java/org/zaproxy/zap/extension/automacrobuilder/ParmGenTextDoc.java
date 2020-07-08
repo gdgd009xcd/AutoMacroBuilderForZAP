@@ -19,6 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import java.awt.Insets;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -184,7 +186,6 @@ public class ParmGenTextDoc {
 
         doc = new DefaultStyledDocument();
 
-        Style binaryicon;
         Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 
         List<PRequest.RequestChunk> chunks = prequest.getRequestChunks();
@@ -235,18 +236,15 @@ public class ParmGenTextDoc {
                         Style s = null;
                         if (chunk.getBytes().length > 20000) {
                             // s = doc.getStyle("binary");
-                            StyleConstants.setAlignment(def, StyleConstants.ALIGN_CENTER);
-
                             String partno = "X-PARMGEN:" + chunk.getPartNo();
+                            ImageIcon icon = null;
                             if (displayableimgtype.isEmpty()) {
-                                StyleConstants.setIcon(def, new ImageIcon(IMGICONURL, partno));
+                                icon = new ImageIcon(IMGICONURL, partno);
                             } else {
-                                StyleConstants.setIcon(
-                                        def, new ImageIcon(chunk.getBytes(), partno));
+                                icon = new ImageIcon(chunk.getBytes(), partno);
                             }
                             // doc.addStyle(partno, def);
-                            binaryicon = def;
-                            s = binaryicon;
+                            s = makeStyleImageButton(def, icon, partno);
                             LOGGER4J.debug("@CONTENTS length:" + chunk.getBytes().length);
                             element = partno;
                         } else {
@@ -327,16 +325,17 @@ public class ParmGenTextDoc {
             for (ResponseChunk chunk : chunks) {
                 Style s = null;
                 String elem;
+                ImageIcon icon = null;
                 switch (chunk.getChunkType()) {
                     case CONTENTSBINARY:
-                        StyleConstants.setIcon(def, new ImageIcon(IMGICONURL, partno));
-                        s = def;
+                        icon = new ImageIcon(IMGICONURL, partno);
+                        s = makeStyleImageButton(def, icon, partno);
                         elem = partno;
                         LOGGER4J.debug("CONTENTSBINARY[" + elem + "]pos:" + pos);
                         break;
                     case CONTENTSIMG:
-                        StyleConstants.setIcon(def, new ImageIcon(chunk.getBytes(), partno));
-                        s = def;
+                        icon = new ImageIcon(chunk.getBytes(), partno);
+                        s = makeStyleImageButton(def, icon, partno);
                         elem = partno;
                         LOGGER4J.debug("CONTENTSIMG[" + elem + "]pos:" + pos);
                         break;
@@ -352,10 +351,31 @@ public class ParmGenTextDoc {
                 doc.insertString(pos, elem, s);
                 pos += elem.length();
             }
-
         } catch (Exception e) {
 
         }
         tcompo.setStyledDocument(doc);
+    }
+
+    /**
+     * create button with ImageIcon and add eventhandler.
+     *
+     * @param s
+     * @param icon
+     * @param actioncommand
+     * @return
+     */
+    public Style makeStyleImageButton(Style s, ImageIcon icon, String actioncommand) {
+        StyleConstants.setAlignment(s, StyleConstants.ALIGN_CENTER);
+        JButton button = new JButton();
+        button.setIcon(icon);
+        button.setMargin(new Insets(0, 0, 0, 0));
+        button.setActionCommand(actioncommand);
+        button.addActionListener(
+                e -> {
+                    LOGGER4J.debug("button pressed:" + e.getActionCommand());
+                });
+        StyleConstants.setComponent(s, button);
+        return s;
     }
 }

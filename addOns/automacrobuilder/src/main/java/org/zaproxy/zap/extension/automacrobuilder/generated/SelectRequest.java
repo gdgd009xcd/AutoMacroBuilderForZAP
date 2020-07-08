@@ -21,6 +21,7 @@ import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.PResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenJSONSave;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
 /**
@@ -122,11 +123,11 @@ public class SelectRequest extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        RequestEntity = new javax.swing.JTextArea();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        RequestEntity = new javax.swing.JTextPane();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        ResponseEntity = new javax.swing.JTextArea();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        ResponseEntity = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(bundle.getString("SelectRequest.リクエスト選択.text")); // NOI18N
@@ -156,49 +157,33 @@ public class SelectRequest extends javax.swing.JDialog {
 
         jLabel1.setText(bundle.getString("SelectRequest.リクエストを下記一覧から選択し、ＯＫボタンで選択。.text")); // NOI18N
 
-        RequestEntity.setColumns(20);
-        RequestEntity.setRows(5);
-        RequestEntity.setText("POST http://tss-xxxxxxxxxxx? HTTP/1.1\nHost: xxxxxxxxxxxxxxxxxxxx\nUser-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.2.23) Gecko/20110920 Firefox/3.6.23 ( .NET CLR 3.5.30729; .NET4.0E)\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: ja,en-us;q=0.7,en;q=0.3\nAccept-Encoding: gzip,deflate\nAccept-Charset: Shift_JIS,utf-8;q=0.7,*;q=0.7\nKeep-Alive: 115\nProxy-Connection: keep-alive");
-        jScrollPane2.setViewportView(RequestEntity);
+        RequestEntity.setText("GET /index.php?DB=1 HTTP/1.1\nHost: glide\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: ja,en-US;q=0.7,en;q=0.3\nAccept-Encoding: gzip, deflate\nConnection: close\nUpgrade-Insecure-Requests: 1\nContent-Length: 0\n");
+        jScrollPane6.setViewportView(RequestEntity);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(bundle.getString("SelectRequest.REQUEST.text"), jPanel1); // NOI18N
 
-        ResponseEntity.setColumns(20);
-        ResponseEntity.setRows(5);
-        jScrollPane3.setViewportView(ResponseEntity);
+        jScrollPane4.setViewportView(ResponseEntity);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
-                .addGap(25, 25, 25))
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
-                .addGap(35, 35, 35))
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(bundle.getString("SelectRequest.RESPONSE.text"), jPanel2); // NOI18N
@@ -268,50 +253,21 @@ public class SelectRequest extends javax.swing.JDialog {
         //int column = RequestTable.columnAtPoint(point);
         //int[] sidx = RequestTable.getSelectedRows();
         int sidx = RequestTable.getSelectedRow();
-        
-        String _request = "";
-        String _response = "";
+
+        PRequest request = null;
+        PResponse response = null;
         if ( sidx >= 0){
-            _request = P_proxy_messages.get(sidx).request.getMessage();
-            String ctype = P_proxy_messages.get(sidx).response.getContent_Type();
-            if (ctype != null && ctype.startsWith("image")) {
-                _response = P_proxy_messages.get(sidx).response.getHeaderOnly();
-            }else{
-                _response = P_proxy_messages.get(sidx).response.getMessage();
-            }
+            request = P_proxy_messages.get(sidx).request;
+            response = P_proxy_messages.get(sidx).response;
             selected_message_idx = sidx;
         }
-        SimpleAttributeSet attr = new SimpleAttributeSet();
-        Document blank = new DefaultStyledDocument();
-        Document qdoc = RequestEntity.getDocument();
-        Document rdoc = ResponseEntity.getDocument();
-        // RequestEntity.setDocument(blank);
-        // ResponseEntity.setDocument(blank);
-        //Document qdoc = new DefaultStyledDocument();
-        //Document rdoc = new DefaultStyledDocument();
-        
 
-        try {
-            qdoc.remove(0, qdoc.getLength());
-            rdoc.remove(0, rdoc.getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger(SelectRequest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        ParmGenTextDoc reqdoc = new ParmGenTextDoc(RequestEntity);
+        ParmGenTextDoc resdoc = new ParmGenTextDoc(ResponseEntity);
 
-        try {
-            qdoc.insertString(0, _request, attr);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(SelectRequest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            rdoc.insertString(0, _response, attr);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(SelectRequest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        RequestEntity.setDocument(qdoc);
-        ResponseEntity.setDocument(rdoc);
-        //RequestEntity.setText(_request);
-        //ResponseEntity.setText(_response);
+        reqdoc.setRequestChunks(request);
+        resdoc.setResponseChunks(response);
+
         RequestEntity.setCaretPosition(0);
         ResponseEntity.setCaretPosition(0);
     }//GEN-LAST:event_RequestTableMouseClicked
@@ -319,16 +275,16 @@ public class SelectRequest extends javax.swing.JDialog {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton MessageSelected;
-    private javax.swing.JTextArea RequestEntity;
+    private javax.swing.JTextPane RequestEntity;
     private javax.swing.JTable RequestTable;
-    private javax.swing.JTextArea ResponseEntity;
+    private javax.swing.JTextPane ResponseEntity;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 }
