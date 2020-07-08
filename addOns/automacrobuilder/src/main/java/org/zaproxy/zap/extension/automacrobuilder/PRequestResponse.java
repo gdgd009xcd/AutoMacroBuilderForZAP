@@ -80,8 +80,13 @@ public class PRequestResponse implements DeepClone {
         return this.cdmc;
     }
 
-    void updateRequest(PRequest _req) {
+    public void updateRequest(PRequest _req) {
         request = _req;
+    }
+
+    public void updateRequestResponse(PRequest request, PResponse response) {
+        this.request = request;
+        this.response = response;
     }
 
     public void setComments(String _v) {

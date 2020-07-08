@@ -52,4 +52,16 @@ public class ListDeepCopy {
 
         return listDeepCopyVClone(src, dest);
     }
+
+    /**
+     * Deep copy List<PRequestResponse>
+     *
+     * @param src
+     * @return
+     */
+    public static List<PRequestResponse> listDeepCopyPRequestResponse(List<PRequestResponse> src) {
+        if (src == null) return null;
+        List<PRequestResponse> dest = new ArrayList<>();
+        return listDeepCopyVClone(src, dest);
+    }
 }

@@ -21,18 +21,25 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.text.StyledDocument;
 import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenRegex;
 
 /** @author gdgd009xcd */
 public class ParmGenUtil {
+
+    private static org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
+
     private static String LFSIGN = "<!_DO_NOT_MODIFY_124kdsaoi2k_LF>\n";
     private static String LFSIGNEX = "\\<\\!_DO_NOT_MODIFY_124kdsaoi2k_LF\\>\\n";
 
@@ -449,5 +456,93 @@ public class ParmGenUtil {
             b = "";
         }
         return a.equals(b);
+    }
+
+    /**
+     * get RequestChunks from doc and prequest
+     *
+     * @param doc
+     * @param preq
+     * @return
+     */
+    public static List<PRequest.RequestChunk> getRequestFromStyledDoc(
+            StyledDocument doc, PRequest preq) {
+        List<PRequest.RequestChunk> resultchunks = new ArrayList<>();
+
+        try {
+            String docstr = doc.getText(0, doc.getLength());
+            String host = preq.getHost();
+            int port = preq.getPort();
+            boolean isSSL = preq.isSSL();
+            final Charset charset = preq.getPageEnc().getIANACharset();
+            PRequest nreq =
+                    new PRequest(host, port, isSSL, docstr.getBytes(charset), preq.getPageEnc());
+            List<PRequest.RequestChunk> modchunks = nreq.getRequestChunks();
+            List<PRequest.RequestChunk> orgchunks = preq.getRequestChunks();
+
+            modchunks.forEach(
+                    chunk -> {
+                        String elem = "";
+                        PRequest.RequestChunk resultchunk = null;
+                        switch (chunk.getChunkType()) {
+                            case CONTENTS:
+                                elem = new String(chunk.getBytes(), charset);
+                                List<String> matches =
+                                        ParmGenUtil.getRegexMatchGroups("X-PARMGEN:([0-9]+)", elem);
+                                LOGGER4J.debug("elem[" + elem + "]");
+                                if (matches.size() > 0) {
+                                    int partno = Integer.parseInt(matches.get(0));
+                                    Optional<PRequest.RequestChunk> ochunk =
+                                            orgchunks.stream()
+                                                    .filter(
+                                                            c ->
+                                                                    c.getChunkType()
+                                                                                    == PRequest
+                                                                                            .RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTS
+                                                                            && c.getPartNo()
+                                                                                    == partno)
+                                                    .findFirst();
+                                    resultchunk = ochunk.orElse(chunk);
+                                } else {
+                                    resultchunk = chunk;
+                                }
+                                break;
+                            default:
+                                resultchunk = chunk;
+                                break;
+                        }
+                        resultchunks.add(resultchunk);
+                    });
+
+        } catch (Exception ex) {
+            // Logger.getLogger(ZapUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return resultchunks;
+    }
+
+    /**
+     * create PRequest from styleddocument and Prequest
+     *
+     * @param doc
+     * @param preq
+     * @return
+     */
+    public static PRequest createPRequest(StyledDocument doc, PRequest preq) {
+        List<PRequest.RequestChunk> chunks = getRequestFromStyledDoc(doc, preq);
+        if (chunks.size() > 0) {
+            ParmGenBinUtil reqbin = new ParmGenBinUtil(chunks.get(0).getBytes());
+            for (int i = 1; i < chunks.size(); i++) {
+                reqbin.concat(chunks.get(i).getBytes());
+            }
+            String host = preq.getHost();
+            int port = preq.getPort();
+            boolean isSSL = preq.isSSL();
+            PRequest request =
+                    new PRequest(host, port, isSSL, reqbin.getBytes(), preq.getPageEnc());
+            return request;
+        }
+        return null;
     }
 }

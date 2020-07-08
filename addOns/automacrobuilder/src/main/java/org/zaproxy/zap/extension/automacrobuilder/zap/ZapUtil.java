@@ -1,11 +1,7 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.StyledDocument;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
@@ -101,7 +97,7 @@ public class ZapUtil {
             pmt.setCurrentRequest(pos);
             PRequestResponse prr = pmt.getCurrentRequestResponse();
             StyledDocument doc = mbui.getMacroRequestStyledDocument();
-            List<RequestChunk> chunks = getRequestFromStyledDoc(doc, prr.request);
+            List<RequestChunk> chunks = ParmGenUtil.getRequestFromStyledDoc(doc, prr.request);
             if (chunks.size() > 0) {
                 ParmGenBinUtil reqbin = new ParmGenBinUtil(chunks.get(0).getBytes());
                 for (int i = 1; i < chunks.size(); i++) {
@@ -118,63 +114,6 @@ public class ZapUtil {
             return getHttpMessage(prr);
         }
         return null;
-    }
-
-    public static List<RequestChunk> getRequestFromStyledDoc(StyledDocument doc, PRequest preq) {
-        List<RequestChunk> resultchunks = new ArrayList<>();
-
-        try {
-            String docstr = doc.getText(0, doc.getLength());
-            String host = preq.getHost();
-            int port = preq.getPort();
-            boolean isSSL = preq.isSSL();
-            final Charset charset = preq.getPageEnc().getIANACharset();
-            PRequest nreq =
-                    new PRequest(host, port, isSSL, docstr.getBytes(charset), preq.getPageEnc());
-            List<RequestChunk> modchunks = nreq.getRequestChunks();
-            List<RequestChunk> orgchunks = preq.getRequestChunks();
-
-            modchunks.forEach(
-                    chunk -> {
-                        String elem = "";
-                        RequestChunk resultchunk = null;
-                        switch (chunk.getChunkType()) {
-                            case CONTENTS:
-                                elem = new String(chunk.getBytes(), charset);
-                                List<String> matches =
-                                        ParmGenUtil.getRegexMatchGroups("X-PARMGEN:([0-9]+)", elem);
-                                LOGGER4J.debug("elem[" + elem + "]");
-                                if (matches.size() > 0) {
-                                    int partno = Integer.parseInt(matches.get(0));
-                                    Optional<RequestChunk> ochunk =
-                                            orgchunks.stream()
-                                                    .filter(
-                                                            c ->
-                                                                    c.getChunkType()
-                                                                                    == PRequest
-                                                                                            .RequestChunk
-                                                                                            .CHUNKTYPE
-                                                                                            .CONTENTS
-                                                                            && c.getPartNo()
-                                                                                    == partno)
-                                                    .findFirst();
-                                    resultchunk = ochunk.orElse(chunk);
-                                } else {
-                                    resultchunk = chunk;
-                                }
-                                break;
-                            default:
-                                resultchunk = chunk;
-                                break;
-                        }
-                        resultchunks.add(resultchunk);
-                    });
-
-        } catch (Exception ex) {
-            Logger.getLogger(ZapUtil.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return resultchunks;
     }
 
     /**

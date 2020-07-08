@@ -19,13 +19,15 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import javax.swing.text.StyledDocument;
+
 /** @author daike */
 public interface InterfaceParmGenRegexSaveCancelAction {
-    public void ParmGenRegexSaveAction(String message);
+    public void ParmGenRegexSaveAction(StyledDocument styleddoc);
 
-    public void ParmGenRegexCancelAction();
+    public void ParmGenRegexCancelAction(boolean isLabelSaveBtn);
 
-    public String getParmGenRegexSaveBtnText();
+    public String getParmGenRegexSaveBtnText(boolean isLabelSaveBtn);
 
-    public String getParmGenRegexCancelBtnText();
+    public String getParmGenRegexCancelBtnText(boolean isLabelSaveBtn);
 }

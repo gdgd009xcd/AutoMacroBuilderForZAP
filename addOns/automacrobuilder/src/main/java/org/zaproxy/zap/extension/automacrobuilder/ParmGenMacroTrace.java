@@ -301,11 +301,30 @@ public class ParmGenMacroTrace extends ClientDependent {
         return rlist.size();
     }
 
+    /**
+     * update original requestlist with parameter
+     *
+     * @param idx
+     * @param _request
+     */
     public void updateOriginalRequest(int idx, PRequest _request) {
-        if (originalrlist != null && originalrlist.size() > 0) {
+        if (originalrlist != null && idx > -1 && idx < originalrlist.size()) {
             PRequestResponse pqr = originalrlist.get(idx);
             pqr.updateRequest(_request);
-            originalrlist.set(idx, pqr);
+            // originalrlist.set(idx, pqr);
+        }
+    }
+
+    /**
+     * update requestlist with paramter.
+     *
+     * @param idx
+     * @param request
+     */
+    public void updateRequestCurrentList(int idx, PRequest request) {
+        if (rlist != null && idx > -1 && idx < rlist.size()) {
+            PRequestResponse pqr = rlist.get(idx);
+            pqr.updateRequest(request);
         }
     }
 
@@ -603,9 +622,9 @@ public class ParmGenMacroTrace extends ClientDependent {
         // rlist = new ArrayList <PRequestResponse> (_rlist);//copy
         if (rlist == null) {
             rlist = _rlist; // reference共有
-            originalrlist = new ArrayList<PRequestResponse>(_rlist); // copy
+            originalrlist = ListDeepCopy.listDeepCopyPRequestResponse(_rlist); // Must Do Deep Copy
         } else {
-            originalrlist.addAll(new ArrayList<PRequestResponse>(_rlist));
+            originalrlist.addAll(ListDeepCopy.listDeepCopyPRequestResponse(_rlist));
         }
         LOGGER4J.debug("setRecords:" + rlist.size() + "/" + originalrlist.size());
     }
@@ -701,6 +720,26 @@ public class ParmGenMacroTrace extends ClientDependent {
         return toolbaseline;
     }
 
+    /**
+     * get current requestresponse
+     *
+     * @param pos
+     * @return
+     */
+    public PRequestResponse getRequestResponseCurrentList(int pos) {
+        if (rlist != null && rlist.size() > 0) {
+            PRequestResponse pqr = rlist.get(pos);
+            return pqr;
+        }
+        return null;
+    }
+
+    /**
+     * get RequestResponse current or original
+     *
+     * @param pos
+     * @return
+     */
     public PRequestResponse getRequestResponse(int pos) {
         if (rlist != null && rlist.size() > 0) {
             PRequestResponse pqr = rlist.get(pos);

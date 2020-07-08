@@ -50,6 +50,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     InterfaceRegex parentwin =null;
     InterfaceParmGenRegexSaveCancelAction regexactionwin= null;
     List<RegexSelectedTextPos> foundTextAttrPos = null;
+    boolean isLabelSaveBtn = false;
     
     public static final String Escaperegex = "([\\[\\]\\{\\}\\(\\)\\*\\<\\>\\.\\?\\+\\\"\\\'\\$])";
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
@@ -141,6 +142,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     
     public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, PRequest prequest){
         initComponents();
+        isLabelSaveBtn = true;
         um = new UndoManager();
         original_um = new UndoManager();
         To.setEnabled(false);
@@ -157,8 +159,8 @@ public class ParmGenRegex extends javax.swing.JDialog {
         
         foundTextAttrPos = new ArrayList<>();
         if(regexactionwin!=null){
-            Save.setText(regexactionwin.getParmGenRegexSaveBtnText());
-            Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText());
+            Save.setText(regexactionwin.getParmGenRegexSaveBtnText(isLabelSaveBtn));
+            Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText(isLabelSaveBtn));
         }
         
         
@@ -182,6 +184,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     
     public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, PResponse presponse){
         initComponents();
+        isLabelSaveBtn = false;
         um = new UndoManager();
         original_um = new UndoManager();
         To.setEnabled(false);
@@ -198,8 +201,8 @@ public class ParmGenRegex extends javax.swing.JDialog {
         
         foundTextAttrPos = new ArrayList<>();
         if(regexactionwin!=null){
-            Save.setText(regexactionwin.getParmGenRegexSaveBtnText());
-            Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText());
+            Save.setText(regexactionwin.getParmGenRegexSaveBtnText(isLabelSaveBtn));
+            Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText(isLabelSaveBtn));
         }
         
         
@@ -909,7 +912,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     private void CancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CancelActionPerformed
         // TODO add your handling code here:
         if(regexactionwin!=null){
-            regexactionwin.ParmGenRegexCancelAction();
+            regexactionwin.ParmGenRegexCancelAction(isLabelSaveBtn);
         }
         dispose();
         //setVisible(false);
@@ -1049,7 +1052,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
         // TODO add your handling code here:
         if(regexactionwin!=null){
-            regexactionwin.ParmGenRegexSaveAction(OriginalText.getText());
+            regexactionwin.ParmGenRegexSaveAction(OriginalText.getStyledDocument());
             dispose();
             return;
         }

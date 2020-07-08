@@ -23,12 +23,10 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 import org.zaproxy.zap.extension.automacrobuilder.*;
-import org.zaproxy.zap.extension.automacrobuilder.PRequest.RequestChunk;
+
 
 /**
  *
@@ -45,10 +43,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     List<PRequestResponse> rlist = null;
     ParmGenMacroTrace pmt = null;
 
+    int EditTarget = -1;
     DefaultListModel<String> RequestListModel = null;
-    int OriginalEditTarget = -1;
-    boolean EditTargetIsSSL = false;
-    int EditTargetPort = 0;
     Encode EditPageEnc = Encode.ISO_8859_1;
     static final int REQUEST_DISPMAXSIZ = 500000;//1MB
     static final int RESPONSE_DISPMAXSIZ = 1000000;//1MB
@@ -89,6 +85,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     
     public javax.swing.JPopupMenu getPopupMenuForRequestList(){
         return PopupMenuForRequestList;
+    }
+    
+    public javax.swing.JPopupMenu getPopupMenuRequestEdit() {
+        return RequestEdit;
     }
     
     public javax.swing.JButton getScanMacroButton(){
@@ -206,8 +206,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         enableRequest = new javax.swing.JMenuItem();
         deleteRequest = new javax.swing.JMenuItem();
         RequestEdit = new javax.swing.JPopupMenu();
-        showRequest = new javax.swing.JMenuItem();
         edit = new javax.swing.JMenuItem();
+        restore = new javax.swing.JMenuItem();
+        update = new javax.swing.JMenuItem();
         ResponseShow = new javax.swing.JPopupMenu();
         show = new javax.swing.JMenuItem();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -312,14 +313,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         });
         PopupMenuForRequestList.add(deleteRequest);
 
-        showRequest.setText(bundle.getString("MacroBuilderUI.ShowRequest.text")); // NOI18N
-        showRequest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showRequestActionPerformed(evt);
-            }
-        });
-        RequestEdit.add(showRequest);
-
         edit.setText(bundle.getString("MacroBuilderUI.REQUESTEDIT.text")); // NOI18N
         edit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -327,6 +320,22 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
         RequestEdit.add(edit);
+
+        restore.setText(bundle.getString("MacroBuilderUI.restore.text")); // NOI18N
+        restore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreActionPerformed(evt);
+            }
+        });
+        RequestEdit.add(restore);
+
+        update.setText(bundle.getString("MacroBuilderUI.update.text")); // NOI18N
+        update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateActionPerformed(evt);
+            }
+        });
+        RequestEdit.add(update);
 
         show.setText(bundle.getString("MacroBuilderUI.RESPONSESHOW.text")); // NOI18N
         show.addActionListener(new java.awt.event.ActionListener() {
@@ -1472,12 +1481,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if(pmt!=null){
             PRequestResponse pqr = pmt.getOriginalRequest(pos);
             if(pqr!=null){
-                OriginalEditTarget = pos;
-                // String reqdata = pqr.request.getMessage();
-                EditTargetIsSSL = pqr.request.isSSL();
-                EditTargetPort = pqr.request.getPort();
-                EditPageEnc = pqr.request.getPageEnc();
-                new ParmGenRegex(this, reg,pqr.request).setVisible(true);
+                new ParmGenRegex(this, reg, pqr.request).setVisible(true);
             }
         }
       
@@ -1489,7 +1493,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         String reg = "";
         int pos = RequestList.getSelectedIndex();
         String orig = MacroResponse.getText();
-        OriginalEditTarget = -1;
         if (pos != -1) {
             PRequestResponse prr = rlist.get(pos);
             new ParmGenRegex(this,reg,prr.response).setVisible(true);
@@ -1509,28 +1512,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private void MBfromStepNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MBfromStepNoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_MBfromStepNoActionPerformed
-
-    private void showRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showRequestActionPerformed
-        // TODO add your handling code here:
-        // TODO add your handling code here:
-        String reg = "";
-        //String orig = MacroRequest.getText();
-        // Document docreq = MacroRequest.getDocument();
-        // int rlen = docreq.getLength();
-        try {
-            
-            OriginalEditTarget = -1;
-            // String reqdata = docreq.getText(0, rlen);
-            int pos = getCurrentSelectedRequestIndex();
-            if (pos != -1) {
-                PRequestResponse prr = rlist.get(pos);
-                new ParmGenRegex(this, reg, prr.request).setVisible(true);
-            }
-            
-        } catch (Exception ex) {
-            Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_showRequestActionPerformed
 
     private void TrackModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TrackModeActionPerformed
         // TODO add your handling code here:
@@ -1584,8 +1565,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             RequestListModel.set(pos, downelem);
             ParmGen.exchangeStepNo(pos-1, pos);
 
-            ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
-            csv.GSONsave();
+            if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
+                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+                csv.GSONsave();
+            }
 
             RequestList.setSelectedIndex(pos-1);
         }
@@ -1617,8 +1600,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             RequestListModel.set(pos+1, downelem);
             ParmGen.exchangeStepNo(pos, pos+1);
 
-            ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
-            csv.GSONsave();
+            if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
+                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+                csv.GSONsave();
+            }
+
             RequestList.setSelectedIndex(pos+1);
         }
     }//GEN-LAST:event_DownSelectedActionPerformed
@@ -1664,8 +1650,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     pini.setSetToStep(settostep-1);
                 }
             });
-            ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
-            csv.GSONsave();
+            if (ParmVars.isSaved()) {
+                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+                csv.GSONsave();
+            }
         }
     }//GEN-LAST:event_deleteRequestActionPerformed
 
@@ -1721,6 +1709,36 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
     }//GEN-LAST:event_MacroResponseMouseReleased
 
+    private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
+        // TODO add your handling code here:
+        int idx = this.getCurrentSelectedRequestIndex();
+        if (pmt != null && idx > -1 && rlist != null && idx < rlist.size()) {
+            PRequestResponse prr = pmt.getOriginalRequest(idx);
+            if (prr != null) {
+                PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
+                current.updateRequestResponse(prr.request, prr.response);
+                ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
+                reqdoc.setRequestChunks(prr.request);
+                ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
+                resdoc.setResponseChunks(prr.response);
+            }
+        }
+    }//GEN-LAST:event_restoreActionPerformed
+
+    private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
+        // TODO add your handling code here:
+        int idx = this.getCurrentSelectedRequestIndex();
+        if (pmt != null && idx > -1 && rlist != null && idx < rlist.size()) {
+            PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
+            PRequestResponse original = pmt.getOriginalRequest(idx);
+            original.updateRequestResponse(current.request, current.response);
+            if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
+                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+                csv.GSONsave();
+            }
+        }
+    }//GEN-LAST:event_updateActionPerformed
+
     /**
      * get current selected request index in RequestList.
      * 
@@ -1739,40 +1757,39 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
     
     @Override
-    public void ParmGenRegexSaveAction(String message) {
-        if(pmt!=null&&OriginalEditTarget!=-1){
+    public void ParmGenRegexSaveAction(StyledDocument styledoc) {
+        int idx = getCurrentSelectedRequestIndex();
+        if(rlist != null && idx > -1 &&  idx < rlist.size()){
             PRequest request;
             try {
-                PRequestResponse pqr = pmt.getOriginalRequest(OriginalEditTarget);
+                PRequestResponse pqr = rlist.get(idx);
                 PRequest origrequest = pqr.request;
-                request = new PRequest(origrequest.getHost(), origrequest.getPort(), origrequest.isSSL(), message.getBytes(EditPageEnc.getIANACharsetName()),EditPageEnc);
-                request.setSSL(EditTargetIsSSL);
-                request.setPort(EditTargetPort);
-                pmt.updateOriginalRequest(OriginalEditTarget, request);
-            } catch (UnsupportedEncodingException ex) {
+                PRequest newrequest = ParmGenUtil.createPRequest(styledoc, origrequest);
+                pmt.updateRequestCurrentList(idx, newrequest);
+                ParmGenTextDoc doc = new ParmGenTextDoc(MacroRequest);
+                doc.setRequestChunks(newrequest);
+            } catch (Exception ex) {
                 Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-            OriginalEditTarget = -1;
         }
     }
 
     @Override
-    public void ParmGenRegexCancelAction() {
-        OriginalEditTarget = -1;
+    public void ParmGenRegexCancelAction(boolean isLabelSaveBtn) {
+
     }
 
     @Override
-    public String getParmGenRegexSaveBtnText() {
-        if(OriginalEditTarget==-1){
+    public String getParmGenRegexSaveBtnText(boolean isLabelSaveBtn) {
+        if(!isLabelSaveBtn){
             return "Close";
         }
         return "Save";
     }
 
     @Override
-    public String getParmGenRegexCancelBtnText() {
-        if(OriginalEditTarget==-1){
+    public String getParmGenRegexCancelBtnText(boolean isLabelSaveBtn) {
+        if(!isLabelSaveBtn){
             return "Close";
         }
         return "Cancel";
@@ -1830,9 +1847,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane paramlog;
+    private javax.swing.JMenuItem restore;
     private javax.swing.JMenuItem show;
-    private javax.swing.JMenuItem showRequest;
     private javax.swing.JMenuItem targetRequest;
+    private javax.swing.JMenuItem update;
     private javax.swing.JTextField waitsec;
     // End of variables declaration//GEN-END:variables
 

@@ -52,6 +52,7 @@ public class MyWorkPanel extends AbstractPanel implements Tab {
 
         javax.swing.JButton scanmacrobtn = mbui.getScanMacroButton();
         javax.swing.JPopupMenu requestlistpopupmenu = mbui.getPopupMenuForRequestList();
+        javax.swing.JPopupMenu requesteditpopupmenu = mbui.getPopupMenuRequestEdit();
 
         exthook.addOptionsParamSet(extscanwrapper.getScannerParam());
 
@@ -60,9 +61,15 @@ public class MyWorkPanel extends AbstractPanel implements Tab {
         PopUpItemSingleSend popupitemsingle =
                 new PopUpItemSingleSend(mbui, extscanwrapper.getStartedActiveScanContainer());
 
+        requesteditpopupmenu.add(popupitemsingle);
+
         requestlistpopupmenu.remove(0); // remove "SendTo" menu that is only used in burp
 
         requestlistpopupmenu.add(popupitemscan);
+
+        // create menuitem for each JPopupMenu.
+        popupitemsingle =
+                new PopUpItemSingleSend(mbui, extscanwrapper.getStartedActiveScanContainer());
         requestlistpopupmenu.add(popupitemsingle);
 
         // scanmacrobtn.setEnabled(true);
