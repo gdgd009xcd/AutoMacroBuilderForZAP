@@ -1473,11 +1473,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PRequestResponse pqr = pmt.getOriginalRequest(pos);
             if(pqr!=null){
                 OriginalEditTarget = pos;
-                String reqdata = pqr.request.getMessage();
+                // String reqdata = pqr.request.getMessage();
                 EditTargetIsSSL = pqr.request.isSSL();
                 EditTargetPort = pqr.request.getPort();
                 EditPageEnc = pqr.request.getPageEnc();
-                new ParmGenRegex(this, reg,reqdata).setVisible(true);
+                new ParmGenRegex(this, reg,pqr.request).setVisible(true);
             }
         }
       
@@ -1487,9 +1487,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private void showActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showActionPerformed
         // TODO add your handling code here:
         String reg = "";
+        int pos = RequestList.getSelectedIndex();
         String orig = MacroResponse.getText();
         OriginalEditTarget = -1;
-        new ParmGenRegex(this,reg,orig).setVisible(true);
+        if (pos != -1) {
+            PRequestResponse prr = rlist.get(pos);
+            new ParmGenRegex(this,reg,prr.response).setVisible(true);
+        }
+        
     }//GEN-LAST:event_showActionPerformed
 
     private void StartScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartScanActionPerformed
@@ -1510,15 +1515,19 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         // TODO add your handling code here:
         String reg = "";
         //String orig = MacroRequest.getText();
-        Document docreq = MacroRequest.getDocument();
-        int rlen = docreq.getLength();
+        // Document docreq = MacroRequest.getDocument();
+        // int rlen = docreq.getLength();
         try {
             
             OriginalEditTarget = -1;
-            String reqdata = docreq.getText(0, rlen);
+            // String reqdata = docreq.getText(0, rlen);
+            int pos = getCurrentSelectedRequestIndex();
+            if (pos != -1) {
+                PRequestResponse prr = rlist.get(pos);
+                new ParmGenRegex(this, reg, prr.request).setVisible(true);
+            }
             
-            new ParmGenRegex(this, reg,reqdata).setVisible(true);
-        } catch (BadLocationException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_showRequestActionPerformed

@@ -27,6 +27,10 @@ import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCancelAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
+import org.zaproxy.zap.extension.automacrobuilder.PRequest;
+import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
+import org.zaproxy.zap.extension.automacrobuilder.PResponse;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 
@@ -103,7 +107,14 @@ public class ParmGenRegex extends javax.swing.JDialog {
         init(null, null);
         this.setModal(true);
         RegexText.setText(parentwin.getRegex());
-        OriginalText.setText(parentwin.getOriginal());
+        // OriginalText.setText(parentwin.getOriginal());
+        ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
+        PRequestResponse ppr = parentwin.getOriginalRequestResponse();
+        if (ppr != null) {
+            reqdoc.setRequestChunks(ppr.request);
+        } else {
+            OriginalText.setText(parentwin.getOriginal());
+        }
         OriginalText.setCaretPosition(0);
         Document rexdoc = RegexText.getDocument();
         
@@ -126,7 +137,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
 		});
     }
     
-    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, String _Original){
+    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, PRequest prequest){
         initComponents();
         um = new UndoManager();
         original_um = new UndoManager();
@@ -137,7 +148,50 @@ public class ParmGenRegex extends javax.swing.JDialog {
         init(null, null);
         this.setModal(true);
         RegexText.setText(_reg);
-        OriginalText.setText(_Original);
+        // OriginalText.setText(_Original);
+        ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
+        reqdoc.setRequestChunks(prequest);
+        OriginalText.setCaretPosition(0);
+        
+        foundTextAttrPos = new ArrayList<>();
+        if(regexactionwin!=null){
+            Save.setText(regexactionwin.getParmGenRegexSaveBtnText());
+            Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText());
+        }
+        
+        
+        //RegexTextのUndo/Redo
+        Document rexdoc = RegexText.getDocument();
+        rexdoc.addUndoableEditListener(new UndoableEditListener() {
+			public void undoableEditHappened(UndoableEditEvent e) {
+				//行われた編集(文字の追加や削除)をUndoManagerに登録
+				um.addEdit(e.getEdit());
+			}
+		});
+        //RegexTextのUndo/Redo
+        Document origdoc = OriginalText.getDocument();
+        origdoc.addUndoableEditListener(new UndoableEditListener() {
+			public void undoableEditHappened(UndoableEditEvent e) {
+				//行われた編集(文字の追加や削除)をUndoManagerに登録
+				original_um.addEdit(e.getEdit());
+			}
+		});
+    }
+    
+    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, PResponse presponse){
+        initComponents();
+        um = new UndoManager();
+        original_um = new UndoManager();
+        To.setEnabled(false);
+        parentwin = null;
+        regexactionwin = _actionwin;
+        findplist = new ArrayList<Integer>();
+        init(null, null);
+        this.setModal(true);
+        RegexText.setText(_reg);
+        // OriginalText.setText(_Original);
+        ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
+        reqdoc.setResponseChunks(presponse);
         OriginalText.setCaretPosition(0);
         
         foundTextAttrPos = new ArrayList<>();

@@ -25,5 +25,7 @@ public interface InterfaceRegex {
 
     public String getOriginal();
 
+    public PRequestResponse getOriginalRequestResponse();
+
     public void setRegex(String regex);
 }

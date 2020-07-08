@@ -357,4 +357,9 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
          }
         //throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public PRequestResponse getOriginalRequestResponse() {
+        return null;
+    }
 }

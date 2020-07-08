@@ -43,6 +43,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
     public static final int T_OPTIONTITLE = 2;
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
+    PRequestResponse currentrequestresponse = null;
     
     // 正規表現適用順序
     // 0-8 
@@ -524,6 +525,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
     public void update(){
         if ( ParmGenJSONSave.selected_messages.size()>0){
             PRequestResponse rs = ParmGenJSONSave.selected_messages.get(0);
+            currentrequestresponse = rs;
             ResponseURL.setText(rs.request.getURL());
             ResponseArea.setText(rs.response.getMessage());
             ResponseArea.setCaretPosition(0);   
@@ -690,5 +692,10 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
     @Override
     public void updateMessageAreaInSelectedModel(int panel) {
         //NOP
+    }
+
+    @Override
+    public PRequestResponse getOriginalRequestResponse() {
+        return currentrequestresponse;
     }
 }

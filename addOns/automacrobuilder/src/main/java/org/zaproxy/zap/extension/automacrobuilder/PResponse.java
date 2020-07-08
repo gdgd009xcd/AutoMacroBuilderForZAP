@@ -186,9 +186,9 @@ public class PResponse extends ParseHTTPHeaders {
 
         String displayablecontents = "";
         if (tcontent_type != null && !tcontent_type.isEmpty()) {
+            LOGGER4J.debug("content-type[" + tcontent_type + "]");
             List<String> matches =
-                    ParmGenUtil.getRegexMatchGroups(
-                            "Content-Type: image/(jpeg|png|gif)", tcontent_type);
+                    ParmGenUtil.getRegexMatchGroups("image/(jpeg|png|gif)", tcontent_type);
             if (matches.size() > 0) {
                 displayablecontents = matches.get(0);
             }
@@ -212,7 +212,7 @@ public class PResponse extends ParseHTTPHeaders {
         if (tbodies != null && tbodies.length > 0) {
             PResponse.ResponseChunk chunkbody = new PResponse.ResponseChunk(chntype, tbodies);
             reschunks.add(chunkbody);
-            LOGGER4J.debug("res body[" + new String(tbodies) + "]");
+            LOGGER4J.debug("res body size:" + chunkbody.getBytes().length);
         } else {
             LOGGER4J.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!res body is null");
         }

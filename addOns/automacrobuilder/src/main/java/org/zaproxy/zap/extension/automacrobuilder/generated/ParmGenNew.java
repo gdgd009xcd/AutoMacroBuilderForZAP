@@ -251,6 +251,8 @@ private void setAppParmsIni(){
         return getTableRowRegex();
     }
 
+    
+    
     public String getOriginal(){
         if (current_model == P_TRACKMODEL){
             if( current_tablecolidx > 2){
@@ -540,11 +542,11 @@ private void setAppParmsIni(){
         return (String)ParamTableModels[current_model].getValueAt(current_tablerowidx, pos);
     }
 
-    public String getRequestArea(){
+    private String getRequestArea(){
         return RequestArea.getText();
     }
 
-    public String getResponseArea(){
+    private String getResponseArea(){
         return ResponseArea.getText();
     }
 
@@ -2158,5 +2160,10 @@ private void setAppParmsIni(){
     @Override
     public void update() {
         //NOP
+    }
+
+    @Override
+    public PRequestResponse getOriginalRequestResponse() {
+        return ParmGenJSONSave.selected_messages.get(0);
     }
 }
