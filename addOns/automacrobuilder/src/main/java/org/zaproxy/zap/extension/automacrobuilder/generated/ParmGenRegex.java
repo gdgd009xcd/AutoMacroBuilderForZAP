@@ -25,6 +25,8 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
+
+import com.sun.management.VMOption;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCancelAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
@@ -140,7 +142,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
 		});
     }
     
-    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, PRequest prequest){
+    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, StyledDocument doc){
         initComponents();
         isLabelSaveBtn = true;
         um = new UndoManager();
@@ -153,8 +155,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
         this.setModal(true);
         RegexText.setText(_reg);
         // OriginalText.setText(_Original);
-        ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
-        reqdoc.setRequestChunks(prequest);
+        // ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
+        OriginalText.setStyledDocument(doc);
+        // reqdoc.setRequestChunks(prequest);
         OriginalText.setCaretPosition(0);
         
         foundTextAttrPos = new ArrayList<>();

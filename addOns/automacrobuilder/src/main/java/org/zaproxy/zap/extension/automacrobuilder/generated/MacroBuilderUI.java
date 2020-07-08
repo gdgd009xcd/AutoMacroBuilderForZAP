@@ -1480,8 +1480,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if(pos<0)return;
         if(pmt!=null){
             PRequestResponse pqr = pmt.getOriginalRequest(pos);
+            StyledDocument doc = MacroRequest.getStyledDocument();
             if(pqr!=null){
-                new ParmGenRegex(this, reg, pqr.request).setVisible(true);
+                new ParmGenRegex(this, reg, doc).setVisible(true);
             }
         }
       
@@ -1730,6 +1731,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int idx = this.getCurrentSelectedRequestIndex();
         if (pmt != null && idx > -1 && rlist != null && idx < rlist.size()) {
             PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
+            StyledDocument doc = MacroRequest.getStyledDocument();
+            PRequest newrequest = ParmGenUtil.createPRequest(doc, current.request);
+            current.request = newrequest;
+
             PRequestResponse original = pmt.getOriginalRequest(idx);
             original.updateRequestResponse(current.request, current.response);
             if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
