@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -360,44 +361,53 @@ public class ParmGen {
                         byte[] partdata = null;
                         boolean partupdt = false;
                         byte[] headerseparator = {0x0d, 0x0a, 0x0d, 0x0a}; // <CR><LF><CR><LF>
+                        byte[] CRLF = {0x0d, 0x0a};
+                        byte[] LASTHYPHEN = {0x2d, 0x2d};
                         byte[] partheader = null;
                         String partenc = "";
                         String neworg_content_iso8859 = null;
                         boolean org_content_isupdated = false;
+                        int endOfData = _contarray.getBytes().length;
                         while ((npos = _contarray.indexOf(boundaryarray.getBytes(), cpos)) != -1) {
                             if (cpos != 0) { // cpos->npos == partdata
                                 partdata = _contarray.subBytes(cpos, npos);
                                 // マルチパート内のヘッダーまで(CRLFCRLF)読み込み、Content-typeを判定
                                 int hend = _contarray.indexOf(headerseparator, cpos);
-                                partheader = _contarray.subBytes(cpos, hend);
-                                String partcontenttype = null;
-                                try {
-                                    partcontenttype = new String(partheader, ParmVars.formdataenc);
-                                } catch (UnsupportedEncodingException ex) {
-                                    partcontenttype = "";
-                                }
-                                int ctypestart = 0;
-                                partenc = ParmVars.enc.getIANACharsetName();
-                                if ((ctypestart = partcontenttype.indexOf("Content-Type:")) != -1) {
-                                    String cstr =
-                                            partcontenttype.substring(
-                                                    ctypestart + "Content-Type:".length());
-                                    String[] cstrvalues = cstr.split("[\r\n;]+");
-                                    if (cstrvalues.length > 0) {
-                                        String partcontenttypevalue = cstrvalues[0];
-                                        if (!partcontenttypevalue.isEmpty()) {
-                                            partenc = ParmVars.formdataenc;
-                                            partcontenttypevalue = partcontenttypevalue.trim();
-                                            LOGGER4J.debug(
-                                                    "form-data Contentype:["
-                                                            + partcontenttypevalue
-                                                            + "]");
+                                if (hend != -1 && hend < npos && hend - cpos > 50) {
+                                    partheader = _contarray.subBytes(cpos, hend);
+                                    String partcontenttype = null;
+                                    try {
+                                        partcontenttype =
+                                                new String(partheader, ParmVars.formdataenc);
+                                    } catch (UnsupportedEncodingException ex) {
+                                        partcontenttype = "";
+                                    }
+                                    int ctypestart = 0;
+                                    partenc = ParmVars.enc.getIANACharsetName();
+                                    if ((ctypestart = partcontenttype.indexOf("Content-Type:"))
+                                            != -1) {
+                                        String cstr =
+                                                partcontenttype.substring(
+                                                        ctypestart + "Content-Type:".length());
+                                        String[] cstrvalues = cstr.split("[\r\n;]+");
+                                        if (cstrvalues.length > 0) {
+                                            String partcontenttypevalue = cstrvalues[0];
+                                            if (!partcontenttypevalue.isEmpty()) {
+                                                partenc = ParmVars.formdataenc;
+                                                partcontenttypevalue = partcontenttypevalue.trim();
+                                                LOGGER4J.debug(
+                                                        "form-data Contentype:["
+                                                                + partcontenttypevalue
+                                                                + "]");
+                                            }
                                         }
                                     }
                                 }
                                 String partdatastr = null;
                                 try {
                                     partdatastr = new String(partdata, partenc);
+                                    LOGGER4J.debug(
+                                            "partdatastr[" + partdatastr.substring(0, 200) + "]");
                                 } catch (UnsupportedEncodingException e) {
                                     partdatastr = null;
                                 }
@@ -437,18 +447,33 @@ public class ParmGen {
                                 } else {
                                     n_array.concat(partdata);
                                 }
-                                int nextcpos = npos + boundaryarray.length() + 2;
+                                int nextcpos = npos + boundaryarray.length();
                                 n_array.concat(_contarray.subBytes(npos, nextcpos));
-                                String lasthyphon =
-                                        new String(_contarray.subBytes(nextcpos - 2, nextcpos));
-                                if (lasthyphon.equals("--")) {
-                                    n_array.concat("\r\n".getBytes()); // last hyphon "--" + CRLF
+                                if (nextcpos + 2 <= endOfData) { // End Of Data ?
+                                    byte[] last2bytes = _contarray.subBytes(nextcpos, nextcpos + 2);
+                                    if (last2bytes != null
+                                            && (Arrays.equals(CRLF, last2bytes)
+                                                    || Arrays.equals(LASTHYPHEN, last2bytes))) {
+                                        n_array.concat(last2bytes);
+                                        nextcpos += last2bytes.length;
+                                    }
                                 }
                                 cpos = nextcpos;
                             } else {
-                                cpos = npos + boundaryarray.length() + 2;
-                                n_array.concat(_contarray.subBytes(0, cpos));
+                                int nextcpos = npos + boundaryarray.length();
+                                n_array.concat(_contarray.subBytes(cpos, nextcpos));
+                                if (nextcpos + 2 <= endOfData) {
+                                    byte[] last2bytes = _contarray.subBytes(nextcpos, nextcpos + 2);
+                                    if (last2bytes != null && Arrays.equals(CRLF, last2bytes)) {
+                                        n_array.concat(last2bytes);
+                                        nextcpos += last2bytes.length;
+                                    }
+                                }
+                                cpos = nextcpos;
                             }
+                        }
+                        if (cpos < endOfData) {
+                            n_array.concat(_contarray.subBytes(cpos, endOfData));
                         }
 
                         if (partupdt) {

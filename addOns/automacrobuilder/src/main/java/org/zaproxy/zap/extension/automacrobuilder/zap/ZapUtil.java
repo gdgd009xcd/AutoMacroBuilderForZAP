@@ -1,19 +1,16 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.nio.charset.Charset;
-import java.util.List;
-import javax.swing.text.StyledDocument;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpResponseHeader;
 import org.zaproxy.zap.extension.automacrobuilder.Encode;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
-import org.zaproxy.zap.extension.automacrobuilder.PRequest.RequestChunk;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
+import org.zaproxy.zap.extension.automacrobuilder.StyledDocumentWithChunk;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.network.HttpRequestBody;
 import org.zaproxy.zap.network.HttpResponseBody;
@@ -91,27 +88,17 @@ public class ZapUtil {
      */
     public static HttpMessage getCurrentHttpMessage(MacroBuilderUI mbui) {
         int pos = mbui.getCurrentSelectedRequestIndex();
-
         if (pos > -1) {
             ParmGenMacroTrace pmt = mbui.getParmGenMacroTrace();
             pmt.setCurrentRequest(pos);
             PRequestResponse prr = pmt.getCurrentRequestResponse();
-            StyledDocument doc = mbui.getMacroRequestStyledDocument();
-            List<RequestChunk> chunks = ParmGenUtil.getRequestFromStyledDoc(doc, prr.request);
-            if (chunks.size() > 0) {
-                ParmGenBinUtil reqbin = new ParmGenBinUtil(chunks.get(0).getBytes());
-                for (int i = 1; i < chunks.size(); i++) {
-                    reqbin.concat(chunks.get(i).getBytes());
+            StyledDocumentWithChunk doc = mbui.getMacroRequestStyledDocument();
+            if (doc != null) {
+                PRequest prequest = doc.reBuildPRequestFromDocText();
+                if (prequest != null) {
+                    return getHttpMessage(prequest);
                 }
-                String host = prr.request.getHost();
-                int port = prr.request.getPort();
-                boolean isSSL = prr.request.isSSL();
-                PRequest request =
-                        new PRequest(
-                                host, port, isSSL, reqbin.getBytes(), prr.request.getPageEnc());
-                return getHttpMessage(request);
             }
-            return getHttpMessage(prr);
         }
         return null;
     }

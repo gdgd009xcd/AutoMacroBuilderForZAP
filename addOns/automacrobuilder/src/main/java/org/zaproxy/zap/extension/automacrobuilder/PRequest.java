@@ -19,6 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,6 +125,7 @@ public class PRequest extends ParseHTTPHeaders {
         byte[] headerseparator = {0x0d, 0x0a, 0x0d, 0x0a}; // <CR><LF><CR><LF>
 
         String tboundarywithoutcrlf = null;
+        Charset charset = getPageEnc().getIANACharset();
 
         if (tcontent_type != null && !tcontent_type.isEmpty()) {
             Pattern tctypepattern =
@@ -137,6 +139,7 @@ public class PRequest extends ParseHTTPHeaders {
             }
         }
 
+        int endOfData = tbodies.length;
         int partno = 0;
         // create requestheader chunks
         byte[] reqheaderchunks = theaders.getBytes();
@@ -157,18 +160,25 @@ public class PRequest extends ParseHTTPHeaders {
             int cpos = 0;
             while ((npos = _contarray.indexOf(boundaryarraywithoutcrlf.getBytes(), cpos)) != -1) {
                 if (cpos > 0) {
-
                     int hend = _contarray.indexOf(headerseparator, cpos);
-                    byte[] boundaryheader =
-                            _contarray.subBytes(
-                                    cpos, hend + headerseparator.length); // mutipart headers
-                    chunk =
-                            new RequestChunk(
-                                    PRequest.RequestChunk.CHUNKTYPE.BOUNDARYHEADER,
-                                    boundaryheader,
-                                    partno);
-                    reqchunks.add(chunk);
                     int contstartpos = hend + headerseparator.length;
+                    if (hend != -1
+                            && hend >= cpos
+                            && hend + headerseparator.length
+                                    <= npos) { // at least , CRLFCRLF found between boundary.
+                        byte[] boundaryheader =
+                                _contarray.subBytes(
+                                        cpos, hend + headerseparator.length); // mutipart headers
+                        chunk =
+                                new RequestChunk(
+                                        PRequest.RequestChunk.CHUNKTYPE.BOUNDARYHEADER,
+                                        boundaryheader,
+                                        partno);
+                        reqchunks.add(chunk);
+                    } else { // no header.
+                        contstartpos = cpos;
+                    }
+
                     int contendpos = npos - 2;
                     if (contendpos > contstartpos) {
                         byte[] contents = _contarray.subBytes(contstartpos, contendpos);
@@ -176,51 +186,88 @@ public class PRequest extends ParseHTTPHeaders {
                                 new RequestChunk(
                                         PRequest.RequestChunk.CHUNKTYPE.CONTENTS, contents, partno);
                         reqchunks.add(chunk);
+                    } else if (npos > contstartpos) { // No CONTENT but has CONTENTSEND.
+                        contendpos = contstartpos;
+                    } else { // has No CONTENT and CONTENDEND
+                        contendpos = -1;
                     }
-                    chunk =
-                            new RequestChunk(
-                                    PRequest.RequestChunk.CHUNKTYPE.CONTENTSEND,
-                                    "\r\n".getBytes(),
-                                    partno);
-                    reqchunks.add(chunk);
+
+                    if (contendpos != -1) {
+                        byte[] contentsendbytes = _contarray.subBytes(contendpos, npos);
+                        chunk =
+                                new RequestChunk(
+                                        PRequest.RequestChunk.CHUNKTYPE.CONTENTSEND,
+                                        contentsendbytes,
+                                        partno);
+                        reqchunks.add(chunk);
+                    }
 
                     partno++;
                     int nextcpos = npos + boundaryarraywithoutcrlf.length() + 2;
-                    String lasthyphon = new String(_contarray.subBytes(nextcpos - 2, nextcpos));
-                    String lasthyphonrepesentation = "--";
-                    LOGGER4J.debug("lasthyphon[" + lasthyphon.replaceAll("\r\n", "<CR><LF>") + "]");
-                    if (lasthyphon.equals(lasthyphonrepesentation)) {
+                    String lasthyphen = "";
+                    byte[] lasthyphenbytes = _contarray.subBytes(nextcpos - 2, nextcpos);
+                    if (lasthyphenbytes != null && lasthyphenbytes.length == 2) {
+                        lasthyphen = new String(lasthyphenbytes, charset);
+                        byte[] endcrlfbytes = _contarray.subBytes(nextcpos, nextcpos + 2);
+                        if (endcrlfbytes != null && endcrlfbytes.length == 2) {
+                            String endcrlf = new String(endcrlfbytes, charset);
+                            lasthyphen = lasthyphen + endcrlf;
+                        }
+                    }
+
+                    LOGGER4J.debug(
+                            "crlforlasthyphon[" + lasthyphen.replaceAll("\r\n", "<CR><LF>") + "]");
+                    if (lasthyphen.startsWith("--")) {
+                        if (lasthyphen.equals("--\r\n")) {
+                            nextcpos += 2;
+                        }
+                        byte[] lastboundarybytescrlf = _contarray.subBytes(npos, nextcpos);
                         // last hyphon "--" + CRLF
                         chunk =
                                 new RequestChunk(
                                         PRequest.RequestChunk.CHUNKTYPE.LASTBOUNDARY,
-                                        lastboundaryarraycrlf.getBytes(),
+                                        lastboundarybytescrlf,
                                         partno);
                         reqchunks.add(chunk);
-                        break;
                     } else {
-                        LOGGER4J.debug(
-                                "lasthyphon["
-                                        + lasthyphon.replaceAll("\r\n", "<CR><LF>")
-                                        + "]!="
-                                        + lasthyphonrepesentation);
+                        if (!lasthyphen.equals("\r\n")) {
+                            nextcpos -= 2;
+                        }
+                        byte[] boundarybytescrlf = _contarray.subBytes(npos, nextcpos);
                         chunk =
                                 new RequestChunk(
                                         PRequest.RequestChunk.CHUNKTYPE.BOUNDARY,
-                                        boundaryarraycrlf.getBytes(),
+                                        boundarybytescrlf,
                                         partno);
                         reqchunks.add(chunk);
                     }
                     cpos = nextcpos;
                 } else {
                     cpos = npos + boundaryarraywithoutcrlf.length() + 2;
+                    byte[] bytescrlf = _contarray.subBytes(npos - 2, npos);
+                    String crlf = "";
+                    if (bytescrlf != null && bytescrlf.length == 2) {
+                        crlf = new String(bytescrlf, charset);
+                    }
+                    if (!crlf.equals("\r\n")) {
+                        cpos -= 2;
+                    }
+                    byte[] boundarybytes = _contarray.subBytes(npos, cpos);
                     chunk =
                             new RequestChunk(
                                     PRequest.RequestChunk.CHUNKTYPE.BOUNDARY,
-                                    boundaryarraycrlf.getBytes(),
+                                    boundarybytes,
                                     partno);
                     reqchunks.add(chunk);
                 }
+            }
+            if (cpos < tbodies.length) {
+                partno++;
+                byte[] gabagebytes = _contarray.subBytes(cpos, tbodies.length);
+                chunk =
+                        new RequestChunk(
+                                PRequest.RequestChunk.CHUNKTYPE.CONTENTS, gabagebytes, partno);
+                reqchunks.add(chunk);
             }
         } else { // simple request. headers<CR><LF>contents.
             if (tbodies != null && tbodies.length > 0) {

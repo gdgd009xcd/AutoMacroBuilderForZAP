@@ -53,6 +53,8 @@ public class ParmGenTextDoc {
     private static final URL IMGICONURL =
             ParmGenTextDoc.class.getResource(RESOURCES + "/binary.png");
 
+    public static String CONTENTS_PLACEHOLDER_PREFIX = "<__X_PARMGEN:";
+    public static String CONTENTS_PLACEHOLDER_SUFFIX = ":NEGMRAP_X__>";
     private JTextPane tcompo;
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
@@ -166,29 +168,21 @@ public class ParmGenTextDoc {
      * @param prequest
      */
     public void setRequestChunks(PRequest prequest) {
-        StyledDocument doc = null;
+
         if (tcompo == null) return;
         StyledDocument blank = new DefaultStyledDocument();
 
         // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
         // display contents. this problem occur only ZAP.
         // Thus you must get original Document from JEditorPane for Setting Text.
-        doc = tcompo.getStyledDocument();
         tcompo.setStyledDocument(blank);
-
-        try {
-            LOGGER4J.debug("before  remove text");
-            doc.remove(0, doc.getLength());
-            LOGGER4J.debug("done remove text");
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        doc = new DefaultStyledDocument();
 
         Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 
-        List<PRequest.RequestChunk> chunks = prequest.getRequestChunks();
+        StyledDocumentWithChunk requestdoc = new StyledDocumentWithChunk(prequest);
+        StyledDocument doc = requestdoc;
+
+        List<PRequest.RequestChunk> chunks = requestdoc.getRequestChunks();
         Encode pageenc = prequest.getPageEnc();
         int pos = 0;
         String displayableimgtype = "";
@@ -236,7 +230,10 @@ public class ParmGenTextDoc {
                         Style s = null;
                         if (chunk.getBytes().length > 20000) {
                             // s = doc.getStyle("binary");
-                            String partno = "X-PARMGEN:" + chunk.getPartNo();
+                            String partno =
+                                    CONTENTS_PLACEHOLDER_PREFIX
+                                            + chunk.getPartNo()
+                                            + CONTENTS_PLACEHOLDER_SUFFIX;
                             ImageIcon icon = null;
                             if (displayableimgtype.isEmpty()) {
                                 icon = new ImageIcon(IMGICONURL, partno);
@@ -290,33 +287,23 @@ public class ParmGenTextDoc {
      * @param presponse
      */
     public void setResponseChunks(PResponse presponse) {
-        LOGGER4J.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! setResponseChunks");
-        StyledDocument doc = null;
         if (tcompo == null) return;
         StyledDocument blank = new DefaultStyledDocument();
 
         // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
         // display contents. this problem occur only ZAP.
         // Thus you must get original Document from JEditorPane for Setting Text.
-        doc = tcompo.getStyledDocument();
         tcompo.setStyledDocument(blank);
 
-        try {
-            LOGGER4J.debug("before  remove text");
-            doc.remove(0, doc.getLength());
-            LOGGER4J.debug("done remove text");
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        doc = new DefaultStyledDocument();
+        StyledDocumentWithChunk responsedoc = new StyledDocumentWithChunk(presponse);
+        StyledDocument doc = responsedoc;
 
         Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 
-        String partno = "X-PARMGEN:0";
+        String partno = CONTENTS_PLACEHOLDER_PREFIX + "0" + CONTENTS_PLACEHOLDER_SUFFIX;
         StyleConstants.setAlignment(def, StyleConstants.ALIGN_CENTER);
 
-        List<PResponse.ResponseChunk> chunks = presponse.getResponseChunks();
+        List<PResponse.ResponseChunk> chunks = responsedoc.getResponseChunks();
         Charset charset = presponse.getPageEnc().getIANACharset();
 
         int pos = 0;

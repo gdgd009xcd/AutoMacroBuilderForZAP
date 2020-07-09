@@ -27,6 +27,9 @@ import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 
 import com.sun.management.VMOption;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCancelAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
@@ -35,6 +38,7 @@ import org.zaproxy.zap.extension.automacrobuilder.PResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.StyledDocumentWithChunk;
 
 /**
  *
@@ -53,6 +57,10 @@ public class ParmGenRegex extends javax.swing.JDialog {
     InterfaceParmGenRegexSaveCancelAction regexactionwin= null;
     List<RegexSelectedTextPos> foundTextAttrPos = null;
     boolean isLabelSaveBtn = false;
+    PRequest editrequest = null;
+    
+    CustomHttpPanelHexModel hexModel = null;
+    StyledDocumentWithChunk docwithchunk = null;
     
     public static final String Escaperegex = "([\\[\\]\\{\\}\\(\\)\\*\\<\\>\\.\\?\\+\\\"\\\'\\$])";
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
@@ -159,6 +167,22 @@ public class ParmGenRegex extends javax.swing.JDialog {
         OriginalText.setStyledDocument(doc);
         // reqdoc.setRequestChunks(prequest);
         OriginalText.setCaretPosition(0);
+        
+        if (doc instanceof StyledDocumentWithChunk) {
+            this.docwithchunk = CastUtils.castToType(doc);
+        }
+        
+        hexModel = new CustomHttpPanelHexModel();
+        JTable hextable = new JTable();
+        hextable.setModel(hexModel);
+        JScrollPane scrollPane = new JScrollPane(hextable);
+        TextTab.addTab("Hex", scrollPane);
+        if (this.docwithchunk != null) {
+            PRequest prequest = this.docwithchunk.reBuildPRequestFromDocText();
+            if (prequest != null) {
+                hexModel.setData(prequest.getByteMessage());
+            }
+        }
         
         foundTextAttrPos = new ArrayList<>();
         if(regexactionwin!=null){
@@ -638,6 +662,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         RegexText = new javax.swing.JTextPane();
+        TextTab = new javax.swing.JTabbedPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         OriginalText = new javax.swing.JTextPane();
         jLabel1 = new javax.swing.JLabel();
@@ -719,6 +744,8 @@ public class ParmGenRegex extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(RegexText);
 
+        TextTab.setName("Text"); // NOI18N
+
         OriginalText.setText("POST /travel/entry/ HTTP/1.1\nHost: 050plus-cp.com\nUser-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.2.23) Gecko/20110920 Firefox/3.6.23 ( .NET CLR 3.5.30729; .NET4.0E)\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: ja,en-us;q=0.7,en;q=0.3\nAccept-Encoding: gzip,deflate\nAccept-Charset: Shift_JIS,utf-8;q=0.7,*;q=0.7\nKeep-Alive: 115\nConnection: keep-alive\nReferer: https://050plus-cp.com/travel/entry/\nCookie: Formp=e70cja0sp2gcidna2baifhjp8g55kggj\nAuthorization: Basic MTEyMjozMzQ0\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 86\n\nFormp=e70cja0sp2gcidna2baifhjp8g55kggj&_mode=user_confirm&_token=&next.x=107&next.y=12");
         OriginalText.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -734,6 +761,8 @@ public class ParmGenRegex extends javax.swing.JDialog {
             }
         });
         jScrollPane2.setViewportView(OriginalText);
+
+        TextTab.addTab("Text", jScrollPane2);
 
         jLabel1.setText(bundle.getString("ParmGenRegex.正規表現.text")); // NOI18N
 
@@ -823,7 +852,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
                                         .addComponent(MULTILINE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(CASE_INSENSITIVE)))
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addGap(0, 383, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -844,10 +873,12 @@ public class ParmGenRegex extends javax.swing.JDialog {
                                 .addComponent(Add, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(5, 5, 5))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1))
+                        .addComponent(jScrollPane1)
                         .addContainerGap())))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(TextTab, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -862,9 +893,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
-                .addGap(17, 17, 17)
+                .addGap(18, 18, 18)
+                .addComponent(TextTab, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(From, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -888,21 +919,17 @@ public class ParmGenRegex extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 714, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(5, 5, 5)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGap(5, 5, 5)))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(5, 5, 5))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 305, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addContainerGap()))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -1055,7 +1082,10 @@ public class ParmGenRegex extends javax.swing.JDialog {
     private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
         // TODO add your handling code here:
         if(regexactionwin!=null){
-            regexactionwin.ParmGenRegexSaveAction(OriginalText.getStyledDocument());
+            StyledDocument doc = OriginalText.getStyledDocument();
+            if (doc instanceof StyledDocumentWithChunk) {
+                regexactionwin.ParmGenRegexSaveAction(CastUtils.castToType(doc));
+            }
             dispose();
             return;
         }
@@ -1216,6 +1246,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     private javax.swing.JTextPane RegexText;
     private javax.swing.JComboBox<String> RegexType;
     private javax.swing.JButton Save;
+    private javax.swing.JTabbedPane TextTab;
     private javax.swing.JTextField To;
     private javax.swing.JMenuItem Undo;
     private javax.swing.JPopupMenu UndoRedoMenu;
