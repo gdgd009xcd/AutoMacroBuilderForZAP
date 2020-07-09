@@ -372,7 +372,7 @@ public class ParmGen {
                             if (cpos != 0) { // cpos->npos == partdata
                                 partdata = _contarray.subBytes(cpos, npos);
                                 partenc = ParmVars.enc.getIANACharsetName();
-                                // マルチパート内のヘッダーまで(CRLFCRLF)読み込み、Content-typeを判定
+                                // Determine partenc: multi-part content encoding from Content-Type header in multipart.
                                 int hend = _contarray.indexOf(headerseparator, cpos);
                                 if (hend != -1 && hend < npos && hend - cpos > 50) {
                                     partheader = _contarray.subBytes(cpos, hend);
@@ -406,8 +406,6 @@ public class ParmGen {
                                 String partdatastr = null;
                                 try {
                                     partdatastr = new String(partdata, partenc);
-                                    LOGGER4J.debug(
-                                            "partdatastr[" + partdatastr.substring(0, 200) + "]");
                                 } catch (UnsupportedEncodingException e) {
                                     partdatastr = null;
                                 }
