@@ -371,6 +371,7 @@ public class ParmGen {
                         while ((npos = _contarray.indexOf(boundaryarray.getBytes(), cpos)) != -1) {
                             if (cpos != 0) { // cpos->npos == partdata
                                 partdata = _contarray.subBytes(cpos, npos);
+                                partenc = ParmVars.enc.getIANACharsetName();
                                 // マルチパート内のヘッダーまで(CRLFCRLF)読み込み、Content-typeを判定
                                 int hend = _contarray.indexOf(headerseparator, cpos);
                                 if (hend != -1 && hend < npos && hend - cpos > 50) {
@@ -383,7 +384,6 @@ public class ParmGen {
                                         partcontenttype = "";
                                     }
                                     int ctypestart = 0;
-                                    partenc = ParmVars.enc.getIANACharsetName();
                                     if ((ctypestart = partcontenttype.indexOf("Content-Type:"))
                                             != -1) {
                                         String cstr =
