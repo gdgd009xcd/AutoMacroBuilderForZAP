@@ -1479,10 +1479,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int pos = RequestList.getSelectedIndex();
         if(pos<0)return;
         if(pmt!=null){
-            PRequestResponse pqr = pmt.getOriginalRequest(pos);
-            StyledDocument doc = MacroRequest.getStyledDocument();
-            if(pqr!=null){
-                new ParmGenRegex(this, reg, doc).setVisible(true);
+            PRequestResponse pqr = pmt.getRequestResponseCurrentList(pos);
+            if (pqr != null) {
+                String text = MacroRequest.getText();
+                StyledDocumentWithChunk chunkdoc = new StyledDocumentWithChunk(pqr.request);
+                chunkdoc.updateRequestFromText(text);
+                new ParmGenRegex(this, reg, chunkdoc).setVisible(true);
             }
         }
       
@@ -1495,8 +1497,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int pos = RequestList.getSelectedIndex();
         String orig = MacroResponse.getText();
         if (pos != -1) {
-            PRequestResponse prr = rlist.get(pos);
-            new ParmGenRegex(this,reg,prr.response).setVisible(true);
+            StyledDocument doc = MacroResponse.getStyledDocument();
+            new ParmGenRegex(this,reg,doc).setVisible(true);
         }
         
     }//GEN-LAST:event_showActionPerformed
@@ -1637,6 +1639,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 String elem = String.format("%03d",i) + '|' + pqrs.request.getURL();
                 RequestListModel.set(i, elem);
             }
+            int siz = rlist.size();
+            if ( pos == siz - 1 && siz > 1) {
+                int npos = pos - 1;
+                RequestList.setSelectedIndex(npos);
+            }
+            
+            
             hasposlist.stream().forEach(pini -> {
                 int trackfromstep = pini.getTrackFromStep();
                 if ( trackfromstep == pos) {
@@ -1655,6 +1664,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
                 csv.GSONsave();
             }
+            
         }
     }//GEN-LAST:event_deleteRequestActionPerformed
 
@@ -1733,7 +1743,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
             StyledDocumentWithChunk doc = this.getMacroRequestStyledDocument();
             if (doc != null) {
-                PRequest newrequest = doc.reBuildPRequestFromDocText();
+                PRequest newrequest = doc.reBuildChunkPRequestFromDocText();
                 current.request = newrequest;
 
                 PRequestResponse original = pmt.getOriginalRequest(idx);
@@ -1752,7 +1762,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      * @return int
      */
     public int getCurrentSelectedRequestIndex(){
-        return RequestList.getSelectedIndex();
+        int pos = RequestList.getSelectedIndex();
+        if (pos < rlist.size()) return pos;
+        return -1;
     }
 
     public StyledDocumentWithChunk getMacroRequestStyledDocument() {
@@ -1772,10 +1784,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int idx = getCurrentSelectedRequestIndex();
         if(rlist != null && idx > -1 &&  idx < rlist.size()){
             try {
-                PRequest newrequest = doc.reBuildPRequestFromDocText();
-                pmt.updateRequestCurrentList(idx, newrequest);
-                ParmGenTextDoc ndoc = new ParmGenTextDoc(MacroRequest);
-                ndoc.setRequestChunks(newrequest);
+                PRequest newrequest = doc.reBuildChunkPRequestFromDocText();
+                if (newrequest != null) {
+                    pmt.updateRequestCurrentList(idx, newrequest);
+                    ParmGenTextDoc ndoc = new ParmGenTextDoc(MacroRequest);
+                    ndoc.setRequestChunks(newrequest);
+                }
             } catch (Exception ex) {
                 Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
             }

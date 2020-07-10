@@ -22,6 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder.generated;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 
 /**
  * hex edit table model from HttpPanelHexModel in OWASP ZAP.
@@ -202,5 +203,21 @@ public class CustomHttpPanelHexModel extends AbstractTableModel {
 
     public boolean hasChanged() {
         return changed;
+    }
+    
+    public synchronized byte[] getData() {
+        // Need to implement if/when edit supported
+        ParmGenBinUtil bb = new ParmGenBinUtil();
+        for (String[] row : listRow) {
+            for (int i = 1; i < 17; i++) {
+                if (row[i] == null || row[i].length() == 0) {
+                    break;
+                }
+                int intval = Integer.parseInt(row[i], 16);
+                byte[] barray = {(byte)intval};
+                bb.concat(barray);
+            }
+        }
+        return bb.getBytes();
     }
 }

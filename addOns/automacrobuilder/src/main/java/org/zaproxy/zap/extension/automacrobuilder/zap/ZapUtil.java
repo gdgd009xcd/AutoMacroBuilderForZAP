@@ -94,7 +94,7 @@ public class ZapUtil {
             PRequestResponse prr = pmt.getCurrentRequestResponse();
             StyledDocumentWithChunk doc = mbui.getMacroRequestStyledDocument();
             if (doc != null) {
-                PRequest prequest = doc.reBuildPRequestFromDocText();
+                PRequest prequest = doc.reBuildChunkPRequestFromDocText();
                 if (prequest != null) {
                     return getHttpMessage(prequest);
                 }

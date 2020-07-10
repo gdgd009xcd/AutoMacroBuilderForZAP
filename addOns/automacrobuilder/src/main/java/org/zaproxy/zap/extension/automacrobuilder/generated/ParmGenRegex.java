@@ -29,6 +29,7 @@ import javax.swing.undo.UndoManager;
 import com.sun.management.VMOption;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCancelAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
@@ -60,6 +61,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     PRequest editrequest = null;
     
     CustomHttpPanelHexModel hexModel = null;
+    byte[] hexdata = null;
     StyledDocumentWithChunk docwithchunk = null;
     
     public static final String Escaperegex = "([\\[\\]\\{\\}\\(\\)\\*\\<\\>\\.\\?\\+\\\"\\\'\\$])";
@@ -152,7 +154,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     
     public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, StyledDocument doc){
         initComponents();
-        isLabelSaveBtn = true;
+        
         um = new UndoManager();
         original_um = new UndoManager();
         To.setEnabled(false);
@@ -168,19 +170,19 @@ public class ParmGenRegex extends javax.swing.JDialog {
         // reqdoc.setRequestChunks(prequest);
         OriginalText.setCaretPosition(0);
         
+        isLabelSaveBtn = false;
         if (doc instanceof StyledDocumentWithChunk) {
             this.docwithchunk = CastUtils.castToType(doc);
+            isLabelSaveBtn = this.docwithchunk.isRequest();
         }
         
-        hexModel = new CustomHttpPanelHexModel();
-        JTable hextable = new JTable();
-        hextable.setModel(hexModel);
-        JScrollPane scrollPane = new JScrollPane(hextable);
-        TextTab.addTab("Hex", scrollPane);
+        addHexView(isLabelSaveBtn);
+        
+        
         if (this.docwithchunk != null) {
-            PRequest prequest = this.docwithchunk.reBuildPRequestFromDocText();
-            if (prequest != null) {
-                hexModel.setData(prequest.getByteMessage());
+            byte[] hexdata = this.docwithchunk.getBytes();
+            if (hexdata != null) {
+                hexModel.setData(hexdata);
             }
         }
         
@@ -208,49 +210,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
 			}
 		});
     }
-    
-    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, PResponse presponse){
-        initComponents();
-        isLabelSaveBtn = false;
-        um = new UndoManager();
-        original_um = new UndoManager();
-        To.setEnabled(false);
-        parentwin = null;
-        regexactionwin = _actionwin;
-        findplist = new ArrayList<Integer>();
-        init(null, null);
-        this.setModal(true);
-        RegexText.setText(_reg);
-        // OriginalText.setText(_Original);
-        ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
-        reqdoc.setResponseChunks(presponse);
-        OriginalText.setCaretPosition(0);
-        
-        foundTextAttrPos = new ArrayList<>();
-        if(regexactionwin!=null){
-            Save.setText(regexactionwin.getParmGenRegexSaveBtnText(isLabelSaveBtn));
-            Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText(isLabelSaveBtn));
-        }
-        
-        
-        //RegexTextのUndo/Redo
-        Document rexdoc = RegexText.getDocument();
-        rexdoc.addUndoableEditListener(new UndoableEditListener() {
-			public void undoableEditHappened(UndoableEditEvent e) {
-				//行われた編集(文字の追加や削除)をUndoManagerに登録
-				um.addEdit(e.getEdit());
-			}
-		});
-        //RegexTextのUndo/Redo
-        Document origdoc = OriginalText.getDocument();
-        origdoc.addUndoableEditListener(new UndoableEditListener() {
-			public void undoableEditHappened(UndoableEditEvent e) {
-				//行われた編集(文字の追加や削除)をUndoManagerに登録
-				original_um.addEdit(e.getEdit());
-			}
-		});
-    }
-    
+
     public static String EscapeSpecials(String _d){
         _d = _d.replaceAll(Escaperegex, "\\\\$1");
         _d = _d.replaceAll("(\r|\n)+", "(?:\\\\r|\\\\n)+?");
@@ -310,191 +270,6 @@ public class ParmGenRegex extends javax.swing.JDialog {
         hex = hex.replaceAll("\n", "<LF>");
         
         ParmVars.plog.debuglog(1,"["+hex+"]\n");
-    }
-    
-    private void OldSearch(){
-        // TODO add your handling code here:
-        SimpleAttributeSet attr = new SimpleAttributeSet();
-        
-
-        String regex = RegexText.getText();
-        
-        //String original = OriginalText.getText();
-        Document doc = OriginalText.getDocument();
-        Document blank = new DefaultStyledDocument();
-        
-        String original = null;
-        try {
-            original = doc.getText(0, doc.getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ParmGenRegex.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        /*
-        if (regex.equals(curr_regex)&&original.equals(curr_orig)){
-            if (!findplist.isEmpty()){
-                if(findplist.size()<=fidx){
-                    fidx = 0;
-                }
-                OriginalText.setCaretPosition(findplist.get(fidx));
-                fidx++;
-                return;
-            }
-        }
-        * */
-        
-        init(regex, original);
-        //parse Regex
-        Pattern compiledregex = null;
-        Matcher m = null;
-        try{
-            int flags = 0;
-            if(MULTILINE.isSelected()){
-                flags |= Pattern.MULTILINE;
-            }
-            if(CASE_INSENSITIVE.isSelected()){
-                flags |= Pattern.CASE_INSENSITIVE;
-            }
-            compiledregex = ParmGenUtil.Pattern_compile(regex, flags);
-            
-            m = compiledregex.matcher(original);
-        }catch(Exception e){
-            ParmVars.plog.printException(e);
-            JOptionPane.showMessageDialog(this,bundle.getString("ParmGenRegex.正規表現が不正.text")+ e.toString() ,  bundle.getString("ParmGenRegex.正規表現エラー.text"), JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        
-        
-
-
-        try {
-            doc.remove(0,doc.getLength());//remove all document..
-        }catch(BadLocationException e){
-            ParmVars.plog.printException(e);
-        }
-
-        OriginalText.setDocument(blank);
-        
-        String precontents = "";
-        String postcontents = "";
-        String strcnt = null;
-        boolean found = false;
-        int cpt = 0;
-        
-        int fcount=0;
-        while (m.find()) {
-                found = true;
-                fcount++;
-                int spt0 = -1;
-                int ept0 = -1;
-                int spt = -1;
-                int ept = -1;
-                int gcnt = m.groupCount();
-                String matchval = null;
-                if ( gcnt > 0){
-                    spt0 = m.start();
-                    ept0 = m.end();
-                    for(int n = 0; n < gcnt ; n++){
-                            spt = m.start(n+1);
-                            ept = m.end(n+1);
-                            matchval = m.group(n+1);
-
-                    }
-                    if ( matchval == null){
-                        matchval = m.group();
-                    }
-                    if ( spt0 > spt){
-                        spt0 = spt;
-                    }
-                    if(ept0 < ept){
-                        ept0 = ept;
-                    }
-                    // spt0--->spt<matchval>ept-->ept0
-                }else{//Nothing Groups...
-                    spt0 = m.start();
-                    ept0 = m.end();
-                    matchval = m.group();
-                }
-                if ( spt0 >=0 && ept0 >= 0 ){
-                        String prematchval = null;
-                        if ( spt >= 0){
-                            prematchval = original.substring(spt0, spt);
-                        }
-                        String postmatchval = null;
-                        if( ept >= 0){
-                            postmatchval = original.substring(ept, ept0);
-                        }
-                        precontents = original.substring(cpt, spt0) ;
-                        cpt = ept0;
-                        postcontents = original.substring(ept0);
-                        try {
-                            
-                            StyleConstants.setForeground(attr, Color.BLACK);
-                            StyleConstants.setBackground(attr, Color.WHITE);
-                            doc.insertString(doc.getLength(), precontents, attr);
-                            if ( prematchval !=null && !prematchval.isEmpty() ){
-                                StyleConstants.setForeground(attr, Color.BLUE);
-                                StyleConstants.setBackground(attr, Color.RED);
-                                doc.insertString(doc.getLength(), prematchval, attr);
-                            }
-                            StyleConstants.setForeground(attr, Color.WHITE);
-                            StyleConstants.setBackground(attr, Color.RED);
-                            if ( matchval != null && !matchval.isEmpty()){
-                                doc.insertString(doc.getLength(), matchval, attr);
-                            }
-                            if( postmatchval != null && !postmatchval.isEmpty()){
-                                StyleConstants.setForeground(attr, Color.BLUE);
-                                StyleConstants.setBackground(attr, Color.RED);
-                                doc.insertString(doc.getLength(), postmatchval, attr);
-                            }
-                            
-                            //int pos = OriginalText.getCaretPosition();
-                            int pos = doc.getLength();
-                            findplist.add(pos);
-                            if ( fidx == -1){
-                                fidx = 0;
-                            }
-			} catch(BadLocationException e){
-                            ParmVars.plog.printException(e);
-			}
-                }
-        }
-
-        if ( postcontents.length() > 0 ){
-            StyleConstants.setForeground(attr, Color.BLACK);
-            StyleConstants.setBackground(attr, Color.WHITE);
-            try{
-                if ( postcontents != null && !postcontents.isEmpty()){
-                    doc.insertString(doc.getLength(), postcontents, attr);
-                }
-            }catch(BadLocationException e){
-                ParmVars.plog.printException(e);
-            }
-        }
-        
-        if ( doc.getLength()<=0 && original.length() > 0 && found == false){
-            StyleConstants.setForeground(attr, Color.BLACK);
-            StyleConstants.setBackground(attr, Color.WHITE);
-            try{
-                doc.insertString(0, original, attr);
-            }catch(BadLocationException e){
-                ParmVars.plog.printException(e);
-            }
-        }
-        //jTextPaneのDocumentを更新したら、からなずsetDocumentする。
-        //改行コードLFが挿入されるなど、コンテンツが不正になるので注意。
-        OriginalText.setDocument(doc);
-        
-        if ( fidx != -1){
-            OriginalText.setCaretPosition(findplist.get(fidx));
-            fidx++;
-            JOptionPane.showMessageDialog(this, Integer.toString(fcount)+bundle.getString("ParmGenRegex.箇所一致しました。.text"), bundle.getString("ParmGenRegex.検索結果.text"), JOptionPane.INFORMATION_MESSAGE);
-        }else{
-            
-            java.awt.Toolkit.getDefaultToolkit().beep();
-            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.正規表現が一致しませんでした。.text"), bundle.getString("ParmGenRegex.検索結果.text"), JOptionPane.QUESTION_MESSAGE);
-        }
     }
     
     /**
@@ -644,6 +419,49 @@ public class ParmGenRegex extends javax.swing.JDialog {
         }
     }
     
+    void addHexView(boolean editable) {
+        hexModel = new CustomHttpPanelHexModel();
+        hexModel.setEditable(editable);
+        JTable hextable = new JTable();
+        hextable.setModel(hexModel);
+        JScrollPane scrollPane = new JScrollPane(hextable);
+        TextTab.addTab("Hex", scrollPane);
+        hextable.setGridColor(java.awt.Color.gray);
+        hextable.setIntercellSpacing(new java.awt.Dimension(1, 1));
+
+        hextable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        hextable.getColumnModel().getColumn(0).setPreferredWidth(100);
+        for (int i = 1; i <= 17; i++) {
+            hextable.getColumnModel().getColumn(i).setPreferredWidth(30);
+        }
+        for (int i = 17; i <= hextable.getColumnModel().getColumnCount() - 1; i++) {
+            hextable.getColumnModel().getColumn(i).setPreferredWidth(25);
+        }
+
+        hextable.setCellSelectionEnabled(true);
+        hextable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        if (editable) {
+            TextTab.addChangeListener(e -> {
+                int selIndex = TextTab.getSelectedIndex();//tabbedpanes selectedidx 0start..
+                if (this.docwithchunk != null){
+                    switch(selIndex) {
+                        case 1:
+                            PRequest request = this.docwithchunk.reBuildChunkPRequestFromDocText();
+                            hexdata = request.getByteMessage();
+                            hexModel.setData(hexdata);
+                            break;
+                        default:
+                            hexdata = hexModel.getData();
+                            this.docwithchunk.updateRequest(hexdata);
+                            OriginalText.repaint();
+                            break;
+                    }
+                }
+            });
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -746,7 +564,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
         TextTab.setName("Text"); // NOI18N
 
-        OriginalText.setText("POST /travel/entry/ HTTP/1.1\nHost: 050plus-cp.com\nUser-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.2.23) Gecko/20110920 Firefox/3.6.23 ( .NET CLR 3.5.30729; .NET4.0E)\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: ja,en-us;q=0.7,en;q=0.3\nAccept-Encoding: gzip,deflate\nAccept-Charset: Shift_JIS,utf-8;q=0.7,*;q=0.7\nKeep-Alive: 115\nConnection: keep-alive\nReferer: https://050plus-cp.com/travel/entry/\nCookie: Formp=e70cja0sp2gcidna2baifhjp8g55kggj\nAuthorization: Basic MTEyMjozMzQ0\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 86\n\nFormp=e70cja0sp2gcidna2baifhjp8g55kggj&_mode=user_confirm&_token=&next.x=107&next.y=12");
+        OriginalText.setText("POST /travel/entry/ HTTP/1.1\nHost: test.co\nUser-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.9.2.23) Gecko/20110920 Firefox/3.6.23 ( .NET CLR 3.5.30729; .NET4.0E)\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: ja,en-us;q=0.7,en;q=0.3\nAccept-Encoding: gzip,deflate\nAccept-Charset: Shift_JIS,utf-8;q=0.7,*;q=0.7\nKeep-Alive: 115\nConnection: keep-alive\nReferer: https://test.co/index.php\nCookie: Formp=e70cja0sp2gcidna2baifhjp8g55kggj\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 86\n\nFormp=e70cja0sp2gcidna2baifhjp8g55kggj&_mode=user_confirm&_token=&next.x=107&next.y=12");
         OriginalText.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 OriginalTextMousePressed(evt);
@@ -1081,11 +899,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
     private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
         // TODO add your handling code here:
-        if(regexactionwin!=null){
-            StyledDocument doc = OriginalText.getStyledDocument();
-            if (doc instanceof StyledDocumentWithChunk) {
-                regexactionwin.ParmGenRegexSaveAction(CastUtils.castToType(doc));
+        if(regexactionwin!=null && this.docwithchunk != null){
+            int selIndex = TextTab.getSelectedIndex();//tabbedpanes selectedidx 0start..
+            if (selIndex == 1) { // hex dump view
+                if (this.docwithchunk.isRequest()) {
+                    hexdata = hexModel.getData();
+                    this.docwithchunk.updateRequest(hexdata);
+                }
             }
+            regexactionwin.ParmGenRegexSaveAction(this.docwithchunk);
             dispose();
             return;
         }

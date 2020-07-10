@@ -372,7 +372,8 @@ public class ParmGen {
                             if (cpos != 0) { // cpos->npos == partdata
                                 partdata = _contarray.subBytes(cpos, npos);
                                 partenc = ParmVars.enc.getIANACharsetName();
-                                // Determine partenc: multi-part content encoding from Content-Type header in multipart.
+                                // Determine partenc: multi-part content encoding from Content-Type
+                                // header in multipart.
                                 int hend = _contarray.indexOf(headerseparator, cpos);
                                 if (hend != -1 && hend < npos && hend - cpos > 50) {
                                     partheader = _contarray.subBytes(cpos, hend);

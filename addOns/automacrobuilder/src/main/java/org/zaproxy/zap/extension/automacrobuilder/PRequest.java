@@ -139,7 +139,7 @@ public class PRequest extends ParseHTTPHeaders {
             }
         }
 
-        int endOfData = tbodies.length;
+        int endOfData = tbodies != null ? tbodies.length : 0;
         int partno = 0;
         // create requestheader chunks
         byte[] reqheaderchunks = theaders.getBytes();
