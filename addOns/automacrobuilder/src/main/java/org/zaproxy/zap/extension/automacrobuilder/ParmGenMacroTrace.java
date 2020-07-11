@@ -767,43 +767,68 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void sendToRepeater(int pos) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponse(pos)) != null) {
-            setToolBaseLine(pqr);
-            String host = pqr.request.getHost();
-            int port = pqr.request.getPort();
-            boolean useHttps = pqr.request.isSSL();
-            ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
-            pmtParams.setSelectedRequestNo(pos);
-            pqr.request.setParamsCustomHeader(pmtParams);
-            burpSendToRepeater(
-                    host, port, useHttps, pqr.request.getByteMessage(), "MacroBuilder:" + pos);
+            PRequestResponse pqrclone = pqr.clone();
+            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            if (doc != null) {
+                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
+                if (prequest != null) {
+                    pqrclone.updateRequest(prequest);
+                }
+                setToolBaseLine(pqrclone);
+                String host = pqrclone.request.getHost();
+                int port = pqrclone.request.getPort();
+                boolean useHttps = pqrclone.request.isSSL();
+                ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
+                pmtParams.setSelectedRequestNo(pos);
+                pqrclone.request.setParamsCustomHeader(pmtParams);
+                burpSendToRepeater(
+                        host, port, useHttps, pqrclone.request.getByteMessage(), "MacroBuilder:" + pos);
+            }
+
         }
     }
 
     public void sendToScanner(int pos) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponse(pos)) != null) {
-            setToolBaseLine(null);
-            String host = pqr.request.getHost();
-            int port = pqr.request.getPort();
-            boolean useHttps = pqr.request.isSSL();
-            ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
-            pmtParams.setSelectedRequestNo(pos);
-            pqr.request.setParamsCustomHeader(pmtParams);
-            burpDoActiveScan(host, port, useHttps, pqr.request.getByteMessage());
+            PRequestResponse pqrclone = pqr.clone();
+            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            if (doc != null) {
+                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
+                if (prequest != null) {
+                    pqrclone.updateRequest(prequest);
+                }
+                setToolBaseLine(null);
+                String host = pqrclone.request.getHost();
+                int port = pqrclone.request.getPort();
+                boolean useHttps = pqrclone.request.isSSL();
+                ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
+                pmtParams.setSelectedRequestNo(pos);
+                pqrclone.request.setParamsCustomHeader(pmtParams);
+                burpDoActiveScan(host, port, useHttps, pqrclone.request.getByteMessage());
+            }
         }
     }
 
     public void sendToIntruder(int pos) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponse(pos)) != null) {
-            setToolBaseLine(null);
-            String host = pqr.request.getHost();
-            int port = pqr.request.getPort();
-            boolean useHttps = pqr.request.isSSL();
-            ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
-            pmtParams.setSelectedRequestNo(pos);
-            pqr.request.setParamsCustomHeader(pmtParams);
-            burpSendToIntruder(host, port, useHttps, pqr.request.getByteMessage());
+            PRequestResponse pqrclone = pqr.clone();
+            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            if (doc != null) {
+                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
+                if (prequest != null) {
+                    pqrclone.updateRequest(prequest);
+                }
+                setToolBaseLine(null);
+                String host = pqrclone.request.getHost();
+                int port = pqrclone.request.getPort();
+                boolean useHttps = pqrclone.request.isSSL();
+                ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
+                pmtParams.setSelectedRequestNo(pos);
+                pqrclone.request.setParamsCustomHeader(pmtParams);
+                burpSendToIntruder(host, port, useHttps, pqrclone.request.getByteMessage());
+            }
         }
     }
 
