@@ -164,11 +164,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if (rlist != null) {
             PRequestResponse pqr = rlist.get(cpos);
 
-            String reqstr = pqr.request.getMessage();
             ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
             reqdoc.setRequestChunks(pqr.request);
 
-            String resstr = pqr.response.getMessage();
             ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
             resdoc.setResponseChunks(pqr.response);
 
@@ -1481,10 +1479,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if(pmt!=null){
             PRequestResponse pqr = pmt.getRequestResponseCurrentList(pos);
             if (pqr != null) {
-                String text = MacroRequest.getText();
-                StyledDocumentWithChunk chunkdoc = new StyledDocumentWithChunk(pqr.request);
-                chunkdoc.updateRequestFromText(text);
-                new ParmGenRegex(this, reg, chunkdoc).setVisible(true);
+                StyledDocumentWithChunk chunkdoc = this.getMacroRequestStyledDocument();
+                if (chunkdoc != null) {
+                    StyledDocumentWithChunk newchunkdoc = new StyledDocumentWithChunk(chunkdoc); // newchunkdoc is newly created and independent from chunkdoc.
+                    new ParmGenRegex(this, reg, newchunkdoc).setVisible(true);
+                }
             }
         }
       
@@ -1727,7 +1726,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PRequestResponse prr = pmt.getOriginalRequest(idx);
             if (prr != null) {
                 PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
-                current.updateRequestResponse(prr.request, prr.response);
+                current.updateRequestResponse(prr.request.clone(), prr.response.clone());
                 ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
                 reqdoc.setRequestChunks(prr.request);
                 ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
@@ -1743,7 +1742,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
             StyledDocumentWithChunk doc = this.getMacroRequestStyledDocument();
             if (doc != null) {
-                PRequest newrequest = doc.reBuildChunkPRequestFromDocText();
+                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks(); // request newly created from DocText and Chunks
                 current.request = newrequest;
 
                 PRequestResponse original = pmt.getOriginalRequest(idx);
@@ -1784,7 +1783,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int idx = getCurrentSelectedRequestIndex();
         if(rlist != null && idx > -1 &&  idx < rlist.size()){
             try {
-                PRequest newrequest = doc.reBuildChunkPRequestFromDocText();
+                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();
                 if (newrequest != null) {
                     pmt.updateRequestCurrentList(idx, newrequest);
                     ParmGenTextDoc ndoc = new ParmGenTextDoc(MacroRequest);

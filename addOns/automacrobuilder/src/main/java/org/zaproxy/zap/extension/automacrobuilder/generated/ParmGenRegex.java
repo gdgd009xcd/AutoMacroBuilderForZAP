@@ -447,13 +447,12 @@ public class ParmGenRegex extends javax.swing.JDialog {
                 if (this.docwithchunk != null){
                     switch(selIndex) {
                         case 1:
-                            PRequest request = this.docwithchunk.reBuildChunkPRequestFromDocText();
-                            hexdata = request.getByteMessage();
+                            hexdata = this.docwithchunk.getBytes();
                             hexModel.setData(hexdata);
                             break;
                         default:
                             hexdata = hexModel.getData();
-                            this.docwithchunk.updateRequest(hexdata);
+                            this.docwithchunk.updateStyleDocAndChunkFromHex(hexdata);
                             OriginalText.repaint();
                             break;
                     }
@@ -904,7 +903,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
             if (selIndex == 1) { // hex dump view
                 if (this.docwithchunk.isRequest()) {
                     hexdata = hexModel.getData();
-                    this.docwithchunk.updateRequest(hexdata);
+                    this.docwithchunk.updateStyleDocAndChunkFromHex(hexdata);
                 }
             }
             regexactionwin.ParmGenRegexSaveAction(this.docwithchunk);

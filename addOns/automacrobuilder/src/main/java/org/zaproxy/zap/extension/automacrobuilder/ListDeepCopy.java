@@ -64,4 +64,16 @@ public class ListDeepCopy {
         List<PRequestResponse> dest = new ArrayList<>();
         return listDeepCopyVClone(src, dest);
     }
+
+    /**
+     * Deeop copy List<RequestChunk>
+     *
+     * @param src
+     * @return
+     */
+    public static List<RequestChunk> listDeepCopyRequestChunk(List<RequestChunk> src) {
+        if (src == null) return null;
+        List<RequestChunk> dest = new ArrayList<>();
+        return listDeepCopyVClone(src, dest);
+    }
 }

@@ -23,16 +23,50 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.text.BadLocationException;
 
 public class PRequest extends ParseHTTPHeaders {
 
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
+    private List<RequestChunk> chunks = null;
+    private String doctext = null;
+
     public PRequest(String h, int p, boolean ssl, byte[] _binmessage, Encode _pageenc) {
         super(h, p, ssl, _binmessage, _pageenc);
+    }
+
+    /**
+     * handover chunks, doctext from chunkdoc to this instance
+     *
+     * @param h
+     * @param p
+     * @param ssl
+     * @param _binmessage
+     * @param _pageenc
+     * @param chunkdoc
+     */
+    public PRequest(
+            String h,
+            int p,
+            boolean ssl,
+            byte[] _binmessage,
+            Encode _pageenc,
+            StyledDocumentWithChunk chunkdoc) {
+        super(h, p, ssl, _binmessage, _pageenc);
+        if (chunkdoc != null) {
+            chunks = chunkdoc.getRequestChunks();
+            try {
+                doctext = chunkdoc.getText(0, chunkdoc.getLength());
+            } catch (BadLocationException ex) {
+                Logger.getLogger(PRequest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public PRequest newRequestWithRemoveSpecialChars(String regex) { // remove section chars
@@ -54,57 +88,8 @@ public class PRequest extends ParseHTTPHeaders {
     @Override
     public PRequest clone() {
         PRequest nobj = (PRequest) super.clone();
+        nobj.chunks = ListDeepCopy.listDeepCopyRequestChunk(this.chunks);
         return nobj;
-    }
-
-    public static class RequestChunk {
-        public enum CHUNKTYPE {
-            REQUESTHEADER, // HEADER<CR><LF>HEADER<CRLF><CRLF>
-            BOUNDARY, // -----------------------------178155009418426923672012858312<CR><LF>
-            BOUNDARYHEADER, // Content-Disposition: form-data; name="imgfile";
-            // filename="romischenreiches.jpg"<CR><LF>Content-Type:
-            // image/jpeg<CR><LF><CR><LF>
-            CONTENTS, // [binary](without CONTENTSEND)
-            CONTENTSEND, // <CR><LF>
-            LASTBOUNDARY, // -----------------------------178155009418426923672012858312--<CR><LF>
-        };
-
-        CHUNKTYPE ctype;
-        byte[] data;
-        int partno;
-
-        RequestChunk(CHUNKTYPE ctype, byte[] data, int partno) {
-            this.ctype = ctype;
-            this.data = data;
-            this.partno = partno;
-        }
-
-        /**
-         * Get getChunkType
-         *
-         * @return
-         */
-        public CHUNKTYPE getChunkType() {
-            return this.ctype;
-        }
-
-        /**
-         * Get byte data
-         *
-         * @return
-         */
-        public byte[] getBytes() {
-            return this.data;
-        }
-
-        /**
-         * multi-part number from 0
-         *
-         * @return
-         */
-        public int getPartNo() {
-            return this.partno;
-        }
     }
 
     /**
@@ -113,13 +98,33 @@ public class PRequest extends ParseHTTPHeaders {
      * @return
      */
     public List<RequestChunk> getRequestChunks() {
-        String theaders = getHeaderOnly();
-        byte[] tbodies = getBodyBytes();
-        String tcontent_type = getHeader("Content-Type");
-        return getRequestChunks(theaders, tbodies, tcontent_type);
+        if (this.chunks == null) {
+            String theaders = getHeaderOnly();
+            byte[] tbodies = getBodyBytes();
+            String tcontent_type = getHeader("Content-Type");
+            this.chunks = getRequestChunks(theaders, tbodies, tcontent_type);
+        }
+        return this.chunks;
     }
 
-    public List<RequestChunk> getRequestChunks(
+    /**
+     * set doc text from StyledDocumentWithChunks(representating for PRequest)
+     *
+     * @param text
+     */
+    public void setDocText(StyledDocumentWithChunk doc) {
+        try {
+            this.doctext = doc.getText(doc.getLength(), 0);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(PRequest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public String getDocText() {
+        return this.doctext;
+    }
+
+    private List<RequestChunk> getRequestChunks(
             String theaders, byte[] tbodies, String tcontent_type) {
         List<RequestChunk> reqchunks = new ArrayList<>();
         byte[] headerseparator = {0x0d, 0x0a, 0x0d, 0x0a}; // <CR><LF><CR><LF>
@@ -144,8 +149,7 @@ public class PRequest extends ParseHTTPHeaders {
         // create requestheader chunks
         byte[] reqheaderchunks = theaders.getBytes();
         RequestChunk chunk =
-                new RequestChunk(
-                        PRequest.RequestChunk.CHUNKTYPE.REQUESTHEADER, theaders.getBytes(), partno);
+                new RequestChunk(RequestChunk.CHUNKTYPE.REQUESTHEADER, theaders.getBytes(), partno);
         reqchunks.add(chunk);
 
         if (tboundarywithoutcrlf != null && !tboundarywithoutcrlf.isEmpty()) { // form-data
@@ -162,6 +166,7 @@ public class PRequest extends ParseHTTPHeaders {
                 if (cpos > 0) {
                     int hend = _contarray.indexOf(headerseparator, cpos);
                     int contstartpos = hend + headerseparator.length;
+                    String displayableimgtype = "";
                     if (hend != -1
                             && hend >= cpos
                             && hend + headerseparator.length
@@ -171,20 +176,29 @@ public class PRequest extends ParseHTTPHeaders {
                                         cpos, hend + headerseparator.length); // mutipart headers
                         chunk =
                                 new RequestChunk(
-                                        PRequest.RequestChunk.CHUNKTYPE.BOUNDARYHEADER,
+                                        RequestChunk.CHUNKTYPE.BOUNDARYHEADER,
                                         boundaryheader,
                                         partno);
                         reqchunks.add(chunk);
+                        String header = new String(chunk.getBytes());
+                        List<String> matches =
+                                ParmGenUtil.getRegexMatchGroups(
+                                        "Content-Type: image/(jpeg|png|gif)", header);
+                        if (matches.size() > 0) {
+                            displayableimgtype = matches.get(0);
+                        }
                     } else { // no header.
                         contstartpos = cpos;
                     }
 
                     int contendpos = npos - 2;
                     if (contendpos > contstartpos) {
+                        RequestChunk.CHUNKTYPE chunktype =
+                                displayableimgtype.isEmpty()
+                                        ? RequestChunk.CHUNKTYPE.CONTENTS
+                                        : RequestChunk.CHUNKTYPE.CONTENTSIMG;
                         byte[] contents = _contarray.subBytes(contstartpos, contendpos);
-                        chunk =
-                                new RequestChunk(
-                                        PRequest.RequestChunk.CHUNKTYPE.CONTENTS, contents, partno);
+                        chunk = new RequestChunk(chunktype, contents, partno);
                         reqchunks.add(chunk);
                     } else if (npos > contstartpos) { // No CONTENT but has CONTENTSEND.
                         contendpos = contstartpos;
@@ -196,7 +210,7 @@ public class PRequest extends ParseHTTPHeaders {
                         byte[] contentsendbytes = _contarray.subBytes(contendpos, npos);
                         chunk =
                                 new RequestChunk(
-                                        PRequest.RequestChunk.CHUNKTYPE.CONTENTSEND,
+                                        RequestChunk.CHUNKTYPE.CONTENTSEND,
                                         contentsendbytes,
                                         partno);
                         reqchunks.add(chunk);
@@ -225,7 +239,7 @@ public class PRequest extends ParseHTTPHeaders {
                         // last hyphon "--" + CRLF
                         chunk =
                                 new RequestChunk(
-                                        PRequest.RequestChunk.CHUNKTYPE.LASTBOUNDARY,
+                                        RequestChunk.CHUNKTYPE.LASTBOUNDARY,
                                         lastboundarybytescrlf,
                                         partno);
                         reqchunks.add(chunk);
@@ -236,9 +250,7 @@ public class PRequest extends ParseHTTPHeaders {
                         byte[] boundarybytescrlf = _contarray.subBytes(npos, nextcpos);
                         chunk =
                                 new RequestChunk(
-                                        PRequest.RequestChunk.CHUNKTYPE.BOUNDARY,
-                                        boundarybytescrlf,
-                                        partno);
+                                        RequestChunk.CHUNKTYPE.BOUNDARY, boundarybytescrlf, partno);
                         reqchunks.add(chunk);
                     }
                     cpos = nextcpos;
@@ -255,23 +267,19 @@ public class PRequest extends ParseHTTPHeaders {
                     byte[] boundarybytes = _contarray.subBytes(npos, cpos);
                     chunk =
                             new RequestChunk(
-                                    PRequest.RequestChunk.CHUNKTYPE.BOUNDARY,
-                                    boundarybytes,
-                                    partno);
+                                    RequestChunk.CHUNKTYPE.BOUNDARY, boundarybytes, partno);
                     reqchunks.add(chunk);
                 }
             }
             if (cpos < tbodies.length) {
                 partno++;
                 byte[] gabagebytes = _contarray.subBytes(cpos, tbodies.length);
-                chunk =
-                        new RequestChunk(
-                                PRequest.RequestChunk.CHUNKTYPE.CONTENTS, gabagebytes, partno);
+                chunk = new RequestChunk(RequestChunk.CHUNKTYPE.CONTENTS, gabagebytes, partno);
                 reqchunks.add(chunk);
             }
         } else { // simple request. headers<CR><LF>contents.
             if (tbodies != null && tbodies.length > 0) {
-                chunk = new RequestChunk(PRequest.RequestChunk.CHUNKTYPE.CONTENTS, tbodies, partno);
+                chunk = new RequestChunk(RequestChunk.CHUNKTYPE.CONTENTS, tbodies, partno);
                 reqchunks.add(chunk);
             }
         }

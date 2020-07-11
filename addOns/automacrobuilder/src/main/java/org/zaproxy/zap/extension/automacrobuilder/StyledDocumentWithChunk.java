@@ -31,6 +31,8 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
     private Style CRstyle = null;
 
+    private static int PARTNO_MAXLEN = 4;
+
     public static final String RESOURCES =
             "/org/zaproxy/zap/extension/automacrobuilder/zap/resources";
 
@@ -47,7 +49,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     String host;
     int port;
     boolean isSSL;
-    List<PRequest.RequestChunk> requestChunks = null;
+    List<RequestChunk> requestChunks = null;
     List<PResponse.ResponseChunk> responseChunks = null;
 
     public StyledDocumentWithChunk(PRequest prequest) {
@@ -66,6 +68,39 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     /**
+     * create instance from specified chunkdoc this.requestChunks are deepcopied from
+     * chunkdoc.requestChunks. thus this instance is independent from specified chunkdoc.
+     *
+     * @param chunkdoc
+     */
+    public StyledDocumentWithChunk(StyledDocumentWithChunk chunkdoc) {
+        super();
+        if (chunkdoc != null) {
+            if (chunkdoc.isRequest()) {
+                LOGGER4J.debug("chunkdoc is REQUEST");
+                enc = chunkdoc.enc;
+                host = chunkdoc.host;
+                port = chunkdoc.port;
+                isSSL = chunkdoc.isSSL;
+                requestChunks =
+                        ListDeepCopy.listDeepCopyRequestChunk(
+                                chunkdoc.requestChunks); // copy from source
+                try {
+                    generateStyledDocFromRequestText(chunkdoc.getText(0, chunkdoc.getLength()));
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(StyledDocumentWithChunk.class.getName())
+                            .log(Level.SEVERE, null, ex);
+                }
+            } else {
+                LOGGER4J.debug("chunkdoc is RESPONSE");
+                enc = chunkdoc.enc;
+                byte[] resbin = chunkdoc.getBytes();
+                PResponse response = new PResponse(resbin, enc);
+                updateResponse(response);
+            }
+        }
+    }
+    /**
      * this document for Prequest or not.
      *
      * @return
@@ -74,7 +109,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         return requestChunks != null ? true : false;
     }
 
-    public List<PRequest.RequestChunk> getRequestChunks() {
+    public List<RequestChunk> getRequestChunks() {
         return requestChunks;
     }
 
@@ -83,22 +118,26 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     /**
-     * Rebuild Chunk PRequest from intenal text
+     * Rebuild PRequest from intenal text and chunks. This method no affects contents of this.
      *
      * @param text
      * @return
      */
-    public PRequest reBuildChunkPRequestFromDocText() {
-        return reBuildChunkPRequestFromDocText(null);
+    public PRequest reBuildPRequestFromDocTextAndChunks() {
+        byte[] data = reBuildPRequestFromDocTextAndChunks(null);
+        if (data != null) {
+            return new PRequest(host, port, isSSL, data, enc, this);
+        }
+        return null;
     }
 
     /**
-     * Rebuild Chunk PRequest from specified(or intenal) text
+     * Rebuild PRequest from specified(or intenal) text This method no affects contents of this.
      *
      * @param text
      * @return
      */
-    private PRequest reBuildChunkPRequestFromDocText(String text) {
+    private byte[] reBuildPRequestFromDocTextAndChunks(String text) {
         if (requestChunks == null) return null;
         try {
             if (text == null || text.isEmpty()) {
@@ -117,21 +156,25 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 resultarray.concat(contarray.subBytes(cpos, npos));
                 cpos = npos + PLS_PREFIX.length;
                 if ((sfxstpos = contarray.indexOf(PLS_SUFFIX, cpos)) != -1) {
-                    if (sfxstpos > cpos && sfxstpos - cpos <= 3) {
+                    if (sfxstpos > cpos && sfxstpos - cpos <= PARTNO_MAXLEN) {
                         String nstr = new String(contarray.subBytes(cpos, sfxstpos), charset);
                         if (nstr.matches("[0-9]+")) {
                             int partno = Integer.parseInt(nstr);
-                            Optional<PRequest.RequestChunk> ochunk =
+                            Optional<RequestChunk> ochunk =
                                     requestChunks.stream()
                                             .filter(
                                                     c ->
-                                                            c.getChunkType()
-                                                                            == PRequest.RequestChunk
-                                                                                    .CHUNKTYPE
-                                                                                    .CONTENTS
+                                                            (c.getChunkType()
+                                                                                    == RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTS
+                                                                            || c.getChunkType()
+                                                                                    == RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTSIMG)
                                                                     && c.getPartNo() == partno)
                                             .findFirst();
-                            PRequest.RequestChunk resultchunk = ochunk.orElse(null);
+                            RequestChunk resultchunk = ochunk.orElse(null);
                             if (resultchunk != null && resultchunk.getBytes().length > 0) {
                                 resultarray.concat(resultchunk.getBytes());
                             }
@@ -143,9 +186,9 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
             if (cpos < docbytes.length) {
                 resultarray.concat(contarray.subBytes(cpos, docbytes.length));
             }
-            PRequest newrequest = new PRequest(host, port, isSSL, resultarray.getBytes(), enc);
-            requestChunks = newrequest.getRequestChunks();
-            return newrequest;
+
+            // requestChunks = newrequest.getRequestChunks();
+            return resultarray.getBytes();
         } catch (BadLocationException ex) {
             Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -157,19 +200,84 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
      * port, isSSL, enc parameter is No changed. so if you need to update these 4 params then you
      * must newly create this instance.
      *
-     * @param reqbin
+     * @param hexbytes
      */
-    public void updateRequest(byte[] reqbin) {
-        PRequest newrequest = null;
+    public void updateStyleDocAndChunkFromHex(byte[] hexbytes) {
+        if (hexbytes == null) return;
+        Charset charset = enc.getIANACharset();
+        String doctext = "";
 
         try {
-            newrequest = new PRequest(host, port, isSSL, reqbin, enc);
-        } catch (Exception e) {
+            doctext = this.getText(0, this.getLength());
+        } catch (BadLocationException ex) {
+            Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
 
-        if (newrequest == null) return;
-        updateRequest(newrequest);
+        byte[] docbytes = doctext.getBytes(charset);
+        ParmGenBinUtil docarray = new ParmGenBinUtil(docbytes);
+        ParmGenBinUtil hexarray = new ParmGenBinUtil(hexbytes);
+        ParmGenBinUtil resultarray = new ParmGenBinUtil();
+        byte[] PLS_PREFIX = CONTENTS_PLACEHOLDER_PREFIX.getBytes();
+        byte[] PLS_SUFFIX = CONTENTS_PLACEHOLDER_SUFFIX.getBytes();
+        int npos = -1;
+        int cpos = 0;
+        int hpos = 0;
+        while ((npos = docarray.indexOf(PLS_PREFIX, cpos)) != -1) {
+            int siz = 0;
+            if (npos > cpos) {
+                siz = npos - cpos;
+                resultarray.concat(hexarray.subBytes(hpos, hpos + siz));
+                hpos += siz;
+            }
+            cpos = npos + PLS_PREFIX.length;
+            resultarray.concat(PLS_PREFIX);
+
+            if ((npos = docarray.indexOf(PLS_SUFFIX, cpos)) != -1) {
+                if (npos > cpos && npos - cpos <= PARTNO_MAXLEN) {
+                    byte[] partnobytes = docarray.subBytes(cpos, npos);
+                    String partnostr = new String(partnobytes, charset);
+                    if (partnostr.matches("[0-9]+")) {
+                        int partno = Integer.parseInt(partnostr);
+                        Optional<RequestChunk> ochunk =
+                                requestChunks.stream()
+                                        .filter(
+                                                c ->
+                                                        (c.getChunkType()
+                                                                                == RequestChunk
+                                                                                        .CHUNKTYPE
+                                                                                        .CONTENTS
+                                                                        || c.getChunkType()
+                                                                                == RequestChunk
+                                                                                        .CHUNKTYPE
+                                                                                        .CONTENTSIMG)
+                                                                && c.getPartNo() == partno)
+                                        .findFirst();
+                        RequestChunk resultchunk = ochunk.orElse(null);
+                        if (resultchunk != null) {
+                            siz = resultchunk.getBytes().length;
+                            if (siz > 0) {
+                                // update resultChunk.data with hexdata.
+                                resultchunk.setByte(hexarray.subBytes(hpos, hpos + siz));
+                                LOGGER4J.debug(
+                                        "update chunk from hexdata partno:"
+                                                + partno
+                                                + " siz="
+                                                + siz);
+                                hpos += siz;
+                            }
+                        }
+                    }
+                }
+                npos += PLS_SUFFIX.length;
+                resultarray.concat(docarray.subBytes(cpos, npos));
+                cpos = npos;
+            }
+        }
+        if (hpos < hexbytes.length) {
+            resultarray.concat(hexarray.subBytes(hpos, hexbytes.length));
+        }
+        generateStyledDocFromRequestText(new String(resultarray.getBytes(), charset));
     }
 
     /**
@@ -178,19 +286,20 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
      * @return
      */
     public byte[] getBytes() {
-        ParmGenBinUtil bb = new ParmGenBinUtil();
         if (requestChunks != null) {
-            requestChunks.forEach(
-                    chunk -> {
-                        bb.concat(chunk.getBytes());
-                    });
+            byte[] reqbin = reBuildPRequestFromDocTextAndChunks(null);
+            if (reqbin != null) {
+                return reqbin;
+            }
         } else if (responseChunks != null) {
+            ParmGenBinUtil bb = new ParmGenBinUtil();
             responseChunks.forEach(
                     chunk -> {
                         bb.concat(chunk.getBytes());
                     });
+            return bb.getBytes();
         }
-        return bb.getBytes();
+        return null;
     }
 
     /**
@@ -203,19 +312,16 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         requestChunks = newrequest.getRequestChunks();
         responseChunks = null;
 
-        // update StyledDocument with requestChunk
-        updateRequest();
-    }
+        String text = newrequest.getDocText();
 
-    public void updateRequestFromText(String text) {
-
-        if (requestChunks == null) return;
-
-        // update requestChunk with text.
-        reBuildChunkPRequestFromDocText(text);
-
-        // update StyledDocument with requestChunk
-        updateRequest();
+        if (text != null && text.length() > 0) {
+            // update StyledDocument with text
+            generateStyledDocFromRequestText(text);
+        } else {
+            // update StyledDocument with requestChunk
+            updateRequest();
+            newrequest.setDocText(this);
+        }
     }
 
     /** update StyledDocument with requestChunk */
@@ -236,12 +342,12 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
         Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 
-        List<PRequest.RequestChunk> chunks = requestChunks;
+        List<RequestChunk> chunks = requestChunks;
 
         int pos = 0;
         String displayableimgtype = "";
         try {
-            for (PRequest.RequestChunk chunk : chunks) {
+            for (RequestChunk chunk : chunks) {
                 String element = "";
                 switch (chunk.getChunkType()) {
                     case REQUESTHEADER:
@@ -270,19 +376,47 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                         + new String(chunk.getBytes(), pageenc.getIANACharset())
                                         + "]");
                         element = new String(chunk.getBytes(), pageenc.getIANACharset());
-                        displayableimgtype = "";
-                        List<String> matches =
-                                ParmGenUtil.getRegexMatchGroups(
-                                        "Content-Type: image/(jpeg|png|gif)", element);
-                        matches.forEach(s -> LOGGER4J.debug(s));
-                        if (!matches.isEmpty()) {
-                            displayableimgtype = matches.get(0);
-                        }
                         // insertString(pos, element, null);
                         insertStringCR(pos, element);
                         break;
+                    case CONTENTSIMG:
+                        {
+                            Style s = null;
+                            if (chunk.getBytes().length > 20000) {
+                                // s = doc.getStyle("binary");
+                                String partno =
+                                        CONTENTS_PLACEHOLDER_PREFIX
+                                                + chunk.getPartNo()
+                                                + CONTENTS_PLACEHOLDER_SUFFIX;
+                                ImageIcon icon = null;
+
+                                try {
+                                    icon = new ImageIcon(chunk.getBytes(), partno);
+                                } catch (Exception e) {
+                                    icon = new ImageIcon(BRKICONURL, partno);
+                                }
+                                // doc.addStyle(partno, def);
+                                s = makeStyleImageButton(def, icon, partno);
+                                LOGGER4J.debug("@CONTENTS length:" + chunk.getBytes().length);
+                                element = partno;
+                            } else {
+                                s = null;
+                                LOGGER4J.debug(
+                                        "@CONTENTS["
+                                                + new String(
+                                                        chunk.getBytes(), pageenc.getIANACharset())
+                                                + "]");
+                                element = new String(chunk.getBytes(), pageenc.getIANACharset());
+                            }
+
+                            if (s == null) {
+                                insertStringCR(pos, element);
+                            } else {
+                                insertString(pos, element, s);
+                            }
+                        }
+                        break;
                     case CONTENTS:
-                        element = new String(chunk.getBytes(), pageenc.getIANACharset());
                         Style s = null;
                         if (chunk.getBytes().length > 20000) {
                             // s = doc.getStyle("binary");
@@ -290,16 +424,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                     CONTENTS_PLACEHOLDER_PREFIX
                                             + chunk.getPartNo()
                                             + CONTENTS_PLACEHOLDER_SUFFIX;
-                            ImageIcon icon = null;
-                            if (displayableimgtype.isEmpty()) {
-                                icon = new ImageIcon(BINICONURL, partno);
-                            } else {
-                                try {
-                                    icon = new ImageIcon(chunk.getBytes(), partno);
-                                } catch (Exception e) {
-                                    icon = new ImageIcon(BRKICONURL, partno);
-                                }
-                            }
+                            ImageIcon icon = new ImageIcon(BINICONURL, partno);
                             // doc.addStyle(partno, def);
                             s = makeStyleImageButton(def, icon, partno);
                             LOGGER4J.debug("@CONTENTS length:" + chunk.getBytes().length);
@@ -310,6 +435,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                     "@CONTENTS["
                                             + new String(chunk.getBytes(), pageenc.getIANACharset())
                                             + "]");
+                            element = new String(chunk.getBytes(), pageenc.getIANACharset());
                         }
 
                         if (s == null) {
@@ -487,6 +613,103 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 Logger.getLogger(StyledDocumentWithChunk.class.getName())
                         .log(Level.SEVERE, null, ex);
             }
+        }
+    }
+
+    /**
+     * Generate StyledDocument from RequestText
+     *
+     * @param text
+     */
+    private void generateStyledDocFromRequestText(String requesttext) {
+
+        if (requesttext == null || requesttext.isEmpty() || requestChunks == null) return;
+
+        try {
+            this.remove(0, this.getLength());
+        } catch (BadLocationException ex) {
+            Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        int npos = -1;
+        int cpos = 0;
+        while ((npos = requesttext.indexOf(CONTENTS_PLACEHOLDER_PREFIX, cpos)) != -1) {
+            LOGGER4J.debug("CONTENTS_PLACEHOLDER_PREFIX found");
+            if (npos > cpos) {
+                insertStringCR(this.getLength(), requesttext.substring(cpos, npos));
+            }
+            cpos = npos;
+            String element = CONTENTS_PLACEHOLDER_PREFIX;
+            Style s = null;
+            int pnopos = cpos + CONTENTS_PLACEHOLDER_PREFIX.length(); // partno start position
+            if ((npos = requesttext.indexOf(CONTENTS_PLACEHOLDER_SUFFIX, pnopos)) != -1) {
+                LOGGER4J.debug(
+                        "CONTENTS_PLACEHOLDER_SUFFIX found npos,cpos="
+                                + npos
+                                + ","
+                                + pnopos
+                                + " ["
+                                + requesttext.substring(pnopos, npos)
+                                + "]");
+                if (npos > pnopos && npos - pnopos <= PARTNO_MAXLEN) {
+                    element =
+                            CONTENTS_PLACEHOLDER_PREFIX
+                                    + requesttext.substring(pnopos, npos)
+                                    + CONTENTS_PLACEHOLDER_SUFFIX;
+                    LOGGER4J.debug("element[" + element + "]");
+                    String nstr = requesttext.substring(pnopos, npos).trim();
+                    if (nstr.matches("[0-9]+")) {
+                        int partno = Integer.parseInt(nstr);
+                        String partnostr = Integer.toString(partno);
+                        Optional<RequestChunk> ochunks =
+                                requestChunks.stream()
+                                        .filter(
+                                                c ->
+                                                        (c.getChunkType()
+                                                                                == RequestChunk
+                                                                                        .CHUNKTYPE
+                                                                                        .CONTENTS
+                                                                        || c.getChunkType()
+                                                                                == RequestChunk
+                                                                                        .CHUNKTYPE
+                                                                                        .CONTENTSIMG)
+                                                                && c.getPartNo() == partno)
+                                        .findFirst();
+                        RequestChunk content_chunk = ochunks.orElse(null);
+                        if (content_chunk != null && content_chunk.getBytes().length > 0) {
+                            ImageIcon icon = null;
+                            if (content_chunk.getChunkType() == RequestChunk.CHUNKTYPE.CONTENTS) {
+                                icon = new ImageIcon(BINICONURL, partnostr);
+                            } else { // diplayable image
+                                try {
+                                    icon = new ImageIcon(content_chunk.getBytes(), partnostr);
+                                } catch (Exception e) {
+                                    icon = new ImageIcon(BRKICONURL, partnostr);
+                                }
+                            }
+                            // doc.addStyle(partno, def);
+                            Style defstyle =
+                                    StyleContext.getDefaultStyleContext()
+                                            .getStyle(StyleContext.DEFAULT_STYLE);
+                            s = makeStyleImageButton(defstyle, icon, partnostr);
+                        }
+                    }
+                }
+            }
+            if (s != null) {
+                try {
+                    this.insertString(this.getLength(), element, s);
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(StyledDocumentWithChunk.class.getName())
+                            .log(Level.SEVERE, null, ex);
+                }
+            } else {
+                insertStringCR(this.getLength(), element);
+            }
+            cpos += element.length();
+        }
+        if (cpos < requesttext.length()) {
+            insertStringCR(this.getLength(), requesttext.substring(cpos, requesttext.length()));
         }
     }
 }
