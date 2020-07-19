@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -110,11 +111,11 @@ public class PRequest extends ParseHTTPHeaders {
     /**
      * set doc text from StyledDocumentWithChunks(representating for PRequest)
      *
-     * @param text
+     * @param doc
      */
     public void setDocText(StyledDocumentWithChunk doc) {
         try {
-            this.doctext = doc.getText(doc.getLength(), 0);
+            this.doctext = doc.getText(0, doc.getLength());
         } catch (BadLocationException ex) {
             Logger.getLogger(PRequest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -285,5 +286,116 @@ public class PRequest extends ParseHTTPHeaders {
         }
 
         return reqchunks;
+    }
+
+    /**
+     * update DocText and Chunks with specified chunks
+     *
+     * @param orgchunks
+     */
+    void updateDocAndChunks(List<RequestChunk> orgchunks) {
+
+        if (orgchunks == null) return;
+        // recreate this doctext and chunks from prequest.getBytes();
+        this.chunks = null;
+        this.doctext = null;
+        StyledDocumentWithChunk nouseddoc = new StyledDocumentWithChunk(this);
+
+        Charset charset = getPageEnc().getIANACharset();
+        int npos = -1;
+        int cpos = 0;
+        int placebegin = 0;
+        while ((npos =
+                        this.doctext.indexOf(
+                                StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_PREFIX, cpos))
+                != -1) {
+            placebegin = npos;
+            cpos = npos + StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_PREFIX.length();
+            int beginpos = cpos;
+            if ((npos =
+                            this.doctext.indexOf(
+                                    StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_SUFFIX, cpos))
+                    != -1) {
+                cpos = npos + StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_SUFFIX.length();
+                int endpos = npos;
+                if (endpos - beginpos <= StyledDocumentWithChunk.PARTNO_MAXLEN) {
+                    String partno = this.doctext.substring(beginpos, endpos).trim();
+                    if (partno != null && partno.length() > 0) {
+                        int pno = Integer.parseInt(partno);
+                        if (pno > -1) {
+                            Optional<RequestChunk> optorgchunk =
+                                    orgchunks.stream()
+                                            .filter(
+                                                    c ->
+                                                            c.getPartNo() == pno
+                                                                    && (c.getChunkType()
+                                                                                    == RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTS
+                                                                            || c.getChunkType()
+                                                                                    == RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTSIMG))
+                                            .findFirst();
+                            RequestChunk orgchunk = optorgchunk.orElse(null);
+                            Optional<RequestChunk> optnewchunk =
+                                    this.chunks.stream()
+                                            .filter(
+                                                    c ->
+                                                            c.getPartNo() == pno
+                                                                    && (c.getChunkType()
+                                                                                    == RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTS
+                                                                            || c.getChunkType()
+                                                                                    == RequestChunk
+                                                                                            .CHUNKTYPE
+                                                                                            .CONTENTSIMG))
+                                            .findFirst();
+                            RequestChunk newchunk = optnewchunk.orElse(null);
+                            if (orgchunk != null && newchunk != null) {
+                                ParmGenBinUtil newarray = new ParmGenBinUtil(newchunk.getBytes());
+                                byte[] orgdata = orgchunk.getBytes();
+                                int stp = -1;
+                                int etp = 0;
+                                if ((stp = newarray.indexOf(orgdata)) != -1) {
+                                    byte[] newdata = newarray.getBytes();
+                                    int newdatalen = newdata.length;
+                                    etp = stp + orgdata.length;
+                                    String prefix = "";
+                                    String suffix = "";
+                                    if (stp > 0) {
+                                        prefix = new String(newarray.subBytes(0, stp), charset);
+                                    }
+                                    if (etp < newdatalen) {
+                                        suffix =
+                                                new String(
+                                                        newarray.subBytes(etp, newdatalen),
+                                                        charset);
+                                    }
+                                    this.doctext =
+                                            this.doctext.substring(0, placebegin)
+                                                    + prefix
+                                                    + this.doctext.substring(placebegin, cpos)
+                                                    + suffix
+                                                    + this.doctext.substring(cpos);
+                                    cpos += prefix.length() + suffix.length();
+                                    LOGGER4J.debug(
+                                            "prefix["
+                                                    + prefix
+                                                    + "] chunk.len:"
+                                                    + orgchunk.getBytes().length
+                                                    + " suffix["
+                                                    + suffix
+                                                    + "]");
+                                    newchunk.setByte(orgchunk.getBytes());
+                                    newchunk.setChunkType(orgchunk.getChunkType());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

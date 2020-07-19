@@ -40,6 +40,10 @@ public class RequestChunk implements DeepClone {
         return this.ctype;
     }
 
+    public void setChunkType(CHUNKTYPE c) {
+        this.ctype = c;
+    }
+
     /**
      * Get byte data
      *

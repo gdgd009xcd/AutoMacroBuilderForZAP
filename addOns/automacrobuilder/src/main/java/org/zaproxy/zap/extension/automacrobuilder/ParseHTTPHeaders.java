@@ -1423,10 +1423,11 @@ class ParseHTTPHeaders implements DeepClone {
 
     public ParmGenMacroTraceParams getParamsCustomHeader() {
         String v = getHeader(CUSTOM_PARAMS_HEADERNAME);
-        ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams();
+        ParmGenMacroTraceParams pmtParams = null;
         if (v != null) {
-            pmtParams.setString(v);
+            pmtParams = new ParmGenMacroTraceParams(v);
         }
+
         return pmtParams;
     }
 

@@ -7,6 +7,7 @@ package org.zaproxy.zap.extension.automacrobuilder.generated;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.Document;
@@ -19,17 +20,12 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JOptionPane;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 
 import com.sun.management.VMOption;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCancelAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
@@ -48,6 +44,8 @@ import org.zaproxy.zap.extension.automacrobuilder.StyledDocumentWithChunk;
 @SuppressWarnings("serial")
 public class ParmGenRegex extends javax.swing.JDialog {
 
+    private static final org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
     UndoManager um;
     UndoManager original_um;
     int fidx;
@@ -177,6 +175,19 @@ public class ParmGenRegex extends javax.swing.JDialog {
         }
         
         addHexView(isLabelSaveBtn);
+
+        if (isLabelSaveBtn) {
+            JMenuItem insertCR = new JMenuItem(bundle.getString("ParmGenRegex.insCR.text"));
+            OrigUndoRedoMenu.add(insertCR);
+            insertCR.addActionListener(e -> {
+                int cpos = OriginalText.getCaretPosition();
+                try {
+                    this.docwithchunk.insertString(cpos,"\r", this.docwithchunk.getCRstyle());
+                } catch (BadLocationException badLocationException) {
+                    LOGGER4J.error("", badLocationException);
+                }
+            });
+        }
         
         
         if (this.docwithchunk != null) {

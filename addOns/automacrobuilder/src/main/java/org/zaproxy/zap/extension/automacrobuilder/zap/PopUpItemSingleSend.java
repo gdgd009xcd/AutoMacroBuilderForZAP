@@ -12,6 +12,7 @@ import org.parosproxy.paros.extension.history.ExtensionHistory;
 import org.parosproxy.paros.model.HistoryReference;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.*;
+import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
@@ -24,19 +25,29 @@ public class PopUpItemSingleSend extends JMenuItem {
 
     private HttpSender sender = null;
     private static HttpMethodHelper helper = new HttpMethodHelper();
-    private BeforeMacroDoActionProvider beforemacroprovider = new BeforeMacroDoActionProvider();
-    private PostMacroDoActionProvider postmacroprovider = new PostMacroDoActionProvider();
 
-    PopUpItemSingleSend(MacroBuilderUI mbui, StartedActiveScanContainer acon) {
+    private BeforeMacroDoActionProvider beforemacroprovider = null;
+    private PostMacroDoActionProvider postmacroprovider = null;
+
+    PopUpItemSingleSend(
+            MacroBuilderUI mbui,
+            StartedActiveScanContainer acon,
+            BeforeMacroDoActionProvider beforemacroprovider,
+            PostMacroDoActionProvider postmacroprovider) {
         super(Constant.messages.getString(PREFIX + ".popup.title.PopUpSingleSendForMacroBuilder"));
+        this.beforemacroprovider = beforemacroprovider;
+        this.postmacroprovider = postmacroprovider;
 
         final StartedActiveScanContainer f_acon = acon;
         final MacroBuilderUI f_mbui = mbui;
 
         addActionListener(
                 e -> {
-                    HttpMessage htmess = ZapUtil.getCurrentHttpMessage(f_mbui);
+                    PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
                     int pos = f_mbui.getCurrentSelectedRequestIndex();
+                    HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
+
+                    final ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(pos);
 
                     if (htmess != null) {
                         final Thread t =
@@ -45,9 +56,6 @@ public class PopUpItemSingleSend extends JMenuItem {
                                             @Override
                                             public void run() {
                                                 try {
-                                                    ParmGenMacroTraceParams pmtParams =
-                                                            new ParmGenMacroTraceParams();
-                                                    pmtParams.setSelectedRequestNo(pos);
                                                     f_acon.addParmGenMacroTraceParams(pmtParams);
                                                     HttpSender sender = getHttpSenderInstance();
                                                     beforemacroprovider.setParameters(

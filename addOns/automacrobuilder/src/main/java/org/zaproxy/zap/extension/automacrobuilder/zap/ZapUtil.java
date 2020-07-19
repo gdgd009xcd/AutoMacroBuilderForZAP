@@ -51,6 +51,20 @@ public class ZapUtil {
     }
 
     /**
+     * get PRequest from StyledDocumentWithChunk doc
+     *
+     * @param doc
+     * @return
+     */
+    public static HttpMessage getHttpMessage(StyledDocumentWithChunk doc) {
+        PRequest preq = doc.reBuildPRequestFromDocTextAndChunks();
+        if (preq != null) {
+            return getHttpMessage(preq);
+        }
+        return null;
+    }
+
+    /**
      * Get HttpMessage from PRequest
      *
      * @param preq
@@ -81,23 +95,23 @@ public class ZapUtil {
     }
 
     /**
-     * Get Current Selected HttpMessage in MacroBuilder's RequestList.
+     * Get PRequest from Contents of MacroRequest in mbui
      *
      * @param mbui
-     * @return null or HttpMessage
+     * @return null or PRequest
      */
-    public static HttpMessage getCurrentHttpMessage(MacroBuilderUI mbui) {
+    public static PRequest getPRequestFromMacroRequest(MacroBuilderUI mbui) {
         int pos = mbui.getCurrentSelectedRequestIndex();
         if (pos > -1) {
             ParmGenMacroTrace pmt = mbui.getParmGenMacroTrace();
             pmt.setCurrentRequest(pos);
-            PRequestResponse prr = pmt.getCurrentRequestResponse();
+
             StyledDocumentWithChunk doc = mbui.getMacroRequestStyledDocument();
             if (doc != null) {
-                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
-                if (prequest != null) {
-                    return getHttpMessage(prequest);
-                }
+                PRequestResponse prr = pmt.getRequestResponseCurrentList(pos);
+                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();
+                prr.updateRequest(newrequest.clone());
+                return newrequest;
             }
         }
         return null;

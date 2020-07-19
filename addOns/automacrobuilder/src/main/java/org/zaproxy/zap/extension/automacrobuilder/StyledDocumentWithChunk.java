@@ -31,7 +31,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
     private Style CRstyle = null;
 
-    private static int PARTNO_MAXLEN = 4;
+    public static int PARTNO_MAXLEN = 4;
 
     public static final String RESOURCES =
             "/org/zaproxy/zap/extension/automacrobuilder/zap/resources";
@@ -120,7 +120,6 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     /**
      * Rebuild PRequest from intenal text and chunks. This method no affects contents of this.
      *
-     * @param text
      * @return
      */
     public PRequest reBuildPRequestFromDocTextAndChunks() {
@@ -305,7 +304,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     /**
      * update styleedoc by request bytes. large binary data representation is image icon.
      *
-     * @param prequest
+     * @param newrequest
      */
     private void updateRequest(PRequest newrequest) {
 
@@ -468,6 +467,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         } catch (BadLocationException ex) {
             Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
         }
+        LOGGER4J.debug("doc.length:" + this.getLength());
     }
 
     /**
@@ -563,7 +563,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         return s;
     }
 
-    Style getCRstyle() {
+    public Style getCRstyle() {
 
         Style defstyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
         // StyleConstants.setAlignment(defstyle, StyleConstants.ALIGN_CENTER);
@@ -619,7 +619,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     /**
      * Generate StyledDocument from RequestText
      *
-     * @param text
+     * @param requesttext
      */
     private void generateStyledDocFromRequestText(String requesttext) {
 

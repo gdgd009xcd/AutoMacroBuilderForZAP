@@ -31,6 +31,7 @@ import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.SiteNode;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
@@ -60,14 +61,13 @@ public class PopUpItemActiveScan extends JMenuItem {
         addActionListener(
                 ev -> {
                     int pos = this.mbui.getCurrentSelectedRequestIndex();
-                    ParmGenMacroTraceParams targetStepNo = new ParmGenMacroTraceParams();
-                    targetStepNo.setSelectedRequestNo(pos);
-                    this.extension.setTargetStepNo(targetStepNo);
-                    if (pos > -1) {
-                        ParmGenMacroTrace pmt = this.mbui.getParmGenMacroTrace();
-                        pmt.setCurrentRequest(pos);
 
-                        PRequestResponse prr = pmt.getCurrentRequestResponse();
+                    if (pos > -1) {
+                        PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(this.mbui);
+                        ParmGenMacroTraceParams targetStepNo = new ParmGenMacroTraceParams(pos);
+                        this.extension.setTargetStepNo(targetStepNo);
+                        ParmGenMacroTrace pmt = this.mbui.getParmGenMacroTrace();
+                        PRequestResponse prr = pmt.getRequestResponseCurrentList(pos);
                         ClientDependMessageContainer cdmcon = prr.getClientDependMessageContainer();
                         HistoryReference href =
                                 cdmcon != null ? cdmcon.getClientDpendMessage() : null;

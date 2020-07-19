@@ -41,6 +41,8 @@ public class PostMacroDoAction implements InterfaceDoAction {
                 (tm1, otp1) -> {
                     ParmGenMacroTrace.clientrequest.postZapCurrentResponse(pmt, msg);
                     pmt.startPostMacro(otp1);
+                    ParmGenMacroTrace.clientrequest.updateCurrentResponseWithFinalResponse(
+                            pmt, msg);
                     return true;
                 });
         ACTION_LIST.set(actionlist);
@@ -48,8 +50,6 @@ public class PostMacroDoAction implements InterfaceDoAction {
         // end action create and save into ThreadLocal
         ENDACTION.set(
                 () -> {
-                    ParmGenMacroTrace.clientrequest.updateCurrentResponseWithFinalResponse(
-                            pmt, msg);
                     ParmGenMacroTraceProvider.getOriginalBase().updateOriginalBase(pmt);
                     ParmGenMacroTraceProvider.removeEndInstance(pmt.getUUID());
                 });

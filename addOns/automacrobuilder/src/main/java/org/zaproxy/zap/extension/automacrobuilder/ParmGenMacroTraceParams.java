@@ -1,10 +1,16 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 public class ParmGenMacroTraceParams {
-    public int selected_request = -1; // scan target request stepno in ParmGenMacroTrace stepno
-    public int last_stepno = -1; // scan last request stepno in ParmGenMacroTrace stepno
+    private int selected_request = -1; // scan target request stepno in ParmGenMacroTrace stepno
+    private int last_stepno = -1; // scan last request stepno in ParmGenMacroTrace stepno
 
-    public ParmGenMacroTraceParams() {}
+    public ParmGenMacroTraceParams(int pos) {
+        setSelectedRequestNo(pos);
+    }
+
+    public ParmGenMacroTraceParams(String hv) {
+        setString(hv);
+    }
 
     /**
      * Set Scan target request stepno in ParmGenMacroTrace.
@@ -48,7 +54,7 @@ public class ParmGenMacroTraceParams {
         return Integer.toString(selected_request) + "|" + Integer.toString(last_stepno);
     }
 
-    public void setString(String s) {
+    private void setString(String s) {
         if (s != null) {
             String[] nv = s.split("\\|");
             String[] nvpair = new String[2];
