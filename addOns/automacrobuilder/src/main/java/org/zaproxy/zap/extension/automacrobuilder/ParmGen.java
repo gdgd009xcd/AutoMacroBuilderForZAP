@@ -193,8 +193,8 @@ public class ParmGen {
                     String o_path = nvcont[1];
                     if (n_path != null && !path.equals(n_path)) {
                         url = n_path;
-                        LOGGER4J.debug(" Original path[" + path + "]");
-                        LOGGER4J.debug(" Modified path[" + n_path + "]");
+                        LOGGER4J.trace(" Original path[" + path + "]");
+                        LOGGER4J.trace(" Modified path[" + n_path + "]");
                         // request.setURL(new HttpUrl(url));
                         prequest.setURL(url);
                         if (org_request != null
@@ -219,8 +219,8 @@ public class ParmGen {
                         String o_query = nvcont[1];
                         if (n_query != null && !query.equals(n_query)) {
                             url = path + '?' + n_query;
-                            LOGGER4J.debug(" Original query[" + query + "]");
-                            LOGGER4J.debug(" Modified path[" + n_query + "]");
+                            LOGGER4J.trace(" Original query[" + query + "]");
+                            LOGGER4J.trace(" Modified path[" + n_query + "]");
                             // request.setURL(new HttpUrl(url));
                             prequest.setURL(url);
                             if (org_request != null
@@ -274,8 +274,8 @@ public class ParmGen {
                                 String n_hval = nvcont[0];
                                 String o_hval = nvcont[1];
                                 if (n_hval != null && !hval.equals(n_hval)) {
-                                    LOGGER4J.debug(" Original header[" + hval + "]");
-                                    LOGGER4J.debug(" Modified header[" + n_hval + "]");
+                                    LOGGER4J.trace(" Original header[" + hval + "]");
+                                    LOGGER4J.trace(" Modified header[" + n_hval + "]");
                                     String htitle = nv[0] + ": ";
                                     n_hval = n_hval.substring(htitle.length());
                                     prequest.setHeader(been.i, nv[0], n_hval);
@@ -321,8 +321,8 @@ public class ParmGen {
                             String neworg_content_iso8859 = nvcont[1];
 
                             if (n_content != null && !content.equals(n_content)) {
-                                LOGGER4J.debug(" Original body[" + content + "]");
-                                LOGGER4J.debug(" Modified body[" + n_content + "]");
+                                LOGGER4J.trace(" Original body[" + content + "]");
+                                LOGGER4J.trace(" Modified body[" + n_content + "]");
                                 try {
                                     _contarray.initParmGenBinUtil(
                                             n_content.getBytes(ParmVars.enc.getIANACharsetName()));
@@ -396,7 +396,7 @@ public class ParmGen {
                                             if (!partcontenttypevalue.isEmpty()) {
                                                 partenc = ParmVars.formdataenc;
                                                 partcontenttypevalue = partcontenttypevalue.trim();
-                                                LOGGER4J.debug(
+                                                LOGGER4J.trace(
                                                         "form-data Contentype:["
                                                                 + partcontenttypevalue
                                                                 + "]");
@@ -425,8 +425,8 @@ public class ParmGen {
                                     if (n_partdatastr != null
                                             && partdatastr != null
                                             && !partdatastr.equals(n_partdatastr)) {
-                                        LOGGER4J.debug(" Original body[" + partdatastr + "]");
-                                        LOGGER4J.debug(" Modified body[" + n_partdatastr + "]");
+                                        LOGGER4J.trace(" Original body[" + partdatastr + "]");
+                                        LOGGER4J.trace(" Modified body[" + n_partdatastr + "]");
                                         try {
                                             n_array.concat(n_partdatastr.getBytes(partenc));
                                         } catch (UnsupportedEncodingException e) {

@@ -5,6 +5,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import static org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil.ImageIconLoadStatus;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
@@ -351,7 +353,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 switch (chunk.getChunkType()) {
                     case REQUESTHEADER:
                         element = new String(chunk.getBytes(), pageenc.getIANACharset());
-                        LOGGER4J.debug(
+                        LOGGER4J.trace(
                                 "@REQUESTHEADER["
                                         + new String(chunk.getBytes(), pageenc.getIANACharset())
                                                 .replaceAll("\r", "<CR>")
@@ -391,6 +393,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
                                 try {
                                     icon = new ImageIcon(chunk.getBytes(), partno);
+                                    LOGGER4J.debug("icon status:" + ImageIconLoadStatus(icon));
                                 } catch (Exception e) {
                                     icon = new ImageIcon(BRKICONURL, partno);
                                 }
@@ -400,7 +403,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                 element = partno;
                             } else {
                                 s = null;
-                                LOGGER4J.debug(
+                                LOGGER4J.trace(
                                         "@CONTENTS["
                                                 + new String(
                                                         chunk.getBytes(), pageenc.getIANACharset())
@@ -430,7 +433,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                             element = partno;
                         } else {
                             s = null;
-                            LOGGER4J.debug(
+                            LOGGER4J.trace(
                                     "@CONTENTS["
                                             + new String(chunk.getBytes(), pageenc.getIANACharset())
                                             + "]");
@@ -444,7 +447,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                         }
                         break;
                     case CONTENTSEND:
-                        LOGGER4J.debug(
+                        LOGGER4J.trace(
                                 "@CONTENTSSEND["
                                         + new String(chunk.getBytes(), pageenc.getIANACharset())
                                         + "]");
@@ -453,7 +456,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                         insertStringCR(pos, element);
                         break;
                     case LASTBOUNDARY:
-                        LOGGER4J.debug(
+                        LOGGER4J.trace(
                                 "@LASTBOUNDARY["
                                         + new String(chunk.getBytes(), pageenc.getIANACharset())
                                         + "]");
@@ -517,6 +520,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                     case CONTENTSIMG:
                         try {
                             icon = new ImageIcon(chunk.getBytes(), partno);
+                            LOGGER4J.debug("icon status:" + ImageIconLoadStatus(icon));
                         } catch (Exception e) {
                             icon = new ImageIcon(BRKICONURL, partno);
                         }
@@ -683,6 +687,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                             } else { // diplayable image
                                 try {
                                     icon = new ImageIcon(content_chunk.getBytes(), partnostr);
+                                    LOGGER4J.debug("icon status:" + ImageIconLoadStatus(icon));
                                 } catch (Exception e) {
                                     icon = new ImageIcon(BRKICONURL, partnostr);
                                 }

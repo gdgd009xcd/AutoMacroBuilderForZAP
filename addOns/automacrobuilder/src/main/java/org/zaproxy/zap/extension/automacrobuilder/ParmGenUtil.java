@@ -19,6 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.*;
 import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenRegex;
 
 /** @author gdgd009xcd */
@@ -453,5 +455,34 @@ public class ParmGenUtil {
             b = "";
         }
         return a.equals(b);
+    }
+
+    /**
+     * get Status of String from ImageIcon
+     *
+     * @param icon
+     * @return
+     */
+    public static String ImageIconLoadStatus(ImageIcon icon) {
+        if (icon == null) return "NULL";
+        String mess = "";
+        switch (icon.getImageLoadStatus()) {
+            case MediaTracker.ABORTED:
+                mess = "ABORTED";
+                break;
+            case MediaTracker.COMPLETE:
+                mess = "COMPLETE";
+                break;
+            case MediaTracker.ERRORED:
+                mess = "ERRORED";
+                break;
+            case MediaTracker.LOADING:
+                mess = "LOADING";
+                break;
+            default:
+                mess = "UNKNOWN";
+                break;
+        }
+        return mess;
     }
 }
