@@ -5,6 +5,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -873,15 +874,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
             if (rlist != null && rlist.size() > pos) {
                 //
-                if(selected_request_idx!=pos){
-                    selected_request_idx = pos;
-                    isLoadedMacroCommentContents = false;
-                    isLoadedMacroRequestContents = false;
-                    isLoadedMacroResponseContents = false;
 
-                    paramlogTabbedPaneSelectedContentsLoad();
-                }
-                
+                selected_request_idx = pos;
+                isLoadedMacroCommentContents = false;
+                isLoadedMacroRequestContents = false;
+                isLoadedMacroResponseContents = false;
+
+                paramlogTabbedPaneSelectedContentsLoad();
 
             }
         }
@@ -944,6 +943,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         // TODO add your handling code here:
         if (evt.isPopupTrigger()) {
             PopupMenuForRequestList.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+        if ((evt.getModifiers() & InputEvent.BUTTON1_MASK) != 0) { // left button clicked
+            int sidx = RequestList.locationToIndex(evt.getPoint());
+            if (sidx > -1) {
+                logger4j.debug("RequestList mouse left button clicked: sidx:" + sidx);
+            }
         }
     }//GEN-LAST:event_RequestListMouseClicked
 
@@ -1612,6 +1617,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
             rlist.remove(pos);
             RequestListModel.remove(pos);
+            selected_request_idx = -1;
             List<PRequestResponse> originalrlist = pmt.getOriginalrlist();
             originalrlist.remove(pos);
 
