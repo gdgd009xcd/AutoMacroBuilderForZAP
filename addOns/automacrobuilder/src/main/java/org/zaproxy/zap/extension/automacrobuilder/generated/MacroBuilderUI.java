@@ -199,7 +199,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         Repeater = new javax.swing.JMenuItem();
         Scanner = new javax.swing.JMenuItem();
         Intruder = new javax.swing.JMenuItem();
-        targetRequest = new javax.swing.JMenuItem();
         disableRequest = new javax.swing.JMenuItem();
         enableRequest = new javax.swing.JMenuItem();
         deleteRequest = new javax.swing.JMenuItem();
@@ -278,14 +277,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         SendTo.add(Intruder);
 
         PopupMenuForRequestList.add(SendTo);
-
-        targetRequest.setText(bundle.getString("MacroBuilderUI.TARGETREQUEST.text")); // NOI18N
-        targetRequest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                targetRequestActionPerformed(evt);
-            }
-        });
-        PopupMenuForRequestList.add(targetRequest);
 
         disableRequest.setText(bundle.getString("MacroBuilderUI.DISABLEREQUEST.text")); // NOI18N
         disableRequest.addActionListener(new java.awt.event.ActionListener() {
@@ -962,15 +953,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PopupMenuForRequestList.show(evt.getComponent(), evt.getX(), evt.getY());
         }
     }//GEN-LAST:event_RequestListMouseReleased
-
-    private void targetRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetRequestActionPerformed
-        // TODO add your handling code here:
-        int pos = RequestList.getSelectedIndex();
-        if (pos != -1) {
-            pmt.setCurrentRequest(pos);
-        }
-        Redraw();
-    }//GEN-LAST:event_targetRequestActionPerformed
 
     @SuppressWarnings("serial")
     private void ParamTrackingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParamTrackingActionPerformed
@@ -1870,7 +1852,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JTabbedPane paramlog;
     private javax.swing.JMenuItem restore;
     private javax.swing.JMenuItem show;
-    private javax.swing.JMenuItem targetRequest;
     private javax.swing.JMenuItem update;
     private javax.swing.JTextField waitsec;
     // End of variables declaration//GEN-END:variables
