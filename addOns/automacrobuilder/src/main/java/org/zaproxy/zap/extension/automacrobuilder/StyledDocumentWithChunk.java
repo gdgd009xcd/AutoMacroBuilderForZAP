@@ -534,7 +534,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                         break;
                     default: // CONTENTS
                         elem = new String(chunk.getBytes(), charset);
-                        LOGGER4J.debug("CONTENTS[" + elem + "]pos:" + pos);
+                        LOGGER4J.trace("CONTENTS[" + elem + "]pos:" + pos);
                         break;
                 }
                 insertString(pos, elem, s);
