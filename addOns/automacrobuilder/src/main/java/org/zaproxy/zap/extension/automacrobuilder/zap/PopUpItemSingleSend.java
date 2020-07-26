@@ -99,7 +99,7 @@ public class PopUpItemSingleSend extends JMenuItem {
                         }
                         SwingUtilities.invokeLater(
                                 () -> {
-                                    f_mbui.updateCurrentReqRes();
+                                    f_mbui.updateCurrentSelectedRequestListDisplayContents();
                                 });
                     }
                 });

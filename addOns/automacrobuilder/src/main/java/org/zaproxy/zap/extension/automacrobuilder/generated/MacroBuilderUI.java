@@ -160,18 +160,19 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     }
 
-    public void updateCurrentReqRes() {
-        int cpos = pmt.getCurrentRequestPos();
-        if (rlist != null) {
-            PRequestResponse pqr = rlist.get(cpos);
+    /**
+     * update GUI contents with Current Selected request
+     *
+     */
+    public void updateCurrentSelectedRequestListDisplayContents() {
+        int cpos = RequestList.getSelectedIndex();
+        if (cpos != -1) { // current cpos request is displayed in MacroRequest.
+            selected_request_idx = cpos;
+            isLoadedMacroCommentContents = false;
+            isLoadedMacroRequestContents = false;
+            isLoadedMacroResponseContents = false;
 
-            ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
-            reqdoc.setRequestChunks(pqr.request);
-
-            ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
-            resdoc.setResponseChunks(pqr.response);
-
-            MacroComments.setText(pqr.getComments());
+            paramlogTabbedPaneSelectedContentsLoad();
         }
     }
 
@@ -871,7 +872,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         logger4j.debug("RequestListValueChanged Start...");
         int pos = RequestList.getSelectedIndex();
         if (pos != -1) {
-
+            logger4j.debug("RequestListValueChanged selected pos:" + pos);
             if (rlist != null && rlist.size() > pos) {
                 //
 
@@ -883,6 +884,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 paramlogTabbedPaneSelectedContentsLoad();
 
             }
+        } else {
+            logger4j.debug("RequestListValueChanged noselect pos:" + pos);
         }
         logger4j.debug("RequestListValueChanged done");
     }//GEN-LAST:event_RequestListValueChanged
@@ -948,6 +951,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             int sidx = RequestList.locationToIndex(evt.getPoint());
             if (sidx > -1) {
                 logger4j.debug("RequestList mouse left button clicked: sidx:" + sidx);
+                if (selected_request_idx == sidx){
+                    RequestList.clearSelection();
+                    RequestList.setSelectedIndex(sidx);
+                    logger4j.debug("clearSelection and setSelectidx:" + sidx);
+                }
             }
         }
     }//GEN-LAST:event_RequestListMouseClicked
