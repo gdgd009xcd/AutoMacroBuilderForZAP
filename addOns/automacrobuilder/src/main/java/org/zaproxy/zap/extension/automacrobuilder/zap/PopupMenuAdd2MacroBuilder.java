@@ -36,6 +36,7 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemHistoryReferenceCont
     private ParmGenMacroTrace pmt = null;
     private MacroBuilderUI mbui = null;
     private List<PRequestResponse> listprr = null;
+    private List<HistoryReference> hrefs = null;
 
     /** @param label */
     public PopupMenuAdd2MacroBuilder(MacroBuilderUI mbui, ParmGenMacroTrace pmt, String label) {
@@ -50,7 +51,8 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemHistoryReferenceCont
 
     @Override
     protected void performHistoryReferenceActions(List<HistoryReference> hrefs) {
-        hrefs.stream()
+        this.hrefs = hrefs;
+        this.hrefs.stream()
                 .forEach(
                         href -> {
                             System.out.println("" + href.toString());
@@ -58,7 +60,10 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemHistoryReferenceCont
 
         this.listprr =
                 hrefs.stream()
-                        .map(href -> new PRequestResponse(new ClientDependMessageContainer(href)))
+                        .map(
+                                href ->
+                                        new PRequestResponse(
+                                                new ClientDependMessageContainer(href), null))
                         .collect(Collectors.toList());
 
         if (pmt.getRlistCount() <= 0) {
@@ -74,6 +79,15 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemHistoryReferenceCont
 
     @Override
     public void LangOK() {
+        // selected encode applied to PRequestResponses.
+        this.listprr =
+                this.hrefs.stream()
+                        .map(
+                                href ->
+                                        new PRequestResponse(
+                                                new ClientDependMessageContainer(href),
+                                                ParmVars.enc))
+                        .collect(Collectors.toList());
         mbui.addNewRequests(this.listprr);
         langdialog.setVisible(false);
     }

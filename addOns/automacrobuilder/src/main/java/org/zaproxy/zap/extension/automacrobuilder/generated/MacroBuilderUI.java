@@ -1763,6 +1763,16 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
 
     public StyledDocumentWithChunk getMacroRequestStyledDocument() {
+        int pos = getCurrentSelectedRequestIndex();
+        if (pos < 0 || pos != selected_request_idx) {
+            logger4j.error(
+                    "getMacroRequestStyledDocument pos["
+                            + pos
+                            + "]!=selected_request_idx["
+                            + selected_request_idx + "]");
+            return null;
+        }
+        MacroRequestLoadContents();
         StyledDocument doc =  MacroRequest.getStyledDocument();
         if ( doc instanceof StyledDocumentWithChunk) {
             return CastUtils.castToType(doc);

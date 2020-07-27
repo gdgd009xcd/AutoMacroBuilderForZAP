@@ -60,7 +60,7 @@ public class PRequestResponse implements DeepClone {
         init(h, p, ssl, binrequest, binresponse, pageenc, pageenc);
     }
 
-    public PRequestResponse(ClientDependMessageContainer cdmc) {
+    public PRequestResponse(ClientDependMessageContainer cdmc, Encode defaultenc) {
         this.cdmc = cdmc;
         init(
                 cdmc.getHost(),
@@ -68,8 +68,8 @@ public class PRequestResponse implements DeepClone {
                 cdmc.isSSL(),
                 cdmc.getRequestByte(),
                 cdmc.getResponseByte(),
-                cdmc.getRequestEncode(),
-                cdmc.getResponseEncode());
+                cdmc.getRequestEncode() != null ? cdmc.getRequestEncode() : defaultenc,
+                cdmc.getResponseEncode() != null ? cdmc.getResponseEncode() : defaultenc);
     }
 
     public void setClientDependMessageContainer(ClientDependMessageContainer cdmc) {

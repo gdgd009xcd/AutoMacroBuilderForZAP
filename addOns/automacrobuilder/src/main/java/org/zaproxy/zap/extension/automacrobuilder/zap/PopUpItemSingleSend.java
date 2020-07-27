@@ -44,12 +44,11 @@ public class PopUpItemSingleSend extends JMenuItem {
         addActionListener(
                 e -> {
                     PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
-                    int pos = f_mbui.getCurrentSelectedRequestIndex();
-                    HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
 
-                    final ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(pos);
-
-                    if (htmess != null) {
+                    if (newrequest != null) {
+                        int pos = f_mbui.getCurrentSelectedRequestIndex();
+                        final HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
+                        final ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(pos);
                         final Thread t =
                                 new Thread(
                                         new Runnable() {
