@@ -62,7 +62,6 @@ public class ParmGenTop extends javax.swing.JFrame {
         ParmGenNew_Modified = false;
         csv = _csv;//リファレンスを格納
         initComponents();
-        LogfileOnOff.setSelected(ParmVars.plog.isLogfileOn());
         //TableColumnModel tcm = ParamTopList.getColumnModel();
         //tcm.getColumn(6).setCellRenderer(new LineWrapRenderer());
         //ParamTopList.setColumnModel(tcm);
@@ -241,18 +240,15 @@ public class ParmGenTop extends javax.swing.JFrame {
         Add = new javax.swing.JButton();
         Mod = new javax.swing.JButton();
         Del = new javax.swing.JButton();
-        Save = new javax.swing.JButton();
         Cancel = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         ParamTopList = new javax.swing.JTable();
-        LogfileOnOff = new javax.swing.JToggleButton();
         jPanel1 = new javax.swing.JPanel();
         ProxyScope = new javax.swing.JCheckBox();
         IntruderScope = new javax.swing.JCheckBox();
         ScannerScope = new javax.swing.JCheckBox();
         RepeaterScope = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
-        Load = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(bundle.getString("ParmGenTop.PARMGENトップ画面.text")); // NOI18N
@@ -285,14 +281,6 @@ public class ParmGenTop extends javax.swing.JFrame {
         Del.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DelActionPerformed(evt);
-            }
-        });
-
-        Save.setText(bundle.getString("ParmGenTop.保存.text")); // NOI18N
-        Save.setEnabled(false);
-        Save.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                SaveActionPerformed(evt);
             }
         });
 
@@ -348,14 +336,6 @@ public class ParmGenTop extends javax.swing.JFrame {
             ParamTopList.getColumnModel().getColumn(6).setHeaderValue(bundle.getString("ParmGenTop.title5.text")); // NOI18N
             ParamTopList.getColumnModel().getColumn(7).setHeaderValue(bundle.getString("ParmGenTop.title6.text")); // NOI18N
         }
-
-        LogfileOnOff.setText(bundle.getString("ParmGenTop.ログファイル出力.text")); // NOI18N
-        LogfileOnOff.setEnabled(false);
-        LogfileOnOff.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                LogfileOnOffActionPerformed(evt);
-            }
-        });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenTop.typeoftool.text"))); // NOI18N
 
@@ -417,13 +397,6 @@ public class ParmGenTop extends javax.swing.JFrame {
 
         jLabel2.setText(bundle.getString("ParmGenTop.注意：処理実行前に、この画面は保存または閉じるボタンで閉じてください。.text")); // NOI18N
 
-        Load.setText(bundle.getString("ParmGenTop.ロード.text")); // NOI18N
-        Load.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                LoadActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -438,10 +411,6 @@ public class ParmGenTop extends javax.swing.JFrame {
                         .addGap(66, 66, 66)
                         .addComponent(Del)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Load)
-                        .addGap(33, 33, 33)
-                        .addComponent(Save)
-                        .addGap(46, 46, 46)
                         .addComponent(Cancel))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
@@ -450,8 +419,7 @@ public class ParmGenTop extends javax.swing.JFrame {
                         .addComponent(LANGUAGE, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(40, 40, 40)
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 472, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(LogfileOnOff))
+                        .addGap(0, 146, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -466,7 +434,6 @@ public class ParmGenTop extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(LANGUAGE, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
-                    .addComponent(LogfileOnOff)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -477,42 +444,12 @@ public class ParmGenTop extends javax.swing.JFrame {
                     .addComponent(Add)
                     .addComponent(Mod)
                     .addComponent(Del)
-                    .addComponent(Save)
-                    .addComponent(Cancel)
-                    .addComponent(Load))
+                    .addComponent(Cancel))
                 .addGap(28, 28, 28))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
-        // TODO add your handling code here:
-
-        File cfile = new File(ParmVars.parmfile);
-        String dirname = cfile.getParent();
-        JFileChooser jfc = new JFileChooser(dirname);
-        jfc.setSelectedFile(cfile);
-        ParmFileFilter pFilter=new ParmFileFilter();
-        jfc.setFileFilter(pFilter);
-        if(jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            //code to handle choosed file here.
-            File file = jfc.getSelectedFile();
-            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
-            if(!pFilter.accept(file)){//拡張子無しの場合は付与
-                name += ".json";
-            }
-            ParmVars.parmfile = name;
-            //csv.save();
-            csv.GSONsave();
-            
-            ParmGen pgen = new ParmGen(pmt);
-
-            //pgen.reset();
-            pgen.disposeTop();
-        }
-
-    }//GEN-LAST:event_SaveActionPerformed
 
     private void ModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModActionPerformed
         // TODO add your handling code here:
@@ -563,11 +500,6 @@ public class ParmGenTop extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_DelActionPerformed
 
-    private void LogfileOnOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LogfileOnOffActionPerformed
-        // TODO add your handling code here:
-        ParmVars.plog.LogfileOn(LogfileOnOff.isSelected());
-    }//GEN-LAST:event_LogfileOnOffActionPerformed
-
     private void ProxyScopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProxyScopeActionPerformed
         // TODO add your handling code here:
         //ParmGen pg = new ParmGen(pmt);
@@ -608,26 +540,6 @@ public class ParmGenTop extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ScannerScopeActionPerformed
 
-    private void LoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoadActionPerformed
-        // TODO add your handling code here:
-        File cfile = new File(ParmVars.parmfile);
-        String dirname = cfile.getParent();
-        JFileChooser jfc = new JFileChooser(dirname);
-        jfc.setSelectedFile(cfile);
-        ParmFileFilter pFilter=new ParmFileFilter();
-        jfc.setFileFilter(pFilter);
-        if(jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            //code to handle choosed file here.
-            File file = jfc.getSelectedFile();
-            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
-            
-            ParmGen pgen = new ParmGen(pmt);//20200208 なにもしないコンストラクター＞スタティックに置き換える。
-            pgen.checkAndLoadFile(name);//20200208 再読み込み -> 明示的なファイルのロード、チェック、チェックOKのみパラメータ更新する。
-            refreshRowDisp(true);//表示更新
-        }
-
-    }//GEN-LAST:event_LoadActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Add;
@@ -635,13 +547,10 @@ public class ParmGenTop extends javax.swing.JFrame {
     private javax.swing.JButton Del;
     private javax.swing.JCheckBox IntruderScope;
     private javax.swing.JComboBox<String> LANGUAGE;
-    private javax.swing.JButton Load;
-    private javax.swing.JToggleButton LogfileOnOff;
     private javax.swing.JButton Mod;
     private javax.swing.JTable ParamTopList;
     private javax.swing.JCheckBox ProxyScope;
     private javax.swing.JCheckBox RepeaterScope;
-    private javax.swing.JButton Save;
     private javax.swing.JCheckBox ScannerScope;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

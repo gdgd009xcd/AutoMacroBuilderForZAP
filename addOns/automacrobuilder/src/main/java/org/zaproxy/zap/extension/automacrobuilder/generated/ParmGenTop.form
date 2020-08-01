@@ -36,10 +36,6 @@
                       <EmptySpace min="-2" pref="66" max="-2" attributes="0"/>
                       <Component id="Del" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
-                      <Component id="Load" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-                      <Component id="Save" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="46" max="-2" attributes="0"/>
                       <Component id="Cancel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
@@ -49,8 +45,7 @@
                       <Component id="LANGUAGE" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                       <Component id="jLabel2" min="-2" pref="472" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="LogfileOnOff" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="146" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -71,7 +66,6 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="LANGUAGE" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="LogfileOnOff" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel2" alignment="3" min="-2" pref="43" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -83,9 +77,7 @@
                   <Component id="Add" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Mod" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Del" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Save" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Cancel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Load" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
           </Group>
@@ -144,17 +136,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DelActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="Save">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="burp/Bundle.properties" key="&#x4fdd;&#x5b58;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
-        </Property>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SaveActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="Cancel">
@@ -260,22 +241,11 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JToggleButton" name="LogfileOnOff">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="burp/Bundle.properties" key="&#x30ed;&#x30b0;&#x30d5;&#x30a1;&#x30a4;&#x30eb;&#x51fa;&#x529b;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
-        </Property>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="LogfileOnOffActionPerformed"/>
-      </Events>
-    </Component>
     <Container class="javax.swing.JPanel" name="jPanel1">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="target scope">
+            <TitledBorder title="&lt;typeoftool&gt;">
               <ResourceString PropertyName="titleX" bundle="burp/Bundle.properties" key="typeoftool" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
             </TitledBorder>
           </Border>
@@ -362,16 +332,6 @@
           <ResourceString bundle="burp/Bundle.properties" key="&#x6ce8;&#x610f;&#xff1a;&#x51e6;&#x7406;&#x5b9f;&#x884c;&#x524d;&#x306b;&#x3001;&#x3053;&#x306e;&#x753b;&#x9762;&#x306f;&#x4fdd;&#x5b58;&#x307e;&#x305f;&#x306f;&#x9589;&#x3058;&#x308b;&#x30dc;&#x30bf;&#x30f3;&#x3067;&#x9589;&#x3058;&#x3066;&#x304f;&#x3060;&#x3055;&#x3044;&#x3002;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="Load">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="burp/Bundle.properties" key="&#x30ed;&#x30fc;&#x30c9;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="LoadActionPerformed"/>
-      </Events>
     </Component>
   </SubComponents>
 </Form>
