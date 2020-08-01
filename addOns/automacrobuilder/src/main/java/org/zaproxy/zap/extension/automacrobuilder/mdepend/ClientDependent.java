@@ -36,6 +36,11 @@ import org.zaproxy.zap.extension.automacrobuilder.UUIDGenerator;
 /** @author daike */
 public class ClientDependent {
 
+    public enum CLIENT_TYPE {
+        BURPSUITE,
+        ZAP
+    }
+
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
@@ -51,6 +56,15 @@ public class ClientDependent {
 
     // HttpMethodHelper has NO variable members. so, this instance can share any threads.
     private static HttpMethodHelper helper = new HttpMethodHelper();
+
+    /**
+     * get Client Type
+     *
+     * @return
+     */
+    public CLIENT_TYPE getClientType() {
+        return ClientDependent.CLIENT_TYPE.ZAP;
+    }
 
     /**
      * initialize this members.

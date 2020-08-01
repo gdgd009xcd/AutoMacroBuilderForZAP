@@ -16,6 +16,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import org.zaproxy.zap.extension.automacrobuilder.*;
+import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 
 /**
  *
@@ -54,6 +55,15 @@ public class ParmGenTop extends javax.swing.JFrame {
             //ParamTopList.setRowHeight(ri++, default_rowheight * pini.getAppValuesLineCnt());
         }
     }
+
+    private void disableBurpToolGUI() {
+        burptoolflg.setVisible(false);
+        ProxyScope.setVisible(false);
+        IntruderScope.setVisible(false);
+        RepeaterScope.setVisible(false);
+        ScannerScope.setVisible(false);
+    }
+
     /**
      * Creates new form ParmGenTop
      */
@@ -68,6 +78,9 @@ public class ParmGenTop extends javax.swing.JFrame {
         default_rowheight = ParamTopList.getRowHeight();
         model = (DefaultTableModel)ParamTopList.getModel();
 
+        if(pmt.getClientType() == ClientDependent.CLIENT_TYPE.ZAP) {
+            disableBurpToolGUI();
+        }
 
         cleartables();
         DefaultComboBoxModel<String> cbmodel = new DefaultComboBoxModel<String>();
@@ -243,7 +256,7 @@ public class ParmGenTop extends javax.swing.JFrame {
         Cancel = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         ParamTopList = new javax.swing.JTable();
-        jPanel1 = new javax.swing.JPanel();
+        burptoolflg = new javax.swing.JPanel();
         ProxyScope = new javax.swing.JCheckBox();
         IntruderScope = new javax.swing.JCheckBox();
         ScannerScope = new javax.swing.JCheckBox();
@@ -337,7 +350,7 @@ public class ParmGenTop extends javax.swing.JFrame {
             ParamTopList.getColumnModel().getColumn(7).setHeaderValue(bundle.getString("ParmGenTop.title6.text")); // NOI18N
         }
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenTop.typeoftool.text"))); // NOI18N
+        burptoolflg.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenTop.typeoftool.text"))); // NOI18N
 
         ProxyScope.setText(bundle.getString("ParmGenTop.PROXY.text")); // NOI18N
         ProxyScope.setEnabled(false);
@@ -371,11 +384,11 @@ public class ParmGenTop extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout burptoolflgLayout = new javax.swing.GroupLayout(burptoolflg);
+        burptoolflg.setLayout(burptoolflgLayout);
+        burptoolflgLayout.setHorizontalGroup(
+            burptoolflgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(burptoolflgLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(ProxyScope)
                 .addGap(18, 18, 18)
@@ -386,9 +399,9 @@ public class ParmGenTop extends javax.swing.JFrame {
                 .addComponent(ScannerScope)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        burptoolflgLayout.setVerticalGroup(
+            burptoolflgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(burptoolflgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(ProxyScope)
                 .addComponent(IntruderScope)
                 .addComponent(ScannerScope)
@@ -423,7 +436,7 @@ public class ParmGenTop extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(burptoolflg, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jScrollPane1))))
                 .addContainerGap())
         );
@@ -436,7 +449,7 @@ public class ParmGenTop extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(burptoolflg, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
@@ -552,9 +565,9 @@ public class ParmGenTop extends javax.swing.JFrame {
     private javax.swing.JCheckBox ProxyScope;
     private javax.swing.JCheckBox RepeaterScope;
     private javax.swing.JCheckBox ScannerScope;
+    private javax.swing.JPanel burptoolflg;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }
