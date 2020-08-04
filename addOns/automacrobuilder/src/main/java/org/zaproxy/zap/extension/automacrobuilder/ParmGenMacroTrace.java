@@ -64,10 +64,9 @@ public class ParmGenMacroTrace extends ClientDependent {
     ListIterator<PRequestResponse> cit = null; // 実行
 
     boolean MBCookieUpdate = false; // ==true Cookie更新
-    boolean MBCookieFromJar = false; // ==true 開始時Cookie.jarから引き継ぐ
+    boolean CBInheritFromCache = false; // ==true 開始時Cookie.jarから引き継ぐ
     boolean MBFinalResponse = false; // ==true 結果は最後に実行されたマクロのレスポンス
     boolean MBResetToOriginal = false; // ==true オリジナルリクエストを実行。
-    boolean MBsettokencache = false; // 開始時tokenキャッシュ
     boolean MBreplaceCookie = false; // ==true Cookie引き継ぎ置き換え == false Cookie overwrite
     boolean MBmonitorofprocessing = false;
     boolean MBreplaceTrackingParam = false;
@@ -146,10 +145,10 @@ public class ParmGenMacroTrace extends ClientDependent {
         nobj.savelist = new HashMap<>();
         nobj.toolbaseline = this.toolbaseline != null ? this.toolbaseline.clone() : null;
         nobj.MBCookieUpdate = this.MBCookieUpdate; // ==true Cookie更新
-        nobj.MBCookieFromJar = this.MBCookieFromJar; // ==true 開始時Cookie.jarから引き継ぐ
+        nobj.CBInheritFromCache =
+                this.CBInheritFromCache; // ==true inherit CSRFtoken/cookie values from cache
         nobj.MBFinalResponse = this.MBFinalResponse; // ==true 結果は最後に実行されたマクロのレスポンス
         nobj.MBResetToOriginal = this.MBResetToOriginal; // ==true オリジナルリクエストを実行。
-        nobj.MBsettokencache = this.MBsettokencache; // 開始時tokenキャッシュ
         nobj.MBreplaceCookie =
                 this.MBreplaceCookie; // ==true Cookie引き継ぎ置き換え == false Cookie overwrite
         nobj.MBmonitorofprocessing = this.MBmonitorofprocessing;
@@ -181,8 +180,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         ui = _ui;
     }
 
-    public void setMBCookieFromJar(boolean b) {
-        MBCookieFromJar = b;
+    public void setCBInheritFromCache(boolean b) {
+        CBInheritFromCache = b;
     }
 
     public void setMBFinalResponse(boolean b) {
@@ -191,10 +190,6 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     public void setMBResetToOriginal(boolean b) {
         MBResetToOriginal = b;
-    }
-
-    public void setMBsettokencache(boolean b) {
-        MBsettokencache = b;
     }
 
     public void setMBreplaceCookie(boolean b) {
@@ -358,12 +353,12 @@ public class ParmGenMacroTrace extends ClientDependent {
         initFetchResponseVal();
         initCookieManager();
 
-        if (!MBsettokencache) {
+        if (!CBInheritFromCache) {
             if (fetchResVal != null) {
                 fetchResVal.clearCachedLocVal();
             }
         }
-        if (!MBCookieFromJar) {
+        if (!CBInheritFromCache) {
             if (cookieMan != null) {
                 cookieMan.removeAll();
             }
