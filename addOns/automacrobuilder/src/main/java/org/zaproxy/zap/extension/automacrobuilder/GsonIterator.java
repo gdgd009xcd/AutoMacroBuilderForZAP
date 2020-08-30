@@ -35,25 +35,59 @@ public class GsonIterator {
     String keyname; // this Array's or Ojbect's keyname
     Iterator<Map.Entry<String, JsonElement>> objit;
     Iterator<JsonElement> arrit;
+    ElmType etype;
 
-    GsonIterator(String k, Set<Map.Entry<String, JsonElement>> eset) {
-        keyname = k;
-        objit = eset.iterator();
-        arrit = null;
+    GsonIterator(String k, Set<Map.Entry<String, JsonElement>> eset, ElmType etype) {
+        switch (etype) {
+            case ARRAY:
+                keyname = k;
+                arrit = null;
+                objit = null;
+                this.etype = etype;
+                break;
+            case OBJECT:
+            default:
+                keyname = k;
+                objit = eset.iterator();
+                arrit = null;
+                this.etype = etype;
+                break;
+        }
     }
 
-    GsonIterator(String k, Iterator<JsonElement> it) {
-        keyname = k;
-        arrit = it;
-        objit = null;
+    GsonIterator(String k, Iterator<JsonElement> it, ElmType etype) {
+        switch (etype) {
+            case ARRAY:
+                keyname = k;
+                arrit = it;
+                objit = null;
+                this.etype = etype;
+                break;
+            case OBJECT:
+            default:
+                keyname = k;
+                objit = null;
+                arrit = null;
+                this.etype = etype;
+                break;
+        }
     }
 
     public ElmType getElmType() {
-        return (arrit != null ? ElmType.ARRAY : ElmType.OBJECT);
+        return etype;
     }
 
     public boolean hasNext() {
-        return arrit != null ? (arrit.hasNext()) : (objit.hasNext());
+        if (etype == ElmType.ARRAY) {
+            if (arrit != null) {
+                return arrit.hasNext();
+            }
+        } else {
+            if (objit != null) {
+                return objit.hasNext();
+            }
+        }
+        return false;
     }
 
     public GsonEntry next() {

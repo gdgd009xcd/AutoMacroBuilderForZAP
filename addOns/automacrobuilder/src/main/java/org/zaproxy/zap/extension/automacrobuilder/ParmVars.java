@@ -21,6 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,8 +73,13 @@ public class ParmVars {
 
         if (logFile.exists()) {
             LoggerContext context = (LoggerContext) LogManager.getContext(false);
-            context.setConfigLocation(logFile.toURI());
-            System.out.println("log4j:" + logFile.getPath());
+            URI logURI = context.getConfigLocation();
+            if (logURI == null) {
+                context.setConfigLocation(logFile.toURI());
+                System.out.println("log4j: set:" + logFile.getPath());
+            } else {
+                System.out.println("log4j: get URI:" + logURI.toString());
+            }
         } else {
             System.out.println("log4j file not found.:" + logFile.getPath());
         }

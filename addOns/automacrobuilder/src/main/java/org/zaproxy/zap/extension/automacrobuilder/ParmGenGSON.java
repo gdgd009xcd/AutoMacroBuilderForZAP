@@ -413,24 +413,36 @@ public class ParmGenGSON implements GsonParserListener {
         boolean noerror = true;
         switch (etype) {
             case START_OBJECT:
-                logger4j.debug(getindent(level - 1, keyname) + "{" + level);
+                logger4j.debug(
+                        getindent(level - 1, keyname) + "{" + level + " astack:" + astack.size());
                 break;
             case END_OBJECT:
-                logger4j.debug(getindent(level - 1, keyname) + level + "}");
+                logger4j.debug(
+                        getindent(level - 1, keyname) + level + "}" + " astack:" + astack.size());
                 break;
             case START_ARRAY:
                 astack.push(keyname); // array title name
-                logger4j.debug(getindent(level - 1, keyname) + "[" + level);
+                logger4j.debug(
+                        getindent(level - 1, keyname) + "[" + level + " astack:" + astack.size());
                 break;
             case END_ARRAY:
                 String ep = astack.pop();
-                logger4j.debug(getindent(level - 1, keyname) + level + "]"); // keyname == ep
+                logger4j.debug(
+                        getindent(level - 1, keyname)
+                                + level
+                                + "]"
+                                + " astack:"
+                                + astack.size()); // keyname == ep
                 break;
             case BOOLEAN:
                 if (value instanceof Boolean) {
                     Boolean bobj = (Boolean) value;
                     boolean b = bobj.booleanValue();
-                    logger4j.debug(getindent(level, keyname) + (b ? "TRUE" : "FALSE"));
+                    logger4j.debug(
+                            getindent(level, keyname)
+                                    + (b ? "TRUE" : "FALSE")
+                                    + " astack:"
+                                    + astack.size());
                 }
                 break;
             case NUMBER:
@@ -448,11 +460,13 @@ public class ParmGenGSON implements GsonParserListener {
                                     + (enckeyname != null ? enckeyname + "->" : "")
                                     + "\""
                                     + s
-                                    + "\"");
+                                    + "\""
+                                    + " astack:"
+                                    + astack.size());
                 }
                 break;
             case NULL:
-                logger4j.debug(getindent(level, keyname) + "NULL");
+                logger4j.debug(getindent(level, keyname) + "NULL" + " astack:" + astack.size());
                 break;
             default:
                 break;

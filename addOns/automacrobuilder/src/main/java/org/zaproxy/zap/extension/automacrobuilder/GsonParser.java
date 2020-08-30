@@ -62,7 +62,9 @@ public class GsonParser {
 
                     if (element.isJsonArray()) {
                         JsonArray jarray = element.getAsJsonArray();
-                        git = new GsonIterator(kname, jarray.iterator());
+                        git =
+                                new GsonIterator(
+                                        kname, jarray.iterator(), GsonIterator.ElmType.ARRAY);
                         itstack.push(git);
                         level++;
                         noerror =
@@ -71,7 +73,7 @@ public class GsonParser {
 
                     } else if (element.isJsonObject()) {
                         JsonObject jobj = element.getAsJsonObject();
-                        git = new GsonIterator(kname, jobj.entrySet());
+                        git = new GsonIterator(kname, jobj.entrySet(), GsonIterator.ElmType.OBJECT);
                         itstack.push(git);
                         level++;
                         noerror =
@@ -110,6 +112,12 @@ public class GsonParser {
                     if (!git.hasNext()) { // end of array or object list
 
                         GsonParser.EventType etype = GsonParser.EventType.NONE;
+                        currentelmtype = git.getElmType();
+                        logger4j.debug(
+                                "at end current elmtype:"
+                                        + (currentelmtype == GsonIterator.ElmType.ARRAY
+                                                ? "ARRAY"
+                                                : "OBJECT"));
                         if (currentelmtype == GsonIterator.ElmType.ARRAY) {
                             etype = GsonParser.EventType.END_ARRAY;
                         } else {
@@ -125,6 +133,11 @@ public class GsonParser {
                     }
                     if (git != null && git.hasNext()) {
                         currentelmtype = git.getElmType();
+                        logger4j.debug(
+                                "current elmtype:"
+                                        + (currentelmtype == GsonIterator.ElmType.ARRAY
+                                                ? "ARRAY"
+                                                : "OBJECT"));
                         GsonEntry jent = git.next();
                         if (jent.hasKey()) {
                             kname = jent.getKey();
