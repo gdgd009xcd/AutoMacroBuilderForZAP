@@ -12,6 +12,18 @@ Click here below:　<BR>
 　　<A href="https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/2.0.%E6%A6%82%E8%A6%81%EF%BC%88%E6%97%A5%E6%9C%AC%E8%AA%9E%EF%BC%89">Japanese</A> <BR>
 
 
+## <A href="https://github.com/gdgd009xcd/WEBSAMPSQLINJ">gdgd009xcd/WEBSAMPSQLINJ</A> : a member registration sample web test results.
+I tested member registration my sample page which has CSRF token. below is result:  
+
+Prerequisite: AutoMacroBuilderForZAP is installed, test sequence is set up, and member users are registered.
+
+<table>
+ <tr><th>url</th><th>parameter</th><TH>ascanrules release <BR>ver 36.0.0</TH><TH>Advanced SQLInjection Scanner <BR>Ver13 beta</TH><TH>CustomActiveScan <BR>ver0.0.1 alpha</TH></tr>
+ <tr><td>http://localhost:8110/moduser.php</td><td>password</td><TH>NONE</TD><TD>DETECTED<BR>(time based<BR>pg_sleep(5))</TD><TD>DETECTED(boolean based)</TD></tr>
+  <tr><td>http://localhost:8110/moduser.php</td><td>age</td><TH>NONE</TD><TD>DETECTED<BR>(time based<BR>pg_sleep(5))</TD><TD>DETECTED(boolean based)</TD></tr>
+ </table>
+
+
 
 ## Building
 
