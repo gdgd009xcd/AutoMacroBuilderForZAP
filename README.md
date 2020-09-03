@@ -15,7 +15,8 @@ Click here below:　<BR>
 ## <A href="https://github.com/gdgd009xcd/WEBSAMPSQLINJ">gdgd009xcd/WEBSAMPSQLINJ</A> : a member registration sample web test results.
 I tested member registration my sample page which has CSRF token. below is result:  
 
-Prerequisite: AutoMacroBuilderForZAP is installed, test sequence is set up, and member users are registered.
+Prerequisite: AutoMacroBuilderForZAP is installed, test sequence is set up, and member users are registered.  
+Scantarget: [Modify User] 3.2.moduser.php (See <A href="https://github.com/gdgd009xcd/WEBSAMPSQLINJ#sitemap">Sitemap</A>)  
 
 <table>
  <tr><th>url</th><th>parameter</th><TH>ascanrules release <BR>ver 36.0.0</TH><TH>Advanced SQLInjection Scanner <BR>Ver13 beta</TH><TH>CustomActiveScan <BR>ver0.0.1 alpha</TH></tr>
