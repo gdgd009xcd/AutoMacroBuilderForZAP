@@ -19,6 +19,8 @@ I tested member registration my sample page which has CSRF token. below is resul
 
 Prerequisite: AutoMacroBuilderForZAP is installed, test sequence is set up, and member users are registered.  
 Scantarget: [Modify User] 3.2.moduser.php (See <A href="https://github.com/gdgd009xcd/WEBSAMPSQLINJ#sitemap">Sitemap</A>)  
+Version: ZAPROXY 2.10.0-SNAPSHOT  
+Mode: Standard mode  
 
 <table style="font-size: 70%;">
  <tr><th>url</th><th>parameter</th><TH>ascanrules release <BR>ver 36.0.0</TH><TH>Advanced SQLInjection Scanner <BR>Ver13 beta</TH><TH><A HREF="https://github.com/gdgd009xcd/CustomActiveScanForZAP">CustomActiveScan <BR>ver0.0.1 alpha</A></TH></tr>
