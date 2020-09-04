@@ -44,4 +44,5 @@ replacing `<name>` with the name of the add-on (e.g. `reveal`).
 
 [Gradle]: https://gradle.org/
 
+## I don't know gradle...
 * if you are unfamiliar with gradle and install method, please visit <A href="https://github.com/gdgd009xcd/AutoMacroBuilderForZap/wiki/1.2.-Basic-Usage#12basic-usage">here</A>.
