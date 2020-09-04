@@ -43,3 +43,5 @@ To build an add-on individually run:
 replacing `<name>` with the name of the add-on (e.g. `reveal`).
 
 [Gradle]: https://gradle.org/
+
+* if you are unfamiliar with gradle and install method, please visit <A href="">here</A>.
