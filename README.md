@@ -18,9 +18,8 @@ Click here below:　<BR>
 I tested member registration my sample page which has CSRF token. below is result:  
 
 Test Environment: <A href="https://github.com/gdgd009xcd/WEBSAMPSQLINJ">WEBSAMPSQLINJ</A> Docker image(docker-compose)  
-Prerequisite: AutoMacroBuilderForZAP is installed, test sequence is set up, and member users are registered.  
 Scantarget: [Modify User] 3.2.moduser.php (See <A href="https://github.com/gdgd009xcd/WEBSAMPSQLINJ#sitemap">Sitemap</A>)  
-ZAPROXY Version: 2.10.0-SNAPSHOT  
+ZAPROXY Version: 2.10.0-SNAPSHOT  with AutoMacroBuilderForZAP is installed.  
 ZAPROXY Mode: Standard mode  
 
 <table style="font-size: 70%;">
