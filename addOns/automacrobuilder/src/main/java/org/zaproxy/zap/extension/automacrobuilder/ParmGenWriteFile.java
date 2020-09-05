@@ -21,7 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.*;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenWriteFile {
     PrintWriter pw;
     String fileName;

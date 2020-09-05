@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenString {
     private String value;
     int s;

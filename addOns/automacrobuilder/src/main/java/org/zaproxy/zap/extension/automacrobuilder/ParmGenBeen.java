@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenBeen implements DeepClone {
     // primitive or final mermbers
     String v = null;

@@ -31,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmVars {
     // constants , environment params.
     public static String projectdir;

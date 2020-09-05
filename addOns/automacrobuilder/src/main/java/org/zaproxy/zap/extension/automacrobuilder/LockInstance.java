@@ -8,7 +8,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 /**
  * LockInstance
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public class LockInstance {
 

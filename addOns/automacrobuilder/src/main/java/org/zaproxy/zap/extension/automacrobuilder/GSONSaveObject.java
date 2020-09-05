@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class GSONSaveObject {
     public String VERSION;
     public String LANG;

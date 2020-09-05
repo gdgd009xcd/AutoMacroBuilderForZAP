@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenGSON implements GsonParserListener {
     private static org.apache.logging.log4j.Logger logger4j =
             org.apache.logging.log4j.LogManager.getLogger();

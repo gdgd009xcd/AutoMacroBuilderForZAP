@@ -24,7 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenReadFile {
 
     FileReader fr = null;

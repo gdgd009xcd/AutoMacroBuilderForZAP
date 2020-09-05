@@ -8,7 +8,7 @@ package org.zaproxy.zap.extension.automacrobuilder.generated;
 
 /**
  *
- * @author daike
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class TamperProxy extends javax.swing.JFrame {

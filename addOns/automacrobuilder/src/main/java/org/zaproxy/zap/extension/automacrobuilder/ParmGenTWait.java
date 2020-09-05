@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenTWait {
     private long waittimer;
     private static org.apache.logging.log4j.Logger LOGGER4J =

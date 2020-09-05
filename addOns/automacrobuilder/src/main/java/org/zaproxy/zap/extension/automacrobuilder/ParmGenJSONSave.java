@@ -32,7 +32,7 @@ import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.AppValue_List;
 /**
  * This class Used only when saving parameter settings.
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public class ParmGenJSONSave {
     private static org.apache.logging.log4j.Logger logger4j =

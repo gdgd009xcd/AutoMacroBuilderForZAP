@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenCookieManager implements DeepClone {
     private CookieManager manager = null;
     private CookieStore cookiestore = null;

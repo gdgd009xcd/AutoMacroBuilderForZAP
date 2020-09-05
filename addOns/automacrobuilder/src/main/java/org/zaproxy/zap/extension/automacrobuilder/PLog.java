@@ -33,7 +33,7 @@ import java.util.Date;
  * and open the template in the editor.
  */
 
-/** @author daike */
+/** @author gdgd009xcd */
 //
 // Logger
 //

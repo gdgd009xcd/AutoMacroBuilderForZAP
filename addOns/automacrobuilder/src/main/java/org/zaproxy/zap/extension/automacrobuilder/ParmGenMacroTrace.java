@@ -27,7 +27,7 @@ import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientRequest;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenMacroTrace extends ClientDependent {
 
     private static org.apache.logging.log4j.Logger LOGGER4J =

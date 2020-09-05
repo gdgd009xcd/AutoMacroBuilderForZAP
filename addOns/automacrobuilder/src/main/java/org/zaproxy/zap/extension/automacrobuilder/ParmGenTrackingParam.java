@@ -22,21 +22,29 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenTrackingParam implements DeepClone {
     private String cachevalue = null;
+    private String oldvalue = null; // previous cachevalue
+    private boolean condValid =
+            false; // if hasCond && !condValid then restore cachevalue from oldvalue
+    private boolean hasCond = false; // true : condition paramter tracking is enabled.
     private int responseStepNo = -1;
 
     ParmGenTrackingParam() {
         init();
     }
 
-    public void init() {
+    private void init() {
         cachevalue = null;
+        oldvalue = null;
         responseStepNo = -1;
+        condValid = false;
+        hasCond = false;
     }
 
     void setValue(String _v) {
+        oldvalue = cachevalue;
         cachevalue = _v;
     }
 
@@ -45,11 +53,33 @@ public class ParmGenTrackingParam implements DeepClone {
     }
 
     public String getValue() {
+        if (hasCond && !condValid) {
+            cachevalue = oldvalue;
+        }
         return cachevalue;
     }
 
     public int getResponseStepNo() {
         return responseStepNo;
+    }
+
+    /**
+     * set hasCond variable. if hasCond == true then conditional parameter tracking enabled.
+     *
+     * @param b
+     */
+    void setHasCond(boolean b) {
+        hasCond = b;
+        condValid = true;
+    }
+
+    /**
+     * set condValid variable. if hasCond && !condValid then restored cachevalue from oldvalue
+     *
+     * @param b
+     */
+    void setCondValid(boolean b) {
+        condValid = b;
     }
 
     @Override
@@ -60,6 +90,9 @@ public class ParmGenTrackingParam implements DeepClone {
 
             nobj.cachevalue = this.cachevalue;
             nobj.responseStepNo = this.responseStepNo;
+            nobj.hasCond = this.hasCond;
+            nobj.oldvalue = this.oldvalue;
+            nobj.condValid = this.condValid;
 
             return nobj;
         } catch (CloneNotSupportedException ex) {

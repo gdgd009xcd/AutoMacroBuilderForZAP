@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class HeaderPattern {
     private String upperheadername;
     private String tkname_regexformat;

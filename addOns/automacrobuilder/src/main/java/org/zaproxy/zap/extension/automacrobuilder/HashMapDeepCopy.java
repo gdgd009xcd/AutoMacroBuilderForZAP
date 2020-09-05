@@ -24,7 +24,7 @@ import static org.zaproxy.zap.extension.automacrobuilder.CastUtils.castToType;
 import java.util.HashMap;
 import java.util.UUID;
 
-/** @author daike */
+/** @author gdgd009xcd */
 class HashMapDeepCopy {
 
     /**

@@ -40,7 +40,7 @@ import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependMessageCon
 import org.zaproxy.zap.extension.forceduser.ExtensionForcedUser;
 import org.zaproxy.zap.model.Target;
 
-/** @author daike */
+/** @author gdgd009xcd */
 @SuppressWarnings("serial")
 public class PopUpItemActiveScan extends JMenuItem {
 

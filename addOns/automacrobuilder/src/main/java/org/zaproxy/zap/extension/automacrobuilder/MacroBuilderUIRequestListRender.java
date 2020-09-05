@@ -26,7 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 
-/** @author daike */
+/** @author gdgd009xcd */
 @SuppressWarnings("serial")
 public class MacroBuilderUIRequestListRender extends DefaultListCellRenderer {
     ParmGenMacroTrace pmt;

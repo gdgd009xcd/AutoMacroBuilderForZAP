@@ -31,7 +31,7 @@ import org.zaproxy.zap.extension.automacrobuilder.*;
 
 /**
  *
- * @author daike
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfaceParmGenRegexSaveCancelAction {

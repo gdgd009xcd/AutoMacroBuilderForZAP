@@ -33,7 +33,7 @@ import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.UUIDGenerator;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ClientDependent {
 
     public enum CLIENT_TYPE {

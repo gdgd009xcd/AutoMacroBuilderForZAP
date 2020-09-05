@@ -25,7 +25,7 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenHeader implements DeepClone {
     private String name; // header name
     private List<ParmGenBeen> values =

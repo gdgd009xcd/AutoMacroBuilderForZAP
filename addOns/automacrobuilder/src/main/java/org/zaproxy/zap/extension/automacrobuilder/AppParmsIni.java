@@ -26,7 +26,7 @@ import java.io.FileWriter;
 import java.util.*;
 import java.util.regex.Pattern;
 
-/** @author daike */
+/** @author gdgd009xcd */
 //
 // class AppParmsIni
 //

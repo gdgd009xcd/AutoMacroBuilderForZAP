@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenTokenValue implements DeepClone {
     private String url; // url is LOCATION header's URL "VALUE". It is Not a key value.  LOCATION:
     // http://brah.com/xxx...

@@ -21,7 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.util.Objects;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class CookieKey implements Comparable<CookieKey> {
     private String domain;
     private String name;

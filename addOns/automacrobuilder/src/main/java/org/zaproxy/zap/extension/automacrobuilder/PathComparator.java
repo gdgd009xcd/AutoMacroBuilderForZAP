@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-/** @author daike */
+/** @author gdgd009xcd */
 class PathComparator<T extends CookiePathValue> implements java.util.Comparator<T> {
     @Override
     public int compare(T s, T t) {

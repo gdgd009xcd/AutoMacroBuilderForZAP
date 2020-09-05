@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenTrackingToken {
     private ParmGenToken RToken; // Token value from HTTP Response
     private ParmGenRequestToken QToken; // Token value from HTTP reQuest

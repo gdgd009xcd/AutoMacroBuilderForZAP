@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** @author daike */
+/** @author gdgd009xcd */
 //
 // class AppValue
 //
@@ -61,6 +61,14 @@ public class AppValue {
             null; // レスポンスからフェッチしたtokenの値 Token obtained from response during tracking process
 
     private TokenTypeNames tokentype = TokenTypeNames.INPUT;
+
+    // conditional parameter tracking feature
+    private int condTargetNo = -1; // conditinal tracking targetNo default: -1(any == wildcard "*")
+    private String condRegex = ""; // conditional tracking regex. if requestNO == condTargetNo
+    private Pattern Pattern_condRegex = null; // compiled pattern of condRegex
+    // and it's request or response matched this regex then cache value  is updated.
+    private boolean condRegexTargetIsRequest =
+            false; // if this value is true then condRegex matches request.
 
     public enum TokenTypeNames {
         DEFAULT,
@@ -477,6 +485,15 @@ public class AppValue {
         return Pattern_resRegex;
     }
 
+    /**
+     * get regex pattern for conditional parameter tracking
+     *
+     * @return
+     */
+    public Pattern getPattern_condRegex() {
+        return Pattern_condRegex;
+    }
+
     public String getresRegex() {
         return resRegex;
     }
@@ -495,6 +512,66 @@ public class AppValue {
             LOGGER4J.error("ERROR: setresRegex ", e);
             Pattern_resRegex = null;
         }
+    }
+
+    /**
+     * set regex pattern for conditional parameter tracking
+     *
+     * @param _regex
+     */
+    public void setcondRegex(String _regex) {
+        if (_regex == null) _regex = "";
+        condRegex = _regex;
+        try {
+            Pattern_condRegex = ParmGenUtil.Pattern_compile(condRegex);
+        } catch (Exception e) {
+            LOGGER4J.error("ERROR: setcondRegex ", e);
+            Pattern_condRegex = null;
+        }
+    }
+
+    /**
+     * get conditinal target request No.
+     *
+     * @return
+     */
+    public int getCondTargetNo() {
+        return condTargetNo;
+    }
+
+    /**
+     * set conditinal target request No.
+     *
+     * @param nstr String - String of number representation. specialcase is "*" or "" => -1
+     */
+    public void setCondTargetNo(String nstr) {
+        if (nstr == null || nstr.isEmpty() || nstr.equals("*")) {
+            condTargetNo = -1;
+        } else {
+            try {
+                condTargetNo = Integer.parseInt(nstr);
+            } catch (Exception e) {
+                condTargetNo = -1;
+            }
+        }
+    }
+
+    /**
+     * Whether the conditional regular expression applies to requests or responses
+     *
+     * @return true - applies to request.
+     */
+    public boolean requestIsCondRegexTarget() {
+        return condRegexTargetIsRequest;
+    }
+
+    /**
+     * set conditional reqular expression target which is request or not.
+     *
+     * @param b
+     */
+    public void setRequestIsCondTegexTarget(boolean b) {
+        condRegexTargetIsRequest = b;
     }
 
     public void setresPartType(String respart) {
@@ -850,7 +927,10 @@ public class AppValue {
                 && this.urlencode == app.urlencode
                 && this.resencodetype == app.resencodetype
                 && this.fromStepNo == app.fromStepNo
-                && this.toStepNo == app.toStepNo) {
+                && this.toStepNo == app.toStepNo
+                && ParmGenUtil.nullableStringEquals(this.condRegex, app.condRegex)
+                && this.condTargetNo == app.condTargetNo
+                && this.condRegexTargetIsRequest == app.condRegexTargetIsRequest) {
             return true;
         }
         return false;

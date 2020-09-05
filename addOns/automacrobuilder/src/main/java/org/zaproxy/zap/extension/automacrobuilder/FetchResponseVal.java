@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
 //
 // class variable
 //
-// FetchResponse初期化
+// FetchResponse
 //
 
 class FetchResponseVal implements DeepClone {

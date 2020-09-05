@@ -21,7 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.util.ArrayList;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenParseURL {
     String protocol = "";
     String domain = "";

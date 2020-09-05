@@ -13,7 +13,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 
 /**
  *
- * @author daike
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class LangSelectDialog extends javax.swing.JDialog {

@@ -28,7 +28,7 @@ import org.zaproxy.zap.extension.automacrobuilder.Encode;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceClientDependantMessage;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ClientDependMessageContainer
         implements InterfaceClientDependantMessage<HistoryReference> {
 

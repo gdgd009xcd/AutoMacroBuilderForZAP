@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * OneThreadProcessor
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public class OneThreadProcessor {
     private static org.apache.logging.log4j.Logger LOGGER4J =

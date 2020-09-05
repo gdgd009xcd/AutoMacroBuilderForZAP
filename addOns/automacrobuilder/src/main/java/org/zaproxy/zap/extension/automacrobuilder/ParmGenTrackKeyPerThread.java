@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenTrackKeyPerThread implements DeepClone {
 
     private HashMap<UUID, ParmGenTrackingParam> trackjar =

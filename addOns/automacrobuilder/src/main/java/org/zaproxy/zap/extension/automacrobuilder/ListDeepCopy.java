@@ -24,7 +24,7 @@ import static org.zaproxy.zap.extension.automacrobuilder.CastUtils.castToType;
 import java.util.ArrayList;
 import java.util.List;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ListDeepCopy {
 
     private static <V extends DeepClone> List<V> listDeepCopyVClone(List<V> src, List<V> dest) {

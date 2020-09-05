@@ -21,7 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder.zap.generated;
 
 import javax.swing.JPanel;
 
-/** @author daike */
+/** @author gdgd009xcd */
 @SuppressWarnings({"unchecked", "serial"})
 public class MyFirstJPanel extends JPanel {
 
