@@ -449,7 +449,7 @@ public class AppParmsIni {
         int n;
         switch (typeval) {
             case T_NUMBER: // number
-                n = countUp(_valparttype, this); // synchronized
+                n = countUp(_valparttype, this, apv, pmt); // synchronized
                 if (n > -1) {
                     return getFillZeroInt(n); // thread safe
                 } else {
@@ -466,7 +466,8 @@ public class AppParmsIni {
                                 apv.getTrackKey(),
                                 tk,
                                 currentStepNo,
-                                toStepNo); // per thread object
+                                toStepNo,
+                                apv); // per thread object
                 // }
             default: // csv
                 if (frl != null) {
@@ -475,7 +476,11 @@ public class AppParmsIni {
                         csvpos = len;
                     }
                     return frl.readLine(
-                            _valparttype, csvpos, this); // read CSV 1 record. synchronized
+                            _valparttype,
+                            csvpos,
+                            this,
+                            apv,
+                            pmt); // read CSV 1 record. synchronized
                 } else {
                     LOGGER4J.debug("getGenValue frl is NULL");
                 }
@@ -498,7 +503,8 @@ public class AppParmsIni {
         return cstrcnt;
     }
 
-    synchronized int countUp(int _valparttype, AppParmsIni _parent) {
+    synchronized int countUp(
+            int _valparttype, AppParmsIni _parent, AppValue apv, ParmGenMacroTrace pmt) {
         // counter file open
         int cnt = inival;
         try {
@@ -523,7 +529,13 @@ public class AppParmsIni {
 
         int ncnt = cnt + 1;
 
-        if (((_valparttype & AppValue.C_NOCOUNT) == AppValue.C_NOCOUNT) || _parent.isPaused()) {
+        boolean condInValid = false;
+        if (pmt != null && apv != null) {
+            condInValid = !pmt.getFetchResponseVal().getCondValid(apv) && apv.hasCond();
+        }
+        if (condInValid
+                || ((_valparttype & AppValue.C_NOCOUNT) == AppValue.C_NOCOUNT)
+                || _parent.isPaused()) {
             ncnt = cnt; // no countup
         } else if (ncnt > maxval) {
             LOGGER4J.debug(
@@ -574,7 +586,7 @@ public class AppParmsIni {
         String rval = null;
         switch (typeval) {
             case T_NUMBER:
-                int i = countUp(AppValue.C_NOCOUNT, this); // synchronized
+                int i = countUp(AppValue.C_NOCOUNT, this, null, null); // synchronized
                 rval = Integer.toString(i);
                 break;
             case T_RANDOM:
@@ -625,6 +637,11 @@ public class AppParmsIni {
         }
     }
 
+    /**
+     * get JTable row which is generated from AppValue
+     *
+     * @return Object[]
+     */
     public Object[] getNextAppValuesRow() {
         AppValue app;
         if (it != null && it.hasNext()) {
@@ -662,7 +679,11 @@ public class AppParmsIni {
                         app.getToStepNo() == ParmVars.TOSTEPANY
                                 ? "*"
                                 : Integer.toString(app.getToStepNo()),
-                        app.getTokenType().name()
+                        app.getTokenType().name(),
+                        app.getCondRegex(),
+                        app.getCondTargetNo(),
+                        app.requestIsCondRegexTarget(),
+                        app.isReplaceZeroSize()
                     };
                 default:
                     break;

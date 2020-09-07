@@ -28,7 +28,6 @@ public class ParmGenTrackingParam implements DeepClone {
     private String oldvalue = null; // previous cachevalue
     private boolean condValid =
             false; // if hasCond && !condValid then restore cachevalue from oldvalue
-    private boolean hasCond = false; // true : condition paramter tracking is enabled.
     private int responseStepNo = -1;
 
     ParmGenTrackingParam() {
@@ -40,7 +39,6 @@ public class ParmGenTrackingParam implements DeepClone {
         oldvalue = null;
         responseStepNo = -1;
         condValid = false;
-        hasCond = false;
     }
 
     void setValue(String _v) {
@@ -48,29 +46,24 @@ public class ParmGenTrackingParam implements DeepClone {
         cachevalue = _v;
     }
 
+    void rollBackValue() {
+        cachevalue = oldvalue;
+    }
+
+    void overWriteOldValue() {
+        oldvalue = cachevalue;
+    }
+
     void setResponseStepNo(int _r) {
         responseStepNo = _r;
     }
 
-    public String getValue() {
-        if (hasCond && !condValid) {
-            cachevalue = oldvalue;
-        }
+    public String getValue(AppValue ap) {
         return cachevalue;
     }
 
     public int getResponseStepNo() {
         return responseStepNo;
-    }
-
-    /**
-     * set hasCond variable. if hasCond == true then conditional parameter tracking enabled.
-     *
-     * @param b
-     */
-    void setHasCond(boolean b) {
-        hasCond = b;
-        condValid = true;
     }
 
     /**
@@ -82,6 +75,10 @@ public class ParmGenTrackingParam implements DeepClone {
         condValid = b;
     }
 
+    boolean getCondValid() {
+        return condValid;
+    }
+
     @Override
     public ParmGenTrackingParam clone() {
         try {
@@ -90,7 +87,6 @@ public class ParmGenTrackingParam implements DeepClone {
 
             nobj.cachevalue = this.cachevalue;
             nobj.responseStepNo = this.responseStepNo;
-            nobj.hasCond = this.hasCond;
             nobj.oldvalue = this.oldvalue;
             nobj.condValid = this.condValid;
 

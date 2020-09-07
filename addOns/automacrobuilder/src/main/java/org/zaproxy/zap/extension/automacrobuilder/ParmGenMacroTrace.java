@@ -39,10 +39,10 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     // ============== instance unique members(copy per thread) BEGIN ==========
 
-    private List<PRequestResponse> rlist = null; // マクロ実行後の全リクエストレスポンス
-    private List<PRequestResponse> originalrlist = null; // オリジナルリクエストレスポンス
+    private List<PRequestResponse> rlist = null; // requestresponse results
+    private List<PRequestResponse> originalrlist = null; // original requestresponse
 
-    int selected_request = 0; // 現在選択しているカレントのリクエスト
+    int selected_request = 0; // current selected request number
 
     private FetchResponseVal fetchResVal = null; // token cache  has DeepCloneable
 
@@ -60,37 +60,42 @@ public class ParmGenMacroTrace extends ClientDependent {
     PRequestResponse postmacro_RequestResponse =
             null; // after startPostMacro, this value has last RequestResponse.
 
-    ListIterator<PRequestResponse> oit = null; // オリジナル
-    ListIterator<PRequestResponse> cit = null; // 実行
+    ListIterator<PRequestResponse> oit = null; // iterator for resquestresponse results
+    ListIterator<PRequestResponse> cit = null; // iterator for original requestresponse
 
-    boolean MBCookieUpdate = false; // ==true Cookie更新
-    boolean CBInheritFromCache = false; // ==true 開始時Cookie.jarから引き継ぐ
-    boolean MBFinalResponse = false; // ==true 結果は最後に実行されたマクロのレスポンス
-    boolean MBResetToOriginal = false; // ==true オリジナルリクエストを実行。
-    boolean MBreplaceCookie = false; // ==true Cookie引き継ぎ置き換え == false Cookie overwrite
+    boolean MBCookieUpdate = false; // == true update Cookies
+    boolean CBInheritFromCache = false; // == true then Cookies is updated with cache from begin.
+    boolean MBFinalResponse =
+            false; // == true then scan target request's response is updated with last request's
+    // response in macro request list.
+    boolean MBResetToOriginal = false; // == true use original requestresponse.
+    boolean MBreplaceCookie = false; // == true then overwrite Cookie
     boolean MBmonitorofprocessing = false;
     boolean MBreplaceTrackingParam = false;
 
     int state = PMT_POSTMACRO_NULL;
     // int state possible values
-    public static final int PMT_PREMACRO_BEGIN = 0; // 前処理マクロ実行中
-    public static final int PMT_PREMACRO_END = 1; // 前処理マクロ実行中
-    public static final int PMT_CURRENT_BEGIN = 2; // カレントリクエスト開始
-    public static final int PMT_CURRENT_END = 3; // カレントリクエスト終了。
-    public static final int PMT_POSTMACRO_BEGIN = 4; // 後処理マクロ実行中
-    public static final int PMT_POSTMACRO_END = 5; // 後処理マクロ終了。
-    public static final int PMT_POSTMACRO_NULL = 6; // 後処理マクロレスポンスnull
+    public static final int PMT_PREMACRO_BEGIN = 0; // Started Pre Macros
+    public static final int PMT_PREMACRO_END = 1; // Ended Pre Macro Running
+    public static final int PMT_CURRENT_BEGIN = 2; // Started Current Target Request
+    public static final int PMT_CURRENT_END = 3; // Ended Current Target Request
+    public static final int PMT_POSTMACRO_BEGIN = 4; // Started Post Macros
+    public static final int PMT_POSTMACRO_END = 5; // Ended Post Macros
+    public static final int PMT_POSTMACRO_NULL = 6; // Completed ALL requests or stopped.
 
     private int stepno = -1; // current running request step no.
 
     private int last_stepno = -1; // postmacro request performs until this step no.
 
     private ParmGenTWait TWaiter = null;
-    private int waittimer = 0; // 実行間隔(msec)
+    private int waittimer = 0; // wait timer (msec)
 
     public static ClientRequest clientrequest = new ClientRequest();
 
     private Object sender = null;
+
+    private HashMap<Integer, List<AppValue>> cachedAppValues =
+            null; // cache of AppValues. cache is valid only when running macros.
 
     public String state_debugprint() {
         String msg = "PMT_UNKNOWN";
@@ -144,17 +149,18 @@ public class ParmGenMacroTrace extends ClientDependent {
         nobj.cookieMan = this.cookieMan != null ? this.cookieMan.clone() : null; // deepclone
         nobj.savelist = new HashMap<>();
         nobj.toolbaseline = this.toolbaseline != null ? this.toolbaseline.clone() : null;
-        nobj.MBCookieUpdate = this.MBCookieUpdate; // ==true Cookie更新
+        nobj.MBCookieUpdate = this.MBCookieUpdate;
         nobj.CBInheritFromCache =
                 this.CBInheritFromCache; // ==true inherit CSRFtoken/cookie values from cache
-        nobj.MBFinalResponse = this.MBFinalResponse; // ==true 結果は最後に実行されたマクロのレスポンス
-        nobj.MBResetToOriginal = this.MBResetToOriginal; // ==true オリジナルリクエストを実行。
-        nobj.MBreplaceCookie =
-                this.MBreplaceCookie; // ==true Cookie引き継ぎ置き換え == false Cookie overwrite
+        nobj.MBFinalResponse = this.MBFinalResponse;
+        nobj.MBResetToOriginal = this.MBResetToOriginal;
+        nobj.MBreplaceCookie = this.MBreplaceCookie;
         nobj.MBmonitorofprocessing = this.MBmonitorofprocessing;
         nobj.MBreplaceTrackingParam = this.MBreplaceTrackingParam;
 
         nobj.waittimer = this.waittimer;
+
+        nobj.cachedAppValues = null;
 
         return nobj;
     }
@@ -297,6 +303,48 @@ public class ParmGenMacroTrace extends ClientDependent {
     }
 
     /**
+     * initialize cachedAppValueList which has null value.
+     *
+     * @return true when initialized.
+     */
+    boolean initializedCachedAppValues() {
+        boolean b = false;
+        if (this.cachedAppValues == null) {
+            this.cachedAppValues = new HashMap<>();
+            b = true;
+        }
+        return b;
+    }
+
+    /**
+     * add AppValue to cache. cache is valid only when running macros.
+     *
+     * @param ap
+     */
+    void addAppValueToCache(AppValue ap) {
+        if (this.cachedAppValues != null && ap != null) {
+            List<AppValue> aplist = this.cachedAppValues.get(ap.getCondTargetNo());
+            if (aplist == null) {
+                aplist = new ArrayList<>();
+            }
+            aplist.add(ap);
+            this.cachedAppValues.put(ap.getCondTargetNo(), aplist);
+        }
+    }
+
+    /**
+     * get AppValue which has specified targetno cache is valid only when running macros.
+     *
+     * @return AppValue
+     */
+    List<AppValue> getCachedAppValues(int targetno) {
+        if (this.cachedAppValues != null) {
+            return this.cachedAppValues.get(targetno);
+        }
+        return null;
+    }
+
+    /**
      * update original requestlist with parameter
      *
      * @param idx
@@ -338,7 +386,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         return getOriginalRequest(getCurrentRequestPos());
     }
 
-    // １）前処理マクロ開始
+    // 1) Start Pre Macros
     public void startBeforePreMacro(OneThreadProcessor otp) {
         macroStarted();
 
@@ -493,7 +541,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         return null;
     }
 
-    // ４）後処理マクロの開始
+    // 3) start Post Macros
     public void startPostMacro(OneThreadProcessor otp) {
         state = PMT_POSTMACRO_BEGIN;
         postmacro_RequestResponse = null;

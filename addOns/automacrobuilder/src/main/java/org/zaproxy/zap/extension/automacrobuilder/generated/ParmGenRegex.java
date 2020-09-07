@@ -487,6 +487,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         OrigUndoRedoMenu = new javax.swing.JPopupMenu();
         OrigUndo = new javax.swing.JMenuItem();
         OrigRedo = new javax.swing.JMenuItem();
+        SelectPattern = new javax.swing.JMenuItem();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         RegexText = new javax.swing.JTextPane();
@@ -552,6 +553,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
             }
         });
         OrigUndoRedoMenu.add(OrigRedo);
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("burp/Bundle"); // NOI18N
+        SelectPattern.setText(bundle.getString("ParmGenRegex.SelectPattern.text")); // NOI18N
+        SelectPattern.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SelectPatternActionPerformed(evt);
+            }
+        });
+        OrigUndoRedoMenu.add(SelectPattern);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(bundle.getString("ParmGenRegex.正規表現テスト画面.text")); // NOI18N
@@ -1042,6 +1052,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_OrigRedoActionPerformed
 
+    private void SelectPatternActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SelectPatternActionPerformed
+        // TODO add your handling code here:
+        String selected_value = OriginalText.getSelectedText();
+        if (selected_value != null && !selected_value.isEmpty()) {
+            String regex = "(" + selected_value + ")";
+            RegexText.setText(regex);
+        }
+    }//GEN-LAST:event_SelectPatternActionPerformed
+
     public static class RegexSelectedTextPos {
         int st;
         int et;
@@ -1078,6 +1097,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     private javax.swing.JTextPane RegexText;
     private javax.swing.JComboBox<String> RegexType;
     private javax.swing.JButton Save;
+    private javax.swing.JMenuItem SelectPattern;
     private javax.swing.JTabbedPane TextTab;
     private javax.swing.JTextField To;
     private javax.swing.JMenuItem Undo;

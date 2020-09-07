@@ -209,6 +209,12 @@ public class ParmGenJSONSave {
                 AppValue_ListObj.fromStepNo = param.getFromStepNo();
                 AppValue_ListObj.toStepNo = param.getToStepNo();
                 AppValue_ListObj.TokenType = param.getTokenType().name();
+                AppValue_ListObj.condTargetNo = param.getCondTargetNo();
+                AppValue_ListObj.condRegex =
+                        (escapeDelimiters(param.getCondRegex(), null) == null
+                                ? ""
+                                : escapeDelimiters(param.getCondRegex(), null));
+                AppValue_ListObj.condRegexTargetIsRequest = param.requestIsCondRegexTarget();
 
                 AppParmsIni_ListObj.AppValue_List.add(AppValue_ListObj);
             }

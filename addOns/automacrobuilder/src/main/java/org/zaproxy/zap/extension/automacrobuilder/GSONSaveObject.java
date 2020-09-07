@@ -73,6 +73,10 @@ public class GSONSaveObject {
         public int fromStepNo;
         public int toStepNo;
         public String TokenType;
+        public int condTargetNo;
+        public String condRegex;
+        public boolean condRegexTargetIsRequest;
+        public boolean replaceZeroSize;
     }
 
     public int CurrentRequest;

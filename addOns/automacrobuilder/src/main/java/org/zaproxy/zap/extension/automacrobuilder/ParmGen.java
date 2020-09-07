@@ -518,17 +518,7 @@ public class ParmGen {
             switch (av.getResTypeInt()) {
                 case AppValue.V_REQTRACKBODY:
                     return pmt.getFetchResponseVal()
-                            .reqbodymatch(
-                                    av,
-                                    pmt.getStepNo(),
-                                    av.getFromStepNo(),
-                                    url,
-                                    prequest,
-                                    row,
-                                    col,
-                                    true,
-                                    av.getResRegexPos(),
-                                    av.getToken());
+                            .reqbodymatch(av, pmt.getStepNo(), url, prequest, row, col, true);
                 default:
                     break;
             }
@@ -564,15 +554,7 @@ public class ParmGen {
                     rflag =
                             pmt.getFetchResponseVal()
                                     .headermatch(
-                                            pmt.getStepNo(),
-                                            av.getFromStepNo(),
-                                            url,
-                                            presponse,
-                                            row,
-                                            col,
-                                            true,
-                                            av.getToken(),
-                                            av);
+                                            pmt.getStepNo(), url, presponse, row, col, true, av);
                     break;
                 case AppValue.V_REQTRACKBODY: // request追跡なのでNOP.
                     break;
@@ -586,17 +568,13 @@ public class ParmGen {
                                 pmt.getFetchResponseVal()
                                         .bodymatch(
                                                 pmt.getStepNo(),
-                                                av.getFromStepNo(),
                                                 url,
                                                 presponse,
                                                 row,
                                                 col,
                                                 true,
                                                 autotrack,
-                                                av,
-                                                av.getResRegexPos(),
-                                                av.getToken(),
-                                                av.isUrlEncode());
+                                                av);
                     } catch (UnsupportedEncodingException ex) {
                         Logger.getLogger(ParmGen.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -607,12 +585,29 @@ public class ParmGen {
         return rflag;
     }
 
-    // 何もしないコンストラクタ
+    // constructor for runnig macros
     public ParmGen(ParmGenMacroTrace _pmt) {
         pmt = _pmt;
+        if (pmt != null && parmcsv != null) {
+            if (pmt.initializedCachedAppValues()) {
+                AppParmsIni pini = null;
+                Iterator<AppParmsIni> it = parmcsv.iterator();
+                while (it.hasNext()) {
+                    pini = it.next();
+                    List<AppValue> parmlist = pini.getAppValueReadWriteOriginal();
+                    Iterator<AppValue> pt = parmlist.iterator();
+                    while (pt.hasNext()) {
+                        AppValue av = pt.next();
+                        if (av.isEnabled() && av.hasCond()) {
+                            pmt.addAppValueToCache(av);
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    //
+    // constructor for setting new parmcsv
     public ParmGen(ParmGenMacroTrace _pmt, List<AppParmsIni> _parmcsv) {
         pmt = _pmt;
         if (_parmcsv != null) nullset();
@@ -733,7 +728,8 @@ public class ParmGen {
                             }
                             hasboundary = true;
                         }
-                        LOGGER4J.debug("***URL正規表現[" + pini.getUrl() + "]マッチパターン[" + url + "]");
+                        LOGGER4J.debug(
+                                "***URL regex[" + pini.getUrl() + "] matchedvalue[" + url + "]");
                         if (contarray == null) {
 
                             ParmGenBinUtil warray = new ParmGenBinUtil(requestbytes);
@@ -776,7 +772,7 @@ public class ParmGen {
                                 }
                             }
                         }
-                        // ここでerrorhashを評価し、setErrorする。
+                        // evaluate errorhash.
                         Iterator<Map.Entry<ParmGenTokenKey, ParmGenTokenValue>> ic =
                                 errorhash.iterator();
                         boolean iserror = false;
@@ -1061,36 +1057,20 @@ public class ParmGen {
     }
 
     /**
-     * Parse Response and extract tracking tokens from it.
+     * Parse response and extract tracking tokens
      *
      * @param url
-     * @param response_bytes
-     * @param _pageenc
+     * @param prs
      * @return
      */
-    public int ResponseRun(String url, byte[] response_bytes, Encode _pageenc) {
+    public int ResponseRun(String url, PRequestResponse prs) {
 
         int updtcnt = 0;
 
-        PResponse presponse = new PResponse(response_bytes, _pageenc);
-        return ResponseRun(url, presponse);
-    }
-
-    /**
-     * Parse response and extract tracking tokens from it.
-     *
-     * @param url
-     * @param presponse
-     * @return
-     */
-    public int ResponseRun(String url, PResponse presponse) {
-
-        int updtcnt = 0;
-
-        String res_content_type = presponse.getContent_Type();
-        String res_content_subtype = presponse.getContent_Subtype();
-
-        String res_contentMimeType = res_content_type + "/" + res_content_subtype;
+        PRequest prequest = prs.request;
+        PResponse presponse = prs.response;
+        String req_contentMimeType = prequest.getContentMimeType();
+        String res_contentMimeType = presponse.getContentMimeType();
         // if content_type/subtype matches excludeMimeType regex then skip below codes..
         if (!ParmVars.isMimeTypeExcluded(res_contentMimeType)) {
             // ### skip start
@@ -1130,6 +1110,45 @@ public class ParmGen {
         } else {
             LOGGER4J.debug(
                     "ResponseRun skipped url[" + url + "] MimeType[" + res_contentMimeType + "]");
+        }
+
+        List<AppValue> condaplist = pmt.getCachedAppValues(pmt.getStepNo());
+        if (condaplist != null) {
+            condaplist.forEach(
+                    av -> {
+                        if (av.isEnabled()) {
+                            if (av.hasCond()) {
+                                Pattern condpattern = av.getPattern_condRegex();
+                                boolean isRequest = av.requestIsCondRegexTarget();
+                                String mess = null;
+                                if (isRequest && prequest != null) {
+                                    if (!ParmVars.isMimeTypeExcluded(req_contentMimeType)) {
+                                        mess = prequest.getMessage();
+                                    }
+                                } else if (!ParmVars.isMimeTypeExcluded(res_contentMimeType)) {
+                                    mess = presponse.getMessage();
+                                }
+                                if (mess != null) {
+                                    Matcher matcher = condpattern.matcher(mess);
+                                    if (matcher.find()) {
+                                        pmt.getFetchResponseVal().updateCond(av, true);
+                                        LOGGER4J.debug(
+                                                "condRegex["
+                                                        + av.getCondRegex()
+                                                        + "] !! MATCHED TargetNo:"
+                                                        + av.getCondTargetNo());
+                                    } else {
+                                        pmt.getFetchResponseVal().updateCond(av, false);
+                                        LOGGER4J.debug(
+                                                "condRegex["
+                                                        + av.getCondRegex()
+                                                        + "] .. NO matched TargetNo:"
+                                                        + av.getCondTargetNo());
+                                    }
+                                }
+                            }
+                        }
+                    });
         }
 
         return updtcnt;

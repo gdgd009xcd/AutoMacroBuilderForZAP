@@ -41,8 +41,8 @@ public class AppValue {
     private String valpart; // 置換位置
     private int valparttype; //  1-query, 2-body  3-header  4-path.... 16(10000) bit == no count
     // 32(100000) == no modify
-    private String value = null; // value リクエストパラメータの正規表現文字列
-    private Pattern valueregex; // リクエストパラメータの正規表現
+    private String value = null; // Target Regex String to embed value in
+    private Pattern valueregex; //  Target Regex to embed value in
 
     private int csvpos;
 
@@ -52,8 +52,8 @@ public class AppValue {
     private String resRegex = "";
     private Pattern Pattern_resRegex = null;
     private int resPartType;
-    private int resRegexPos = -1; // 追跡token　ページ内出現位置 0start
-    private String token; // 追跡token　Name
+    private int resRegexPos = -1; // Tracking token　position on page(start 0)
+    private String token; // Tracking token name
     //
     // 下記パラメータは、GUI操作時の一時保存値で、保存対象外。スキャン時は未使用。
     // This parameter does not use when scanning. only  temporarily use  for GUI manipulation
@@ -69,6 +69,10 @@ public class AppValue {
     // and it's request or response matched this regex then cache value  is updated.
     private boolean condRegexTargetIsRequest =
             false; // if this value is true then condRegex matches request.
+
+    private boolean replaceZeroSize =
+            false; // if this value is true, request parameter replaced even if fetched tracking
+    // value is zero size string.
 
     public enum TokenTypeNames {
         DEFAULT,
@@ -151,10 +155,14 @@ public class AppValue {
     private boolean enabled = true; // 有効
 
     private void initctype() {
+        Pattern_condRegex = null;
+        condTargetNo = -1;
+        condRegex = null;
         trackkey = null;
         resFetchedValue = null;
         enabled = true;
         tokentype = TokenTypeNames.INPUT;
+        replaceZeroSize = false;
     }
 
     public AppValue() {
@@ -214,7 +222,11 @@ public class AppValue {
             boolean _urlenc,
             int _fromStepNo,
             int _toStepNo,
-            String _tokentypename) {
+            String _tokentypename,
+            String condRegex,
+            int condTargetNo,
+            boolean condRegexTargetIsRequest,
+            boolean replaceZeroSize) {
         initctype();
         setValPart(_Type);
         setEnabled(!_disabled); // NOT
@@ -229,6 +241,10 @@ public class AppValue {
         fromStepNo = _fromStepNo;
         toStepNo = _toStepNo;
         tokentype = parseTokenTypeName(_tokentypename);
+        setCondRegex(condRegex);
+        this.condTargetNo = condTargetNo;
+        this.condRegexTargetIsRequest = condRegexTargetIsRequest;
+        this.replaceZeroSize = replaceZeroSize;
     }
 
     /**
@@ -519,15 +535,24 @@ public class AppValue {
      *
      * @param _regex
      */
-    public void setcondRegex(String _regex) {
+    public void setCondRegex(String _regex) {
         if (_regex == null) _regex = "";
-        condRegex = _regex;
+        this.condRegex = _regex;
         try {
-            Pattern_condRegex = ParmGenUtil.Pattern_compile(condRegex);
+            this.Pattern_condRegex = ParmGenUtil.Pattern_compile(this.condRegex);
         } catch (Exception e) {
             LOGGER4J.error("ERROR: setcondRegex ", e);
-            Pattern_condRegex = null;
+            this.Pattern_condRegex = null;
         }
+    }
+
+    public String getCondRegex() {
+        return condRegex;
+    }
+
+    public void setCondRegexURLencoded(String _regex) {
+        if (_regex == null) _regex = "";
+        setCondRegex(URLdecode(_regex));
     }
 
     /**
@@ -556,6 +581,15 @@ public class AppValue {
         }
     }
 
+    public void setCondTargetNo(int no) {
+        condTargetNo = no;
+    }
+
+    /** condition parameter tracking is exist */
+    public boolean hasCond() {
+        return Pattern_condRegex != null && condTargetNo != -1;
+    }
+
     /**
      * Whether the conditional regular expression applies to requests or responses
      *
@@ -572,6 +606,26 @@ public class AppValue {
      */
     public void setRequestIsCondTegexTarget(boolean b) {
         condRegexTargetIsRequest = b;
+    }
+
+    /**
+     * get replaceZeroSize boolean. if this value true, then request parameter replace even if
+     * tracking value is zero size string.
+     *
+     * @return
+     */
+    public boolean isReplaceZeroSize() {
+        return this.replaceZeroSize;
+    }
+
+    /**
+     * set replaceZeroSize boolean. if this value true, then request parameter replace even if
+     * tracking value is zero size string.
+     *
+     * @param b
+     */
+    public void setReplaceZeroSize(boolean b) {
+        this.replaceZeroSize = b;
     }
 
     public void setresPartType(String respart) {
@@ -769,7 +823,6 @@ public class AppValue {
             if (toStepNo != ParmVars.TOSTEPANY) {
                 if (currentStepNo != toStepNo) {
                     return null; //
-                } else {
                 }
                 // tokentype 固定。tokentypeは追跡元のタイプなので、追跡先toStepNoの埋め込み先タイプとは無関係で無視する。
                 // tk = new ParmGenTokenKey(AppValue.TokenTypeNames.DEFAULT, token, toStepNo);
@@ -802,7 +855,7 @@ public class AppValue {
                         + " TokenName:"
                         + token;
         ParmGenTokenKey errorhash_key = new ParmGenTokenKey(TokenTypeNames.DEFAULT, errKeyName, 0);
-        Matcher m = valueregex.matcher(contents);
+        Matcher m = valueregex.matcher(contents); // embed target match
         Matcher m_org = null;
 
         if (org_contents_iso8859 != null) {
@@ -852,7 +905,8 @@ public class AppValue {
                     LOGGER4J.debug("org_matchval[" + org_matchval + "] matchval[" + matchval + "]");
                     strcnt = differ.replaceOrgMatchedValue(strcnt);
                 }
-                if (strcnt != null) {
+                if (strcnt != null
+                        && (!strcnt.isEmpty() || strcnt.isEmpty() && this.isReplaceZeroSize())) {
                     LOGGER4J.info(
                             java.text.MessageFormat.format(
                                     bundle.getString("ParmGen.parameter_regex_msg1.text"),
@@ -880,7 +934,7 @@ public class AppValue {
                         errorhash.put(errorhash_key, errorhash_value);
                     }
                 }
-                if (isnull) { // 値取得失敗時は、オリジナルに戻す。
+                if (isnull) { // if
                     strcnt = matchval;
                     org_newval = org_matchval;
                 }

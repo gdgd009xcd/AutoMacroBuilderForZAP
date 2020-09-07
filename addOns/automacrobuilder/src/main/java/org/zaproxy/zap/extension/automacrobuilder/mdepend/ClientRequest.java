@@ -81,7 +81,7 @@ public class ClientRequest implements InterfaceClientRequest {
                                 _pageenc);
                 String url = pqrs.request.getURL();
                 // parse response then extract tracking tokens
-                int updtcnt = pgen.ResponseRun(url, pqrs.response);
+                int updtcnt = pgen.ResponseRun(url, pqrs);
                 // parse response and extract set-Cookies.
                 pmt.parseSetCookie(pqrs);
                 if (pqrs != null) {
@@ -139,7 +139,7 @@ public class ClientRequest implements InterfaceClientRequest {
         String url = prs.request.getURL();
         LOGGER4J.debug("=====ResponseRun start====== status:" + prs.response.getStatus());
         ParmGen pgen = new ParmGen(pmt);
-        int updtcnt = pgen.ResponseRun(url, prs.response);
+        int updtcnt = pgen.ResponseRun(url, prs);
         LOGGER4J.debug("=====ResponseRun end======");
         pmt.parseSetCookie(prs); // save Set-Cookie values into CookieStore.
         pmt.endAfterCurrentRequest(prs);

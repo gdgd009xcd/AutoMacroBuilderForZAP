@@ -370,6 +370,14 @@ public class ParmGenGSON implements GsonParserListener {
                                 apv.setTokenTypeName(GetString(ev, value, ""));
                             } else if (name.toUpperCase().equals("RESENCODETYPE")) {
                                 apv.setResEncodeTypeFromString(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("CONDTARGETNO")) {
+                                apv.setCondTargetNo(GetNumber(ev, value, 0));
+                            } else if (name.toUpperCase().equals("CONDREGEX")) {
+                                apv.setCondRegexURLencoded(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("CONDREGEXTARGETISREQUEST")) {
+                                apv.setRequestIsCondTegexTarget(Getboolean(ev, value, false));
+                            } else if (name.toUpperCase().equals("REPLACEZEROSIZE")) {
+                                apv.setReplaceZeroSize(Getboolean(ev, value, false));
                             }
                         }
                         break;
