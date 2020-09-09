@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class GsonIterator {
     enum ElmType {
         ARRAY,

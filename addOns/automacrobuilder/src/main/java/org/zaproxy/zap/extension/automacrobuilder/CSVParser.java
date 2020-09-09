@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class CSVParser {
     static Pattern pattern =
             ParmGenUtil.Pattern_compile("(\"[^\"]*(?:\"\"[^\"]*)*\"|[^,\"]*)[ \t]*?,");

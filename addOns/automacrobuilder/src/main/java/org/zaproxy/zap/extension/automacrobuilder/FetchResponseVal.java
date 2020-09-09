@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
 //
 // class variable
 //
-// FetchResponse初期化
+// FetchResponse
 //
 
 class FetchResponseVal implements DeepClone {
@@ -117,7 +117,7 @@ class FetchResponseVal implements DeepClone {
      * @param toStepNo int
      * @return token value String
      */
-    String getLocVal(UUID k, ParmGenTokenKey tk, int currentStepNo, int toStepNo) {
+    String getLocVal(UUID k, ParmGenTokenKey tk, int currentStepNo, int toStepNo, AppValue ap) {
         String rval = null;
         ParmGenTrackingParam tkparam = trackkeys.get(k);
         if (tkparam != null) {
@@ -125,7 +125,7 @@ class FetchResponseVal implements DeepClone {
             // String v = locarray[r][c];
             // int responseStepNo = responseStepNos[r][c];
 
-            String v = tkparam.getValue();
+            String v = tkparam.getValue(ap);
             int responseStepNo = tkparam.getResponseStepNo();
 
             if (toStepNo >= 0) {
@@ -178,18 +178,21 @@ class FetchResponseVal implements DeepClone {
 
     /** set response's tracking token to TrackJarFactory */
     private UUID setLocVal(
-            UUID k, int currentStepNo, int fromStepNo, String val, boolean overwrite) {
+            int currentStepNo, int fromStepNo, String val, boolean overwrite, AppValue av) {
+        UUID k = av.getTrackKey();
         ParmGenTrackingParam tkparam = trackkeys.get(k);
         if (tkparam == null) { // if tkparam has No exist, then create tkparam with new unique key
             // key
             tkparam = trackkeys.create(k);
         }
 
-        String cachedval = tkparam.getValue();
-        if (cachedval == null) {
-            tkparam.setValue(val);
-        } else if (overwrite == true) {
-            tkparam.setValue(val);
+        String cachedval = tkparam.getValue(null);
+        if (val != null && (!val.isEmpty() || val.isEmpty() && av.isReplaceZeroSize())) {
+            if (cachedval == null) {
+                tkparam.setValue(val);
+            } else if (overwrite == true) {
+                tkparam.setValue(val);
+            }
         }
 
         if (fromStepNo < 0
@@ -206,6 +209,35 @@ class FetchResponseVal implements DeepClone {
         return k;
     }
 
+    /**
+     * update conditional parameter is valid or not
+     *
+     * @param ap
+     * @param b
+     */
+    void updateCond(AppValue av, boolean b) {
+        UUID k = av.getTrackKey();
+        ParmGenTrackingParam tkparam = trackkeys.get(k);
+        if (tkparam == null) { // if tkparam has No exist, then create tkparam with new unique key
+            // key
+            tkparam = trackkeys.create(k);
+        }
+        tkparam.setCondValid(b);
+        if (!b) {
+            tkparam.rollBackValue();
+        } else {
+            tkparam.overWriteOldValue();
+        }
+    }
+
+    boolean getCondValid(AppValue av) {
+        UUID k = av.getTrackKey();
+        ParmGenTrackingParam tkparam = trackkeys.get(k);
+        if (tkparam != null) {
+            return tkparam.getCondValid();
+        }
+        return false;
+    }
     // void copyLocVal(int fr, int fc, int tr, int tc){
     //    if(isValid(fr,fc) && isValid(tr,tc)){
     //	String v = locarray[fr][fc];
@@ -223,14 +255,14 @@ class FetchResponseVal implements DeepClone {
     //
     boolean headermatch(
             int currentStepNo,
-            int fromStepNo,
             String url,
             PResponse presponse,
             int r,
             int c,
             boolean overwrite,
-            String name,
             AppValue av) {
+        int fromStepNo = av.getFromStepNo();
+        String name = av.getToken();
         AppValue.TokenTypeNames _tokentype = av.getTokenType();
         String comments = "";
         if (urlmatch(av, url)) {
@@ -240,7 +272,8 @@ class FetchResponseVal implements DeepClone {
                     ParmGenTokenValue tval = tkn.getTokenValue();
                     if (tval != null) { // value値nullは追跡しない
                         String matchval = tval.getValue();
-                        if (matchval != null && !matchval.isEmpty()) {
+                        if (matchval
+                                != null) { // matchval !=null or matchval.isEmpty() is acceptable.
                             comments =
                                     "*****FETCHRESPONSE header r,c/ header: value"
                                             + r
@@ -250,12 +283,7 @@ class FetchResponseVal implements DeepClone {
                                             + matchval;
                             printlog(comments);
                             pmt.addComments(comments);
-                            setLocVal(
-                                    av.getTrackKey(),
-                                    currentStepNo,
-                                    fromStepNo,
-                                    matchval,
-                                    overwrite);
+                            setLocVal(currentStepNo, fromStepNo, matchval, overwrite, av);
                             return true;
                         }
                     } else {
@@ -281,7 +309,7 @@ class FetchResponseVal implements DeepClone {
                     try {
                         matcher = av.getPattern_resRegex().matcher(hval);
                     } catch (Exception e) {
-                        printlog("matcher例外：" + e.toString());
+                        printlog("Exception matcher：" + e.toString());
                     }
                     if (matcher.find()) {
                         int gcnt = matcher.groupCount();
@@ -290,38 +318,32 @@ class FetchResponseVal implements DeepClone {
                             matchval = matcher.group(n + 1);
                         }
 
-                        if (matchval != null) {
-                            if (!matchval.isEmpty()) { // value値nullは追跡しない
-                                comments =
-                                        "*****FETCHRESPONSE header r,c/ header: value"
-                                                + r
-                                                + ","
-                                                + c
-                                                + "/"
-                                                + hval
-                                                + " => "
-                                                + matchval;
-                                printlog(comments);
-                                pmt.addComments(comments);
-                                setLocVal(
-                                        av.getTrackKey(),
-                                        currentStepNo,
-                                        fromStepNo,
-                                        matchval,
-                                        overwrite);
-                                return true;
-                            } else {
-                                comments =
-                                        "xxxxxIGNORED FETCHRESPONSE header r,c/ header: value"
-                                                + r
-                                                + ","
-                                                + c
-                                                + "/"
-                                                + hval
-                                                + " => null";
-                                printlog(comments);
-                                pmt.addComments(comments);
-                            }
+                        if (matchval
+                                != null) { // matchval != null or matchval.isEmpty() is acceptable.
+                            comments =
+                                    "*****FETCHRESPONSE header r,c/ header: value"
+                                            + r
+                                            + ","
+                                            + c
+                                            + "/"
+                                            + hval
+                                            + " => "
+                                            + matchval;
+                            printlog(comments);
+                            pmt.addComments(comments);
+                            setLocVal(currentStepNo, fromStepNo, matchval, overwrite, av);
+                            return true;
+                        } else {
+                            comments =
+                                    "xxxxxIGNORED FETCHRESPONSE header r,c/ header: value"
+                                            + r
+                                            + ","
+                                            + c
+                                            + "/"
+                                            + hval
+                                            + " => null";
+                            printlog(comments);
+                            pmt.addComments(comments);
                         }
                     }
                 }
@@ -334,18 +356,18 @@ class FetchResponseVal implements DeepClone {
     //
     boolean bodymatch(
             int currentStepNo,
-            int fromStepNo,
             String url,
             PResponse presponse,
             int r,
             int c,
             boolean overwrite,
             boolean autotrack,
-            AppValue av,
-            int fcnt,
-            String name,
-            boolean _uencode)
+            AppValue av)
             throws UnsupportedEncodingException {
+        int fromStepNo = av.getFromStepNo();
+        int fcnt = av.getResRegexPos();
+        String name = av.getToken();
+        boolean _uencode = av.isUrlEncode();
         AppValue.TokenTypeNames _tokentype = av.getTokenType();
         if (urlmatch(av, url)) {
 
@@ -405,14 +427,10 @@ class FetchResponseVal implements DeepClone {
                         String ONETIMEPASSWD = matchval.replaceAll(",", "%2C");
                         String comments = "";
 
-                        if (ONETIMEPASSWD != null && !ONETIMEPASSWD.isEmpty()) { // value値nullは追跡しない
+                        if (ONETIMEPASSWD
+                                != null) { // this variable !=null or isEmpty() is acceptable.
 
-                            setLocVal(
-                                    av.getTrackKey(),
-                                    currentStepNo,
-                                    fromStepNo,
-                                    ONETIMEPASSWD,
-                                    overwrite);
+                            setLocVal(currentStepNo, fromStepNo, ONETIMEPASSWD, overwrite, av);
                             comments =
                                     "*****FETCHRESPONSE body key/r,c:"
                                             + av.getTrackKey()
@@ -454,7 +472,7 @@ class FetchResponseVal implements DeepClone {
                         ParmGenTokenValue tval = tkn.getTokenValue();
                         if (tval != null) {
                             String v = tval.getValue();
-                            if (v != null && !v.isEmpty()) { // value null値は追跡しない。
+                            if (v != null) { // this variable != null or isEmpty() is acceptable.
 
                                 if (_uencode == true) {
                                     String venc = v;
@@ -469,12 +487,7 @@ class FetchResponseVal implements DeepClone {
                                 }
                                 String ONETIMEPASSWD = v.replaceAll(",", "%2C");
 
-                                setLocVal(
-                                        av.getTrackKey(),
-                                        currentStepNo,
-                                        fromStepNo,
-                                        ONETIMEPASSWD,
-                                        overwrite);
+                                setLocVal(currentStepNo, fromStepNo, ONETIMEPASSWD, overwrite, av);
                                 String comments =
                                         "*****FETCHRESPONSE auto track body key/r,c,p:"
                                                 + av.getTrackKey()
@@ -517,14 +530,14 @@ class FetchResponseVal implements DeepClone {
     boolean reqbodymatch(
             AppValue av,
             int currentStepNo,
-            int fromStepNo,
             String url,
             PRequest prequest,
             int r,
             int c,
-            boolean overwrite,
-            int fcnt,
-            String name) {
+            boolean overwrite) {
+        int fromStepNo = av.getFromStepNo();
+        int fcnt = av.getResRegexPos();
+        String name = av.getToken();
         String comments = "";
         if (urlmatch(av, url)) {
             ArrayList<String[]> namelist = prequest.getBodyParams();
@@ -532,7 +545,9 @@ class FetchResponseVal implements DeepClone {
             while (it.hasNext()) {
                 String[] nv = it.next();
                 if (name.equals(nv[0])) {
-                    if (nv.length > 1 && nv[1] != null && !nv[1].isEmpty()) { // value値nullは追跡しない
+                    if (nv.length > 1
+                            && nv[1] != null) { // this variable is != null or isEmpty() is
+                        // acceptable
                         comments =
                                 "******FETCH REQUEST body r,c: name=value:"
                                         + r
@@ -544,7 +559,7 @@ class FetchResponseVal implements DeepClone {
                                         + nv[1];
                         printlog(comments);
                         pmt.addComments(comments);
-                        setLocVal(av.getTrackKey(), currentStepNo, fromStepNo, nv[1], overwrite);
+                        setLocVal(currentStepNo, fromStepNo, nv[1], overwrite, av);
                         return true;
                     } else {
                         comments =

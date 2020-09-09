@@ -10,7 +10,7 @@ import org.zaproxy.zap.extension.ascan.ActiveScan;
 /**
  * Interface for Zap ActiveScan
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public interface InterfaceStartScan {
     public ActiveScan startScan();

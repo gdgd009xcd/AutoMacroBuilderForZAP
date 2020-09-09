@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * InterfaceDoAction
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public interface InterfaceDoAction {
     /**

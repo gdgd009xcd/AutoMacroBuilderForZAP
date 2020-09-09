@@ -26,7 +26,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.tab.Tab;
 
-/** @author daike */
+/** @author gdgd009xcd */
 @SuppressWarnings("serial")
 public class MyWorkPanel extends AbstractPanel implements Tab {
 

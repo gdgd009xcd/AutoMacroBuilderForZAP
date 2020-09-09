@@ -403,7 +403,8 @@ private void setAppParmsIni(){
                     ParmVars.session.get(ParmGenSession.K_RESPONSEPART),
                     ParmVars.session.get(ParmGenSession.K_RESPONSEPOSITION),
                     tkname,
-                    urlencode,"*","*",ParmVars.session.get(ParmGenSession.K_TOKENTYPE)
+                    urlencode,"*","*",ParmVars.session.get(ParmGenSession.K_TOKENTYPE),
+                    "", -1, false, false
                     };
                 }else{
                     String _token;
@@ -424,7 +425,8 @@ private void setAppParmsIni(){
                         ParmVars.session.get(ni, ParmGenSession.K_RESPONSEPART),
                         ParmVars.session.get(ni, ParmGenSession.K_RESPONSEPOSITION),
                         tkname,
-                        urlencode,"*","*",ParmVars.session.get(ni, ParmGenSession.K_TOKENTYPE)
+                        urlencode,"*","*",ParmVars.session.get(ni, ParmGenSession.K_TOKENTYPE),
+                        "", -1, false, false
                         };
                     }
                 }
@@ -529,6 +531,12 @@ private void setAppParmsIni(){
         int pos = current_tablecolidx;
         if(current_model==P_CSVMODEL){
             pos = 3;
+        } else if (current_model == P_TRACKMODEL) {
+            PRequestResponse ppr = getOriginalRequestResponse();
+            if (ppr != null && pos == 12) {
+                int mpos = ppr.getMacroPos();
+                ParamTableModels[current_model].setValueAt(mpos, current_tablerowidx, 13);
+            }
         }
         ParamTableModels[current_model].setValueAt(regex, current_tablerowidx, pos);
 
@@ -584,6 +592,10 @@ private void setAppParmsIni(){
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        RegexPopup = new javax.swing.JPopupMenu();
+        ParamRegex = new javax.swing.JMenuItem();
+        FromValueRegex = new javax.swing.JMenuItem();
+        CondRegex = new javax.swing.JMenuItem();
         ModelTabs = new javax.swing.JTabbedPane();
         SeqNumber = new javax.swing.JPanel();
         NumberRegexTest = new javax.swing.JButton();
@@ -627,7 +639,7 @@ private void setAppParmsIni(){
         nParamDel12 = new javax.swing.JButton();
         nParamDel13 = new javax.swing.JButton();
         nParamDel14 = new javax.swing.JButton();
-        jButton10 = new javax.swing.JButton();
+        RegexTestSelectedColumn = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
         trackTable = new javax.swing.JTable();
         jLabel9 = new javax.swing.JLabel();
@@ -661,6 +673,31 @@ private void setAppParmsIni(){
         TrackFrom = new javax.swing.JTextField();
         SetToLabel = new javax.swing.JLabel();
         SetTo = new javax.swing.JTextField();
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("burp/Bundle"); // NOI18N
+        ParamRegex.setText(bundle.getString("ParmGenNew.RegexPopup.ParamRegex.text")); // NOI18N
+        ParamRegex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ParamRegexActionPerformed(evt);
+            }
+        });
+        RegexPopup.add(ParamRegex);
+
+        FromValueRegex.setText(bundle.getString("ParmGenNew.RegexPopup.FromValueRegex.text")); // NOI18N
+        FromValueRegex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                FromValueRegexActionPerformed(evt);
+            }
+        });
+        RegexPopup.add(FromValueRegex);
+
+        CondRegex.setText(bundle.getString("ParmGenNew.RegexPopup.CondRegex.text")); // NOI18N
+        CondRegex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CondRegexActionPerformed(evt);
+            }
+        });
+        RegexPopup.add(CondRegex);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(bundle.getString("ParmGenNew.PARMGEN編集画面.text")); // NOI18N
@@ -788,7 +825,6 @@ private void setAppParmsIni(){
         });
 
         buttonGroup1.add(DateSelBtn);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("burp/Bundle"); // NOI18N
         DateSelBtn.setText(bundle.getString("ParmGenNew.DateTimeTitle.text")); // NOI18N
         DateSelBtn.setEnabled(false);
         DateSelBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -1146,26 +1182,26 @@ private void setAppParmsIni(){
             }
         });
 
-        jButton10.setText(bundle.getString("ParmGenNew.正規表現テスト.text")); // NOI18N
-        jButton10.addActionListener(new java.awt.event.ActionListener() {
+        RegexTestSelectedColumn.setText(bundle.getString("ParmGenNew.正規表現テスト.text")); // NOI18N
+        RegexTestSelectedColumn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton10ActionPerformed(evt);
+                RegexTestSelectedColumnActionPerformed(evt);
             }
         });
 
         trackTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "置換箇所", "置換しない", "置換正規表現", "追跡URL", "追跡正規表現", "追跡箇所", "追跡位置", "追跡NAME値", "URLencodeする", "", "", "tokentype"
+                "", "置換しない", "", "追跡URL", "", "", "追跡位置", "追跡NAME値", "URLencodeする", "", "", "", "", "", "", ""
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Boolean.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.Object.class, java.lang.Boolean.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Boolean.class, java.lang.Boolean.class
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -1174,6 +1210,14 @@ private void setAppParmsIni(){
         });
         trackTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         trackTable.getTableHeader().setReorderingAllowed(false);
+        trackTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                trackTableMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                trackTableMouseReleased(evt);
+            }
+        });
         jScrollPane6.setViewportView(trackTable);
         if (trackTable.getColumnModel().getColumnCount() > 0) {
             trackTable.getColumnModel().getColumn(0).setPreferredWidth(60);
@@ -1191,6 +1235,10 @@ private void setAppParmsIni(){
             trackTable.getColumnModel().getColumn(9).setHeaderValue(bundle.getString("ParmGenNew.trackTable.title9.text")); // NOI18N
             trackTable.getColumnModel().getColumn(10).setHeaderValue(bundle.getString("ParmGenNew.trackTable.title10.text")); // NOI18N
             trackTable.getColumnModel().getColumn(11).setHeaderValue(bundle.getString("ParmGenNew.trackTable.title11.text")); // NOI18N
+            trackTable.getColumnModel().getColumn(12).setHeaderValue(bundle.getString("ParmGenNew.trackTable.condRegex.text")); // NOI18N
+            trackTable.getColumnModel().getColumn(13).setHeaderValue(bundle.getString("ParmGenNew.trackTable.condTargetNo.text")); // NOI18N
+            trackTable.getColumnModel().getColumn(14).setHeaderValue(bundle.getString("ParmGenNew.trackTable.condRegexTargetIsRequest.text")); // NOI18N
+            trackTable.getColumnModel().getColumn(15).setHeaderValue(bundle.getString("ParmGenNew.trackTable.replaceZeroSize.text")); // NOI18N
         }
 
         jLabel9.setText(bundle.getString("ParmGenNew.置換対象パス.text")); // NOI18N
@@ -1216,7 +1264,7 @@ private void setAppParmsIni(){
                         .addComponent(trackTargetURL)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(SeqResponseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(RegexTestSelectedColumn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(nParamDel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(nParamDel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(nParamDel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1242,7 +1290,7 @@ private void setAppParmsIni(){
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(nParamDel14)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton10)))
+                        .addComponent(RegexTestSelectedColumn)))
                 .addContainerGap())
         );
 
@@ -1754,8 +1802,33 @@ private void setAppParmsIni(){
 
                     String tktypename = (String)model.getValueAt(i, 11);
 
+                    String condRegex = (String)model.getValueAt(i, 12);
+                    
+                    int condTargetNo = -1;
+                    try {
+                        condTargetNo = (Integer)model.getValueAt(i, 13);
+                    } catch (NumberFormatException e) {
+                    }
 
-                    app = new AppValue(type, nomodify, value, _resURL, _resRegex, _resPartType, _resRegexPos, _token, _trackreq, fromStepNo, toStepNo,tktypename);
+                    boolean condRegexTargetIsRequest = Boolean.parseBoolean(model.getValueAt(i, 14).toString());
+                    boolean replaceZeroSize = Boolean.parseBoolean(model.getValueAt(i, 15).toString());
+                    app = new AppValue(
+                            type, 
+                            nomodify, 
+                            value,
+                            _resURL,
+                            _resRegex,
+                            _resPartType,
+                            _resRegexPos,
+                            _token,
+                            _trackreq,
+                            fromStepNo,
+                            toStepNo,
+                            tktypename,
+                            condRegex,
+                            condTargetNo,
+                            condRegexTargetIsRequest,
+                            replaceZeroSize);
                     break;
                 case P_RANDOMMODEL:
                     value = (String)model.getValueAt(i, 2);
@@ -1946,7 +2019,7 @@ private void setAppParmsIni(){
         }
     }//GEN-LAST:event_nParamDel14ActionPerformed
 
-    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
+    private void RegexTestSelectedColumnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RegexTestSelectedColumnActionPerformed
         // TODO add your handling code here:
         if(current_model_selected){
             if(current_model!=P_TRACKMODEL){
@@ -1955,16 +2028,27 @@ private void setAppParmsIni(){
         }
         int[] rowsSelected = trackTable.getSelectedRows();
         int[] colsSelected = trackTable.getSelectedColumns();
+        boolean showrequest = true;
         if (rowsSelected.length > 0){
             current_tablerowidx = rowsSelected[0];current_tablecolidx = 2;
             if (colsSelected.length > 0){
-                if(colsSelected[0]>2){
+                if(colsSelected[0] > 2 && colsSelected[0] < 12){
                     current_tablecolidx = 4;
+                    String _resPartType = (String)ParamTableModels[current_model].getValueAt(current_tablerowidx, 5);
+                    int parttype = AppValue.parseValPartType(_resPartType);
+                    if (parttype == AppValue.V_AUTOTRACKBODY) {
+                        showrequest = false;
+                    } else {
+                        showrequest = true;
+                    }
+                } else if (colsSelected[0] >= 12) {
+                    current_tablecolidx = 12;
+                    showrequest = Boolean.parseBoolean(ParamTableModels[current_model].getValueAt(current_tablerowidx, 14).toString());
                 }
             }
-            new ParmGenRegex(this, current_tablecolidx > 2 ? false : true).setVisible(true);
+            new ParmGenRegex(this, showrequest).setVisible(true);
         }
-    }//GEN-LAST:event_jButton10ActionPerformed
+    }//GEN-LAST:event_RegexTestSelectedColumnActionPerformed
 
     private void csvParamDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_csvParamDelActionPerformed
         // TODO add your handling code here:
@@ -2075,6 +2159,78 @@ private void setAppParmsIni(){
         selectNumberCounterTypeCompo(AppParmsIni.NumberCounterTypes.DateCount);
     }//GEN-LAST:event_DateSelBtnActionPerformed
 
+    private void trackTableMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_trackTableMousePressed
+        // TODO add your handling code here:
+        if(evt.isPopupTrigger()){
+            RegexPopup.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_trackTableMousePressed
+
+    private void trackTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_trackTableMouseReleased
+        // TODO add your handling code here:
+        if(evt.isPopupTrigger()){
+            RegexPopup.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_trackTableMouseReleased
+
+    private void CondRegexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CondRegexActionPerformed
+        // TODO add your handling code here:
+        if(current_model_selected){
+            if(current_model!=P_TRACKMODEL){
+                return;
+            }
+        }
+        int[] rowsSelected = trackTable.getSelectedRows();
+        boolean showrequest = true;
+
+        if (rowsSelected.length > 0){
+            current_tablerowidx = rowsSelected[0];
+            current_tablecolidx = 12;
+            showrequest = Boolean.parseBoolean(ParamTableModels[current_model].getValueAt(current_tablerowidx, 14).toString());
+            new ParmGenRegex(this, showrequest).setVisible(true);
+        }
+    }//GEN-LAST:event_CondRegexActionPerformed
+
+    private void FromValueRegexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FromValueRegexActionPerformed
+        // TODO add your handling code here:
+        if(current_model_selected){
+            if(current_model!=P_TRACKMODEL){
+                return;
+            }
+        }
+        int[] rowsSelected = trackTable.getSelectedRows();
+        int[] colsSelected = trackTable.getSelectedColumns();
+        boolean showrequest = true;
+        if (rowsSelected.length > 0){
+            current_tablerowidx = rowsSelected[0];
+            current_tablecolidx = 4;
+            String _resPartType = (String)ParamTableModels[current_model].getValueAt(current_tablerowidx, 5);
+            int parttype = AppValue.parseValPartType(_resPartType);
+            if (parttype == AppValue.V_AUTOTRACKBODY) {
+                showrequest = false;
+            } else {
+                showrequest = true;
+            }
+            new ParmGenRegex(this, showrequest).setVisible(true);
+        }
+    }//GEN-LAST:event_FromValueRegexActionPerformed
+
+    private void ParamRegexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParamRegexActionPerformed
+        // TODO add your handling code here:
+        if(current_model_selected){
+            if(current_model!=P_TRACKMODEL){
+                return;
+            }
+        }
+        int[] rowsSelected = trackTable.getSelectedRows();
+        int[] colsSelected = trackTable.getSelectedColumns();
+        boolean showrequest = true;
+        if (rowsSelected.length > 0){
+            current_tablerowidx = rowsSelected[0];current_tablecolidx = 2;
+            new ParmGenRegex(this, showrequest).setVisible(true);
+        }
+    }//GEN-LAST:event_ParamRegexActionPerformed
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField AddMsec;
@@ -2082,7 +2238,9 @@ private void setAppParmsIni(){
     private javax.swing.JTextField CSVSkipLine;
     private javax.swing.JCheckBox CSVrewind;
     private javax.swing.JButton CancelParm;
+    private javax.swing.JMenuItem CondRegex;
     private javax.swing.JRadioButton DateSelBtn;
+    private javax.swing.JMenuItem FromValueRegex;
     private javax.swing.JTabbedPane ModelTabs;
     private javax.swing.JLabel MsecLabel;
     private javax.swing.JTextField NumberInit;
@@ -2090,6 +2248,9 @@ private void setAppParmsIni(){
     private javax.swing.JButton NumberRegexTest;
     private javax.swing.JCheckBox NumberRewind;
     private javax.swing.JRadioButton NumberSelBtn;
+    private javax.swing.JMenuItem ParamRegex;
+    private javax.swing.JPopupMenu RegexPopup;
+    private javax.swing.JButton RegexTestSelectedColumn;
     private javax.swing.JPanel ReqPanel;
     private javax.swing.JTextPane RequestArea;
     private javax.swing.JButton RequestSelectBtn;
@@ -2119,7 +2280,6 @@ private void setAppParmsIni(){
     private javax.swing.JTextField csvTargetURL;
     private javax.swing.JButton delTamper;
     private javax.swing.JButton downTamper;
-    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

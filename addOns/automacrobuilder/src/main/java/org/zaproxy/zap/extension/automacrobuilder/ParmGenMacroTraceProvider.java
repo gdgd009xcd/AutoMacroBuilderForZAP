@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * ParmGenMacroTrace Provider for ThreadManager
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public class ParmGenMacroTraceProvider {
 

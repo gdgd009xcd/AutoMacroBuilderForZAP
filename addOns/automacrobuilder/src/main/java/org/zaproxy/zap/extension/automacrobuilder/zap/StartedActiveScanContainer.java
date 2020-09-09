@@ -16,7 +16,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 /**
  * StartedActiveScanContainer
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public class StartedActiveScanContainer {
 

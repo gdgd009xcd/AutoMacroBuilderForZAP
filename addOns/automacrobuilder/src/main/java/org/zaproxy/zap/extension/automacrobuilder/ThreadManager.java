@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * ThreadManager
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public class ThreadManager {
 

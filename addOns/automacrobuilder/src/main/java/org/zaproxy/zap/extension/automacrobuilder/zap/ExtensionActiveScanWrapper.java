@@ -28,7 +28,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.model.Target;
 import org.zaproxy.zap.users.User;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
     private ScannerParam scannerParam = new ScannerParam();

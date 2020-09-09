@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
-/** @author daike */
+/** @author gdgd009xcd */
 //
 // class FileReadLine
 //
@@ -116,7 +116,7 @@ public class FileReadLine {
             columns = new ArrayList<String>();
         }
         columns.clear();
-        String dummy = readLine(0, 99999, null);
+        String dummy = readLine(0, 99999, null, null, null);
         if (columns.size() > 0) {
             return columns;
         }
@@ -128,7 +128,7 @@ public class FileReadLine {
             rewind();
             columns = null;
             while (l-- > 0) {
-                String dummy = readLine(0, 1, null);
+                String dummy = readLine(0, 1, null, null, null);
                 if (dummy == null) {
                     break;
                 }
@@ -139,7 +139,8 @@ public class FileReadLine {
         return current_line;
     }
 
-    synchronized String readLine(int _valparttype, int _pos, AppParmsIni _parent) {
+    synchronized String readLine(
+            int _valparttype, int _pos, AppParmsIni _parent, AppValue apv, ParmGenMacroTrace pmt) {
         if (saveseekp) {
             seekp = 0;
             current_line = 0;
@@ -202,7 +203,13 @@ public class FileReadLine {
             line = _col;
             line = line.replace("\r", "");
             line = line.replace("\n", "");
-            if (((_valparttype & AppValue.C_NOCOUNT) == AppValue.C_NOCOUNT)
+
+            boolean condInValid = false;
+            if (pmt != null && apv != null) {
+                condInValid = !pmt.getFetchResponseVal().getCondValid(apv) && apv.hasCond();
+            }
+            if (condInValid
+                    || ((_valparttype & AppValue.C_NOCOUNT) == AppValue.C_NOCOUNT)
                     || (_parent != null && _parent.isPaused())) {
                 // debuglog(1, " no seek forward:" + Long.toString(seekp));
             } else {
@@ -240,7 +247,7 @@ public class FileReadLine {
     }
 
     synchronized String getCurrentReadLine(int _valparttype, int _pos, AppParmsIni _parent) {
-        String line = readLine(_valparttype, _pos, _parent);
+        String line = readLine(_valparttype, _pos, _parent, null, null);
         return String.valueOf(this.current_line);
     }
 }

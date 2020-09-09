@@ -4,6 +4,44 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
     </Component>
+    <Container class="javax.swing.JPopupMenu" name="RegexPopup">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+      <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="ParamRegex">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="burp/Bundle.properties" key="RegexPopup.ParamRegex" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ParamRegexActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="FromValueRegex">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="burp/Bundle.properties" key="RegexPopup.FromValueRegex" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="FromValueRegexActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="CondRegex">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="burp/Bundle.properties" key="RegexPopup.CondRegex" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CondRegexActionPerformed"/>
+          </Events>
+        </MenuItem>
+      </SubComponents>
+    </Container>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
@@ -844,7 +882,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jButton10" alignment="0" max="32767" attributes="0"/>
+                          <Component id="RegexTestSelectedColumn" alignment="0" max="32767" attributes="0"/>
                           <Component id="nParamDel14" alignment="0" max="32767" attributes="0"/>
                           <Component id="nParamDel13" alignment="0" max="32767" attributes="0"/>
                           <Component id="nParamDel12" alignment="0" max="32767" attributes="0"/>
@@ -874,7 +912,7 @@
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="nParamDel14" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jButton10" min="-2" max="-2" attributes="0"/>
+                              <Component id="RegexTestSelectedColumn" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -923,14 +961,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nParamDel14ActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="jButton10">
+            <Component class="javax.swing.JButton" name="RegexTestSelectedColumn">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="burp/Bundle.properties" key="&#x6b63;&#x898f;&#x8868;&#x73fe;&#x30c6;&#x30b9;&#x30c8;" replaceFormat="bundle.getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
                 </Property>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton10ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RegexTestSelectedColumnActionPerformed"/>
               </Events>
             </Component>
             <Container class="javax.swing.JScrollPane" name="jScrollPane6">
@@ -943,19 +981,23 @@
                 <Component class="javax.swing.JTable" name="trackTable">
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                      <Table columnCount="12" rowCount="4">
-                        <Column editable="true" title="&#x7f6e;&#x63db;&#x7b87;&#x6240;" type="java.lang.Object"/>
+                      <Table columnCount="16" rowCount="4">
+                        <Column editable="true" title="" type="java.lang.Object"/>
                         <Column editable="true" title="&#x7f6e;&#x63db;&#x3057;&#x306a;&#x3044;" type="java.lang.Boolean"/>
-                        <Column editable="true" title="&#x7f6e;&#x63db;&#x6b63;&#x898f;&#x8868;&#x73fe;" type="java.lang.String"/>
+                        <Column editable="true" title="" type="java.lang.String"/>
                         <Column editable="true" title="&#x8ffd;&#x8de1;URL" type="java.lang.String"/>
-                        <Column editable="true" title="&#x8ffd;&#x8de1;&#x6b63;&#x898f;&#x8868;&#x73fe;" type="java.lang.String"/>
-                        <Column editable="true" title="&#x8ffd;&#x8de1;&#x7b87;&#x6240;" type="java.lang.String"/>
+                        <Column editable="true" title="" type="java.lang.String"/>
+                        <Column editable="true" title="" type="java.lang.String"/>
                         <Column editable="true" title="&#x8ffd;&#x8de1;&#x4f4d;&#x7f6e;" type="java.lang.String"/>
                         <Column editable="true" title="&#x8ffd;&#x8de1;NAME&#x5024;" type="java.lang.String"/>
                         <Column editable="true" title="URLencode&#x3059;&#x308b;" type="java.lang.Boolean"/>
                         <Column editable="true" title="" type="java.lang.String"/>
                         <Column editable="true" title="" type="java.lang.String"/>
-                        <Column editable="true" title="tokentype" type="java.lang.String"/>
+                        <Column editable="true" title="" type="java.lang.String"/>
+                        <Column editable="true" title="" type="java.lang.String"/>
+                        <Column editable="true" title="" type="java.lang.Integer"/>
+                        <Column editable="true" title="" type="java.lang.Boolean"/>
+                        <Column editable="true" title="" type="java.lang.Boolean"/>
                       </Table>
                     </Property>
                     <Property name="autoResizeMode" type="int" value="0"/>
@@ -1045,12 +1087,44 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                            <ResourceString bundle="burp/Bundle.properties" key="trackTable.condRegex" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+                          </Title>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                            <ResourceString bundle="burp/Bundle.properties" key="trackTable.condTargetNo" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+                          </Title>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                            <ResourceString bundle="burp/Bundle.properties" key="trackTable.condRegexTargetIsRequest" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+                          </Title>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                            <ResourceString bundle="burp/Bundle.properties" key="trackTable.replaceZeroSize" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{sourceFileName}.{key}.text&quot;)"/>
+                          </Title>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
                       </TableColumnModel>
                     </Property>
                     <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                       <TableHeader reorderingAllowed="false" resizingAllowed="true"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="trackTableMousePressed"/>
+                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="trackTableMouseReleased"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>

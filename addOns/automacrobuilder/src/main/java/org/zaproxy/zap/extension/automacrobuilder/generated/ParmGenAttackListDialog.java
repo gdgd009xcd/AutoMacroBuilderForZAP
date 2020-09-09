@@ -21,7 +21,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 
 /**
  *
- * @author daike
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ParmGenAttackListDialog extends javax.swing.JDialog {

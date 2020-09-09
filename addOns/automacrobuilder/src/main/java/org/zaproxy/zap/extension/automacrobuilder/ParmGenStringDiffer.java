@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenStringDiffer {
     String org;
     String mod;

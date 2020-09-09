@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public interface InterfaceLangOKNG {
     public void LangOK();
 

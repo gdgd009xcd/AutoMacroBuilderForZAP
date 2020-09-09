@@ -15,7 +15,7 @@ import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
 /**
  *
- * @author daike
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ParmGenTamperOpt extends javax.swing.JDialog implements interfaceParmGenWin {

@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public interface GsonParserListener {
     public boolean receiver(
             GsonIterator git, GsonParser.EventType etype, String keyname, Object value, int level);

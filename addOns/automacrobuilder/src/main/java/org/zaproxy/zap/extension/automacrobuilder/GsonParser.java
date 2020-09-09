@@ -26,7 +26,7 @@ import com.google.gson.JsonPrimitive;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class GsonParser {
     private static Logger logger4j = LogManager.getLogger();
 

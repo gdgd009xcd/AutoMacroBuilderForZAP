@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.io.File;
 import java.util.Optional;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class FileInfo {
 
     private String dirname;

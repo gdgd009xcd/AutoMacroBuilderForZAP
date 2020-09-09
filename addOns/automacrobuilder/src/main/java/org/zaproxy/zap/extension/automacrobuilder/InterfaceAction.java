@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 /**
  * InterfaceAction
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public interface InterfaceAction {
     /**

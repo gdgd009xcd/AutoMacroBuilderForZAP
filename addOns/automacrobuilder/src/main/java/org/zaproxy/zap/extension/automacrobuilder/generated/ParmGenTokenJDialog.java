@@ -17,7 +17,7 @@ import org.zaproxy.zap.extension.automacrobuilder.*;
 
 /**
  *
- * @author daike
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ParmGenTokenJDialog extends javax.swing.JDialog {

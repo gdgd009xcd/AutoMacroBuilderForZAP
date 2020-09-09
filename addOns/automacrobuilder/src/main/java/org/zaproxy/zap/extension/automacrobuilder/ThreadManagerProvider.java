@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 /**
  * ThreadManagerProvider
  *
- * @author daike
+ * @author gdgd009xcd
  */
 public class ThreadManagerProvider {
     private static ThreadManager tm = null;

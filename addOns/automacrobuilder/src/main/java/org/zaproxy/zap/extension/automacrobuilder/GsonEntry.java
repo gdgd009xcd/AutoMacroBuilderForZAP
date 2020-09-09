@@ -21,7 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 import com.google.gson.JsonElement;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class GsonEntry {
     String key;
     JsonElement elem;

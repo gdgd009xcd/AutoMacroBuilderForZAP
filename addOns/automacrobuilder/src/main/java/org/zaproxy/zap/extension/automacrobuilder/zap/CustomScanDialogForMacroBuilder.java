@@ -25,7 +25,7 @@ import java.util.List;
 import org.zaproxy.zap.extension.ascan.CustomScanDialog;
 import org.zaproxy.zap.extension.ascan.CustomScanPanel;
 
-/** @author daike */
+/** @author gdgd009xcd */
 @SuppressWarnings("serial")
 public class CustomScanDialogForMacroBuilder
         extends org.zaproxy.zap.extension.ascan.CustomScanDialog {

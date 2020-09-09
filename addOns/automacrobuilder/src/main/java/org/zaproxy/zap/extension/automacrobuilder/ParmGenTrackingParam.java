@@ -22,34 +22,61 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenTrackingParam implements DeepClone {
     private String cachevalue = null;
+    private String oldvalue = null; // previous cachevalue
+    private boolean condValid =
+            false; // if hasCond && !condValid then restore cachevalue from oldvalue
     private int responseStepNo = -1;
 
     ParmGenTrackingParam() {
         init();
     }
 
-    public void init() {
+    private void init() {
         cachevalue = null;
+        oldvalue = null;
         responseStepNo = -1;
+        condValid = false;
     }
 
     void setValue(String _v) {
+        oldvalue = cachevalue;
         cachevalue = _v;
+    }
+
+    void rollBackValue() {
+        cachevalue = oldvalue;
+    }
+
+    void overWriteOldValue() {
+        oldvalue = cachevalue;
     }
 
     void setResponseStepNo(int _r) {
         responseStepNo = _r;
     }
 
-    public String getValue() {
+    public String getValue(AppValue ap) {
         return cachevalue;
     }
 
     public int getResponseStepNo() {
         return responseStepNo;
+    }
+
+    /**
+     * set condValid variable. if hasCond && !condValid then restored cachevalue from oldvalue
+     *
+     * @param b
+     */
+    void setCondValid(boolean b) {
+        condValid = b;
+    }
+
+    boolean getCondValid() {
+        return condValid;
     }
 
     @Override
@@ -60,6 +87,8 @@ public class ParmGenTrackingParam implements DeepClone {
 
             nobj.cachevalue = this.cachevalue;
             nobj.responseStepNo = this.responseStepNo;
+            nobj.oldvalue = this.oldvalue;
+            nobj.condValid = this.condValid;
 
             return nobj;
         } catch (CloneNotSupportedException ex) {

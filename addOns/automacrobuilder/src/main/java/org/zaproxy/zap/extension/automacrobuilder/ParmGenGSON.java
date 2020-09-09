@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-/** @author daike */
+/** @author gdgd009xcd */
 public class ParmGenGSON implements GsonParserListener {
     private static org.apache.logging.log4j.Logger logger4j =
             org.apache.logging.log4j.LogManager.getLogger();
@@ -370,6 +370,14 @@ public class ParmGenGSON implements GsonParserListener {
                                 apv.setTokenTypeName(GetString(ev, value, ""));
                             } else if (name.toUpperCase().equals("RESENCODETYPE")) {
                                 apv.setResEncodeTypeFromString(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("CONDTARGETNO")) {
+                                apv.setCondTargetNo(GetNumber(ev, value, 0));
+                            } else if (name.toUpperCase().equals("CONDREGEX")) {
+                                apv.setCondRegexURLencoded(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("CONDREGEXTARGETISREQUEST")) {
+                                apv.setRequestIsCondTegexTarget(Getboolean(ev, value, false));
+                            } else if (name.toUpperCase().equals("REPLACEZEROSIZE")) {
+                                apv.setReplaceZeroSize(Getboolean(ev, value, false));
                             }
                         }
                         break;
