@@ -533,7 +533,7 @@ private void setAppParmsIni(){
             pos = 3;
         } else if (current_model == P_TRACKMODEL) {
             PRequestResponse ppr = getOriginalRequestResponse();
-            if (ppr != null) {
+            if (ppr != null && pos == 12) {
                 int mpos = ppr.getMacroPos();
                 ParamTableModels[current_model].setValueAt(mpos, current_tablerowidx, 13);
             }
@@ -639,7 +639,7 @@ private void setAppParmsIni(){
         nParamDel12 = new javax.swing.JButton();
         nParamDel13 = new javax.swing.JButton();
         nParamDel14 = new javax.swing.JButton();
-        jButton10 = new javax.swing.JButton();
+        RegexTestSelectedColumn = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
         trackTable = new javax.swing.JTable();
         jLabel9 = new javax.swing.JLabel();
@@ -1182,10 +1182,10 @@ private void setAppParmsIni(){
             }
         });
 
-        jButton10.setText(bundle.getString("ParmGenNew.正規表現テスト.text")); // NOI18N
-        jButton10.addActionListener(new java.awt.event.ActionListener() {
+        RegexTestSelectedColumn.setText(bundle.getString("ParmGenNew.正規表現テスト.text")); // NOI18N
+        RegexTestSelectedColumn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton10ActionPerformed(evt);
+                RegexTestSelectedColumnActionPerformed(evt);
             }
         });
 
@@ -1264,7 +1264,7 @@ private void setAppParmsIni(){
                         .addComponent(trackTargetURL)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(SeqResponseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(RegexTestSelectedColumn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(nParamDel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(nParamDel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(nParamDel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1290,7 +1290,7 @@ private void setAppParmsIni(){
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(nParamDel14)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton10)))
+                        .addComponent(RegexTestSelectedColumn)))
                 .addContainerGap())
         );
 
@@ -2019,7 +2019,7 @@ private void setAppParmsIni(){
         }
     }//GEN-LAST:event_nParamDel14ActionPerformed
 
-    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
+    private void RegexTestSelectedColumnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RegexTestSelectedColumnActionPerformed
         // TODO add your handling code here:
         if(current_model_selected){
             if(current_model!=P_TRACKMODEL){
@@ -2048,7 +2048,7 @@ private void setAppParmsIni(){
             }
             new ParmGenRegex(this, showrequest).setVisible(true);
         }
-    }//GEN-LAST:event_jButton10ActionPerformed
+    }//GEN-LAST:event_RegexTestSelectedColumnActionPerformed
 
     private void csvParamDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_csvParamDelActionPerformed
         // TODO add your handling code here:
@@ -2182,6 +2182,7 @@ private void setAppParmsIni(){
         }
         int[] rowsSelected = trackTable.getSelectedRows();
         boolean showrequest = true;
+
         if (rowsSelected.length > 0){
             current_tablerowidx = rowsSelected[0];
             current_tablecolidx = 12;
@@ -2249,6 +2250,7 @@ private void setAppParmsIni(){
     private javax.swing.JRadioButton NumberSelBtn;
     private javax.swing.JMenuItem ParamRegex;
     private javax.swing.JPopupMenu RegexPopup;
+    private javax.swing.JButton RegexTestSelectedColumn;
     private javax.swing.JPanel ReqPanel;
     private javax.swing.JTextPane RequestArea;
     private javax.swing.JButton RequestSelectBtn;
@@ -2278,7 +2280,6 @@ private void setAppParmsIni(){
     private javax.swing.JTextField csvTargetURL;
     private javax.swing.JButton delTamper;
     private javax.swing.JButton downTamper;
-    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
