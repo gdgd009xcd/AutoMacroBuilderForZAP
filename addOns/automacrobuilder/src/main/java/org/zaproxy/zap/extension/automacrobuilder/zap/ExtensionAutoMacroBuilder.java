@@ -233,7 +233,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
     @Override
     public String getAuthor() {
-        return Constant.ZAP_TEAM;
+        return "gdgd009xcd";
     }
 
     @Override
