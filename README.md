@@ -31,23 +31,22 @@ ZAPROXY Mode: Standard mode
 
 
 
-## Building
+## Download & Building
 
-The add-ons are built with [Gradle], each add-on has its own project which is located under the `addOns` project/directory.
+The add-on is built with [Gradle]: https://gradle.org/  
 
-To build all add-ons, simply run:
+To download & build this addon, simply run:  
 
-    ./gradlew build
+$ git clone https://github.com/gdgd009xcd/AutoMacroBuilderForZAP.git  
+$ cd AutoMacroBuilderForZAP/  
+$ ./gradlew build  
 
-in the main directory of the project, the add-ons will be placed in the directory `build/zapAddOn/bin/` of each project.
+The add-on will be placed in the directory `AutoMacroBuilderForZAP/addOns/automacrobuilder/build/zapAddOn/bin`
 
-To build an add-on individually run:
-
-    ./gradlew :addOns:<name>:build
-
-replacing `<name>` with the name of the add-on (e.g. `reveal`).
-
-[Gradle]: https://gradle.org/
+$ cd addOns/automacrobuilder/build/zapAddOn/bin  
+$ ls  
+automacrobuilder-alpha-0.9.7.zap  
+$   
 
 ## FAQ
 FAQ is [here](https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/9.1.-FAQ)
