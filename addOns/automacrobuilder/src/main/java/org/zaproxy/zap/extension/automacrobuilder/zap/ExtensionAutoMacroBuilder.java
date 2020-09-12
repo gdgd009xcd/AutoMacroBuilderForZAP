@@ -23,7 +23,6 @@ import java.awt.CardLayout;
 import java.awt.Font;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.ImageIcon;
 import javax.swing.JTextPane;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.AbstractPanel;
@@ -61,8 +60,8 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     private static final String RESOURCES =
             "/org/zaproxy/zap/extension/automacrobuilder/zap/resources";
 
-    private static final ImageIcon ICON =
-            new ImageIcon(ExtensionAutoMacroBuilder.class.getResource(RESOURCES + "/cake.png"));
+    // private static final ImageIcon ICON =
+    //        new ImageIcon(ExtensionAutoMacroBuilder.class.getResource(RESOURCES + "/cake.png"));
 
     // private static final String EXAMPLE_FILE = "example/ExampleFile.txt";
 
@@ -146,7 +145,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             statusPanel.setLayout(new CardLayout());
             statusPanel.setName(Constant.messages.getString(PREFIX + ".panel.title"));
             // System.out.println("getString():" + Constant.messages.getString(PREFIX + ".gorua"));
-            statusPanel.setIcon(ICON);
+            // statusPanel.setIcon(ICON);
             JTextPane pane = new JTextPane();
             pane.setEditable(false);
             // Obtain (and set) a font with the size defined in the options
