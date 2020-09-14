@@ -24,9 +24,9 @@ Addon: AutoMacroBuilderForZAP ver0.9.6, ActiveScan rule addons(See below).
 ZAPROXY Mode: Standard mode  
 
 <table style="font-size: 70%;">
- <tr><th>url</th><th>parameter</th><TH>ascanrules release <BR>ver 36.0.0</TH><TH>Advanced SQLInjection Scanner <BR>Ver13 beta</TH><TH><A HREF="https://github.com/gdgd009xcd/CustomActiveScanForZAP">CustomActiveScan <BR>ver0.0.1 alpha</A></TH></tr>
- <tr><td>http://localhost:8110/moduser.php</td><td>password</td><TH>NONE</TD><TD>DETECTED<BR>(time based<BR>pg_sleep(5))</TD><TD>DETECTED(boolean based)</TD></tr>
-  <tr><td>http://localhost:8110/moduser.php</td><td>age</td><TH>NONE</TD><TD>DETECTED<BR>(time based<BR>pg_sleep(5))</TD><TD>DETECTED(boolean based)</TD></tr>
+ <tr><th>url</th><th>parameter</th><TH>Advanced SQLInjection Scanner <BR>Ver13 beta</TH><TH><A HREF="https://github.com/gdgd009xcd/CustomActiveScanForZAP">CustomActiveScan <BR>ver0.0.1 alpha</A></TH></tr>
+ <tr><td>http://localhost:8110/moduser.php</td><td>password</td><TD>DETECTED<BR>(time based<BR>pg_sleep(5))</TD><TD>DETECTED(boolean based)</TD></tr>
+  <tr><td>http://localhost:8110/moduser.php</td><td>age</td><TD>DETECTED<BR>(time based<BR>pg_sleep(5))</TD><TD>DETECTED(boolean based)</TD></tr>
  </table>
 
 
