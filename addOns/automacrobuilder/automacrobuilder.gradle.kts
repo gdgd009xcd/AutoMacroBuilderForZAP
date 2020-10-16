@@ -57,6 +57,7 @@ zapAddOn {
 
     manifest {
         author.set("gdgd009xcd")
+        repo.set("https://github.com/gdgd009xcd/AutoMacroBuilderForZAP")
         helpSet {
             baseName.set("help%LC%.helpset")
             localeToken.set("%LC%")
