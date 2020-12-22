@@ -4,8 +4,9 @@ public class ParmGenMacroTraceParams {
     private int selected_request = -1; // scan target request stepno in ParmGenMacroTrace stepno
     private int last_stepno = -1; // scan last request stepno in ParmGenMacroTrace stepno
 
-    public ParmGenMacroTraceParams(int pos) {
+    public ParmGenMacroTraceParams(int pos, int lastStepNo) {
         setSelectedRequestNo(pos);
+        setLastStepNo(lastStepNo);
     }
 
     public ParmGenMacroTraceParams(String hv) {
@@ -17,7 +18,7 @@ public class ParmGenMacroTraceParams {
      *
      * @param current
      */
-    public void setSelectedRequestNo(int current) {
+    private void setSelectedRequestNo(int current) {
         selected_request = current;
     }
 
@@ -36,7 +37,7 @@ public class ParmGenMacroTraceParams {
      *
      * @param last
      */
-    public void setLastStepNo(int last) {
+    private void setLastStepNo(int last) {
         last_stepno = last;
     }
 

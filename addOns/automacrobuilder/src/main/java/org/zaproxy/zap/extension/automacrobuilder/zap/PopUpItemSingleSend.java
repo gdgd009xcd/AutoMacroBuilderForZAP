@@ -13,6 +13,7 @@ import org.parosproxy.paros.model.HistoryReference;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.*;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
@@ -46,9 +47,14 @@ public class PopUpItemSingleSend extends JMenuItem {
                     PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
 
                     if (newrequest != null) {
-                        int pos = f_mbui.getCurrentSelectedRequestIndex();
+                        int currentSelectedPos = f_mbui.getCurrentSelectedRequestIndex();
+                        ParmGenMacroTrace pmt = f_mbui.getParmGenMacroTrace();
+                        int subSequenceScanLimit = f_mbui.getSubSequenceScanLimit();
+                        int lastStepNo =
+                                pmt.getLastStepNo(currentSelectedPos, subSequenceScanLimit);
                         final HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
-                        final ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(pos);
+                        final ParmGenMacroTraceParams pmtParams =
+                                new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
                         final Thread t =
                                 new Thread(
                                         new Runnable() {

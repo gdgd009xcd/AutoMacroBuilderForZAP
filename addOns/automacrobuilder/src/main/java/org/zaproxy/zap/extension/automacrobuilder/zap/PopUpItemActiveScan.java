@@ -62,11 +62,17 @@ public class PopUpItemActiveScan extends JMenuItem {
                 ev -> {
                     PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(this.mbui);
                     if (newrequest != null) {
-                        int pos = this.mbui.getCurrentSelectedRequestIndex();
-                        ParmGenMacroTraceParams targetStepNo = new ParmGenMacroTraceParams(pos);
-                        this.extension.setTargetStepNo(targetStepNo);
                         ParmGenMacroTrace pmt = this.mbui.getParmGenMacroTrace();
-                        PRequestResponse prr = pmt.getRequestResponseCurrentList(pos);
+                        int currentSelectedPos = this.mbui.getCurrentSelectedRequestIndex();
+                        int subSequenceScanLimit = this.mbui.getSubSequenceScanLimit();
+                        int lastStepNo =
+                                pmt.getLastStepNo(currentSelectedPos, subSequenceScanLimit);
+                        ParmGenMacroTraceParams targetStepNo =
+                                new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
+                        this.extension.setTargetStepNo(targetStepNo);
+
+                        PRequestResponse prr =
+                                pmt.getRequestResponseCurrentList(currentSelectedPos);
                         ClientDependMessageContainer cdmcon = prr.getClientDependMessageContainer();
                         HistoryReference href =
                                 cdmcon != null ? cdmcon.getClientDpendMessage() : null;

@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
 import org.zaproxy.zap.extension.automacrobuilder.*;
@@ -244,6 +245,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         jLabel1 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         FinalResponse = new javax.swing.JCheckBox();
+        requestListNum = new javax.swing.JLabel();
+        subSequenceScanLimit = new javax.swing.JTextField();
+        jCheckBox1 = new javax.swing.JCheckBox();
         MBtoStepNo = new javax.swing.JCheckBox();
         MBmonitorofprocessing = new javax.swing.JCheckBox();
         UpSelected = new javax.swing.JButton();
@@ -590,7 +594,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         jLabel1.setText("Other Options(Usually, you do not need chage options below.)");
 
-        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Pass back to the invoking tool"));
+        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Pass response of subsequent request  back as the result of scan/resend request"));
 
         FinalResponse.setSelected(true);
         FinalResponse.setText(bundle.getString("MacroBuilderUI.FINAL RESPONSE.text")); // NOI18N
@@ -600,19 +604,51 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
+        requestListNum.setText("subsequence scan limit");
+
+        subSequenceScanLimit.setText("-1");
+        subSequenceScanLimit.setToolTipText("maximum number of subsequent requests after scan/resend request currently being tested.");
+        subSequenceScanLimit.setInputVerifier(new IntegerInputVerifier());
+        subSequenceScanLimit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                subSequenceScanLimitActionPerformed(evt);
+            }
+        });
+
+        jCheckBox1.setText("scan all from current target to [Subsequence scan limit]/[Final Response] ");
+        jCheckBox1.setEnabled(false);
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
-                .addComponent(FinalResponse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 569, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addComponent(FinalResponse, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(59, 59, 59)
+                        .addComponent(requestListNum, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(subSequenceScanLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel7Layout.createSequentialGroup()
-                .addComponent(FinalResponse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(requestListNum)
+                        .addComponent(subSequenceScanLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(FinalResponse))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBox1))
         );
 
         MBtoStepNo.setText(bundle.getString("MacroBuilderUI.MBtoStepNo.text")); // NOI18N
@@ -664,24 +700,21 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     .addComponent(DownSelected, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addGap(26, 26, 26))
                     .addComponent(jSeparator1)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 402, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 402, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                                .addComponent(jCheckBox2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(waitsec, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(71, 71, 71))
                             .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                                        .addComponent(jCheckBox2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(waitsec, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(71, 71, 71))
-                                    .addGroup(jPanel4Layout.createSequentialGroup()
-                                        .addComponent(MBfromStepNo, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(26, 26, 26)))
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(MBtoStepNo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(MBmonitorofprocessing, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 826, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                                .addComponent(MBfromStepNo, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(26, 26, 26)))
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(MBtoStepNo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(MBmonitorofprocessing, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 826, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                         .addComponent(paramlog, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())))
@@ -731,7 +764,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(MBfromStepNo)
                     .addComponent(MBtoStepNo))
-                .addContainerGap(255, Short.MAX_VALUE))
+                .addContainerGap(240, Short.MAX_VALUE))
         );
 
         jScrollPane2.setViewportView(jPanel4);
@@ -740,11 +773,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 870, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1283, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1114, Short.MAX_VALUE)
         );
 
         getAccessibleContext().setAccessibleName("");
@@ -1707,6 +1740,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
     }//GEN-LAST:event_updateActionPerformed
 
+    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jCheckBox1ActionPerformed
+
+    private void subSequenceScanLimitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subSequenceScanLimitActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_subSequenceScanLimitActionPerformed
+
     /**
      * get current selected request index in RequestList.
      * 
@@ -1777,7 +1818,40 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
         return "Cancel";
     }
+    
+    /**
+     * get subSequenceScanLimit value.
+     *
+     * @return 
+     */
+    public int getSubSequenceScanLimit() {
+        String v = subSequenceScanLimit.getText();
+        int subSequenceScanLimitValue = Integer.parseInt(v);
+        return subSequenceScanLimitValue;
+    }
 
+    /**
+     * integer input verifier for JTextField.
+     */
+    static class IntegerInputVerifier extends InputVerifier {
+        @Override public boolean verify(JComponent c) {
+          boolean verified = false;
+          if (c instanceof JTextComponent) {
+            JTextComponent textField = (JTextComponent) c;
+            try {
+              Integer.parseInt(textField.getText());
+              verified = true;
+            } catch (NumberFormatException ex) {
+              UIManager.getLookAndFeel().provideErrorFeedback(c);
+            }
+            if (!verified) {
+                JOptionPane.showMessageDialog(c,"subsequence scan limit\nPlease input numeric only.");
+            }
+          }
+          return verified;
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox CBinheritFromCache;
     private javax.swing.JButton ClearMacro;
@@ -1809,6 +1883,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JMenuItem edit;
     private javax.swing.JMenuItem enableRequest;
     private javax.swing.JButton jButton1;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1828,8 +1903,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane paramlog;
+    private javax.swing.JLabel requestListNum;
     private javax.swing.JMenuItem restore;
     private javax.swing.JMenuItem show;
+    private javax.swing.JTextField subSequenceScanLimit;
     private javax.swing.JMenuItem update;
     private javax.swing.JTextField waitsec;
     // End of variables declaration//GEN-END:variables

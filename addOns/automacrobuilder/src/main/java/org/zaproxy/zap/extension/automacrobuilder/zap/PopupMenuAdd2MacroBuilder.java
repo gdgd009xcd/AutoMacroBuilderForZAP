@@ -140,12 +140,20 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
     @Override
     protected void performHistoryReferenceActions(List<HistoryReference> srchrefs) {
         LOGGER4J.debug("performHistoryReferenceActions called.");
-        this.hrefs = new ArrayList<>();
+        Invoker invoker = getInvoker();
+        String invokername = invoker == null ? "null" : invoker.name();
+        LOGGER4J.debug("invoker:" + invokername);
 
-        // collect historyReferences of leaf node from StructuralSiteNodes(Site node tree).
-        for (HistoryReference historyReference : srchrefs) {
-            if (historyReference != null) {
-                this.performAction(historyReference);
+        if (invoker != Invoker.SITES_PANEL) {
+            this.hrefs = srchrefs;
+        } else {
+            this.hrefs = new ArrayList<>();
+
+            // collect historyReferences of leaf node from StructuralSiteNodes(Site node tree).
+            for (HistoryReference historyReference : srchrefs) {
+                if (historyReference != null) {
+                    this.performAction(historyReference);
+                }
             }
         }
 

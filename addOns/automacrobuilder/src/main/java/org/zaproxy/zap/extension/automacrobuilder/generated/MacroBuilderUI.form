@@ -159,12 +159,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jScrollPane2" pref="870" max="32767" attributes="0"/>
+          <Component id="jScrollPane2" pref="873" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jScrollPane2" pref="1283" max="32767" attributes="0"/>
+          <Component id="jScrollPane2" pref="1114" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -209,31 +209,26 @@
                               <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                           </Group>
                           <Component id="jSeparator1" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
+                          <Component id="jLabel2" min="-2" pref="402" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel2" min="-2" pref="402" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="jCheckBox2" max="32767" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Component id="waitsec" min="-2" pref="68" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="71" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" attributes="0">
-                                              <Component id="MBfromStepNo" min="-2" pref="310" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="MBtoStepNo" max="32767" attributes="0"/>
-                                          <Component id="MBmonitorofprocessing" min="-2" pref="405" max="-2" attributes="0"/>
-                                      </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="jCheckBox2" max="32767" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="waitsec" min="-2" pref="68" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="71" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="jLabel1" alignment="0" min="-2" pref="826" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="MBfromStepNo" min="-2" pref="310" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="MBtoStepNo" max="32767" attributes="0"/>
+                                  <Component id="MBmonitorofprocessing" min="-2" pref="405" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
+                          <Component id="jLabel1" alignment="0" min="-2" pref="826" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="paramlog" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -291,7 +286,7 @@
                           <Component id="MBfromStepNo" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="MBtoStepNo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="255" max="32767" attributes="0"/>
+                      <EmptySpace pref="240" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -715,7 +710,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Pass back to the invoking tool"/>
+                    <TitledBorder title="Pass response of subsequent request  back as the result of scan/resend request"/>
                   </Border>
                 </Property>
               </Properties>
@@ -724,16 +719,33 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="FinalResponse" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jCheckBox1" min="-2" pref="569" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="FinalResponse" min="-2" pref="146" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
+                                  <Component id="requestListNum" min="-2" pref="150" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="subSequenceScanLimit" min="-2" pref="25" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="FinalResponse" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                                  <Component id="requestListNum" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="subSequenceScanLimit" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="FinalResponse" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -748,6 +760,32 @@
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="FinalResponseActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JLabel" name="requestListNum">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="subsequence scan limit"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="subSequenceScanLimit">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="-1"/>
+                    <Property name="toolTipText" type="java.lang.String" value="maximum number of subsequent requests after scan/resend request currently being tested."/>
+                    <Property name="inputVerifier" type="javax.swing.InputVerifier" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="new IntegerInputVerifier()" type="code"/>
+                    </Property>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="subSequenceScanLimitActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="scan all from current target to [Subsequence scan limit]/[Final Response] "/>
+                    <Property name="enabled" type="boolean" value="false"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox1ActionPerformed"/>
                   </Events>
                 </Component>
               </SubComponents>

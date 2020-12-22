@@ -815,9 +815,9 @@ public class ParmGenMacroTrace extends ClientDependent {
         return null;
     }
 
-    public void sendToRepeater(int pos) {
+    public void sendToRepeater(int currentSelectedPos) {
         PRequestResponse pqr = null;
-        if ((pqr = getRequestResponseCurrentList(pos)) != null) {
+        if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
@@ -829,17 +829,24 @@ public class ParmGenMacroTrace extends ClientDependent {
                 String host = pqr.request.getHost();
                 int port = pqr.request.getPort();
                 boolean useHttps = pqr.request.isSSL();
-                ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(pos);
+                int subSequenceScanLimit = ui.getSubSequenceScanLimit();
+                int lastStepNo = getLastStepNo(currentSelectedPos, subSequenceScanLimit);
+                ParmGenMacroTraceParams pmtParams =
+                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
                 pqr.request.setParamsCustomHeader(pmtParams);
                 burpSendToRepeater(
-                        host, port, useHttps, pqr.request.getByteMessage(), "MacroBuilder:" + pos);
+                        host,
+                        port,
+                        useHttps,
+                        pqr.request.getByteMessage(),
+                        "MacroBuilder:" + currentSelectedPos);
             }
         }
     }
 
-    public void sendToScanner(int pos) {
+    public void sendToScanner(int currentSelectedPos) {
         PRequestResponse pqr = null;
-        if ((pqr = getRequestResponseCurrentList(pos)) != null) {
+        if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
@@ -851,16 +858,20 @@ public class ParmGenMacroTrace extends ClientDependent {
                 String host = pqr.request.getHost();
                 int port = pqr.request.getPort();
                 boolean useHttps = pqr.request.isSSL();
-                ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(pos);
+                int subSequenceScanLimit = ui.getSubSequenceScanLimit();
+                int lastStepNo = getLastStepNo(currentSelectedPos, subSequenceScanLimit);
+                ParmGenMacroTraceParams pmtParams =
+                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
+
                 pqr.request.setParamsCustomHeader(pmtParams);
                 burpDoActiveScan(host, port, useHttps, pqr.request.getByteMessage());
             }
         }
     }
 
-    public void sendToIntruder(int pos) {
+    public void sendToIntruder(int currentSelectedPos) {
         PRequestResponse pqr = null;
-        if ((pqr = getRequestResponseCurrentList(pos)) != null) {
+        if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
@@ -872,7 +883,10 @@ public class ParmGenMacroTrace extends ClientDependent {
                 String host = pqr.request.getHost();
                 int port = pqr.request.getPort();
                 boolean useHttps = pqr.request.isSSL();
-                ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(pos);
+                int subSequenceScanLimit = ui.getSubSequenceScanLimit();
+                int lastStepNo = getLastStepNo(currentSelectedPos, subSequenceScanLimit);
+                ParmGenMacroTraceParams pmtParams =
+                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
                 pqr.request.setParamsCustomHeader(pmtParams);
                 burpSendToIntruder(host, port, useHttps, pqr.request.getByteMessage());
             }
@@ -970,5 +984,19 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     public <T> T getSender() {
         return CastUtils.castToType(this.sender);
+    }
+
+    /**
+     * get lasteStepNo which respresents last StepNo in RequestList.
+     *
+     * @param currentSelectedPos
+     * @param subSequenceScanLimit
+     * @return
+     */
+    public int getLastStepNo(int currentSelectedPos, int subSequenceScanLimit) {
+        int lastStepNo = currentSelectedPos + subSequenceScanLimit;
+        int rlistSize = rlist.size();
+        if (lastStepNo > rlistSize || subSequenceScanLimit < 0) return -1;
+        return lastStepNo;
     }
 }
