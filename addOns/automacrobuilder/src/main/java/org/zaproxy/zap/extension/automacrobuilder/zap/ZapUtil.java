@@ -101,9 +101,12 @@ public class ZapUtil {
      * @return null or PRequest
      */
     public static PRequest getPRequestFromMacroRequest(MacroBuilderUI mbui) {
-        int pos = mbui.getCurrentSelectedRequestIndex();
-        if (pos > -1) {
-            ParmGenMacroTrace pmt = mbui.getParmGenMacroTrace();
+        int selectedTabIndex = mbui.getSelectedTabIndexOfMacroRequestList();
+        int pos = mbui.getRequestJListSelectedIndexAtTabIndex(selectedTabIndex);
+        ParmGenMacroTrace pmt = mbui.getParmGenMacroTraceAtTabIndex(selectedTabIndex);
+
+        if (pos > -1 && pmt != null) {
+
             pmt.setCurrentRequest(pos);
 
             StyledDocumentWithChunk doc = mbui.getMacroRequestStyledDocument();

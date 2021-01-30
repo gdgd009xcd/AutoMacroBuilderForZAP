@@ -25,19 +25,24 @@ import org.zaproxy.zap.extension.ascan.ActiveScan;
 import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
 import org.zaproxy.zap.extension.ascan.PolicyManager;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.model.Target;
 import org.zaproxy.zap.users.User;
 
 /** @author gdgd009xcd */
 public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
+    private ParmGenMacroTraceProvider pmtProvider = null;
     private ScannerParam scannerParam = new ScannerParam();
     private ExtensionActiveScan extension =
             Control.getSingleton().getExtensionLoader().getExtension(ExtensionActiveScan.class);
-    private StartedActiveScanContainer startedascan = new StartedActiveScanContainer();
+    private StartedActiveScanContainer startedascan = null;
     private ParmGenMacroTraceParams targetStepNo = null;
 
-    ExtensionActiveScanWrapper() {}
+    ExtensionActiveScanWrapper(ParmGenMacroTraceProvider pmtProvider) {
+        this.pmtProvider = pmtProvider;
+        startedascan = new StartedActiveScanContainer(this.pmtProvider);
+    }
 
     protected StartedActiveScanContainer getStartedActiveScanContainer() {
         return this.startedascan;

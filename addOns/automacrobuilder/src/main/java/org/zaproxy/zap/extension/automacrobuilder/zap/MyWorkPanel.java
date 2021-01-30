@@ -22,7 +22,6 @@ package org.zaproxy.zap.extension.automacrobuilder.zap;
 import java.awt.*;
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionHook;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.tab.Tab;
 
@@ -30,14 +29,12 @@ import org.zaproxy.zap.extension.tab.Tab;
 @SuppressWarnings("serial")
 public class MyWorkPanel extends AbstractPanel implements Tab {
 
-    private ParmGenMacroTrace pmt = null;
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
     MyWorkPanel(
             ExtensionActiveScanWrapper extscanwrapper,
             MacroBuilderUI mbui,
-            ParmGenMacroTrace pmt,
             String name,
             ExtensionHook exthook) {
         setLayout(new CardLayout());
@@ -45,7 +42,6 @@ public class MyWorkPanel extends AbstractPanel implements Tab {
         // jScrollPane.setFont(new java.awt.Font("Dialog", java.awt.Font.PLAIN, 11));
         // jScrollPane.setHorizontalScrollBarPolicy(
         //        javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        this.pmt = pmt;
         // jScrollPane.setViewportView(new MacroBuilderUI(pmt).getInnerJPanel());
         this.setName(
                 name); // without calling this method, then NULL pointer exception will be occured.

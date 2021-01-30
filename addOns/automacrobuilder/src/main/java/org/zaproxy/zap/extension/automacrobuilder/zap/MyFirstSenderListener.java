@@ -94,6 +94,7 @@ public class MyFirstSenderListener implements HttpSenderListener {
             }
         } finally {
             this.startedcon.removeThreadid(); // always keep clean.
+            this.startedcon.removeUUID();
         }
     }
 

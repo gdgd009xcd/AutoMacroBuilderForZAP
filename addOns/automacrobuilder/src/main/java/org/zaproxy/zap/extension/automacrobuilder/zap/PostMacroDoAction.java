@@ -2,7 +2,6 @@ package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceAction;
@@ -10,7 +9,6 @@ import org.zaproxy.zap.extension.automacrobuilder.InterfaceDoAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceEndAction;
 import org.zaproxy.zap.extension.automacrobuilder.OneThreadProcessor;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManager;
 
 public class PostMacroDoAction implements InterfaceDoAction {
@@ -32,8 +30,7 @@ public class PostMacroDoAction implements InterfaceDoAction {
      */
     void setParameters(
             StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
-        final UUID uuid = acon.getUUID();
-        final ParmGenMacroTrace pmt = ParmGenMacroTraceProvider.getRunningInstance(uuid);
+        final ParmGenMacroTrace pmt = acon.getRunningInstance();
         List<InterfaceAction> actionlist = new ArrayList<>();
 
         // action create and save into ThreadLocal
@@ -50,8 +47,8 @@ public class PostMacroDoAction implements InterfaceDoAction {
         // end action create and save into ThreadLocal
         ENDACTION.set(
                 () -> {
-                    ParmGenMacroTraceProvider.getOriginalBase().updateOriginalBase(pmt);
-                    ParmGenMacroTraceProvider.removeEndInstance(pmt.getUUID());
+                    acon.updateBaseInstance(pmt);
+                    acon.removeEndInstance();
                 });
     }
 

@@ -69,7 +69,8 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     private RightClickMsgMenu popupMsgMenuExample = null;
     private AbstractPanel statusPanel = null;
     private PopupMenuAdd2MacroBuilder popupadd2MacroBuilder = null;
-    private ParmGenMacroTrace pmt = ParmGenMacroTraceProvider.getOriginalBase();
+    private ParmGenMacroTraceProvider pmtProvider = null;
+    private ParmGenMacroTrace pmt = null;
     private MacroBuilderUI mbui = null;
 
     // private SimpleExampleAPI api;
@@ -80,9 +81,11 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     public ExtensionAutoMacroBuilder() {
         super(NAME);
         setI18nPrefix(PREFIX);
+        this.pmtProvider = new ParmGenMacroTraceProvider();
+        this.pmt = pmtProvider.getBaseInstance(0);
 
         if (this.mbui == null) {
-            this.mbui = new MacroBuilderUI(this.pmt);
+            this.mbui = new MacroBuilderUI(this.pmtProvider);
         }
     }
 
@@ -92,7 +95,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
         // this.api = new SimpleExampleAPI(this);
         // extensionHook.addApiImplementor(this.api);
-        ExtensionActiveScanWrapper extwrapper = new ExtensionActiveScanWrapper();
+        ExtensionActiveScanWrapper extwrapper = new ExtensionActiveScanWrapper(this.pmtProvider);
 
         // As long as we're not running as a daemon
         if (getView() != null) {
@@ -103,12 +106,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             extensionHook
                     .getHookView()
                     .addWorkPanel(
-                            new MyWorkPanel(
-                                    extwrapper,
-                                    this.mbui,
-                                    this.pmt,
-                                    "MacroBuilder",
-                                    extensionHook));
+                            new MyWorkPanel(extwrapper, this.mbui, "MacroBuilder", extensionHook));
             // extensionHook.getHookView().addStatusPanel(new MyWorkPanel("StatusPanel", LOGGER));
             // extensionHook.getHookView().addSelectPanel(new MyWorkPanel("SelectPanel", LOGGER));
         }
