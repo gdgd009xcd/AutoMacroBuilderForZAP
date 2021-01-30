@@ -10,7 +10,6 @@ import org.zaproxy.zap.extension.automacrobuilder.InterfaceDoAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceEndAction;
 import org.zaproxy.zap.extension.automacrobuilder.OneThreadProcessor;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManager;
 
 public class BeforeMacroDoAction implements InterfaceDoAction {
@@ -32,9 +31,7 @@ public class BeforeMacroDoAction implements InterfaceDoAction {
     void setParameters(
             StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
         // newly create ParmGenMacroTrace
-        final ParmGenMacroTrace pmt =
-                ParmGenMacroTraceProvider.getNewParmGenMacroTraceInstance(
-                        sender, acon.getParmGenMacroTraceParams());
+        final ParmGenMacroTrace pmt = acon.getNewRunningInstance(sender);
 
         UUID uuid = pmt.getUUID();
         // Add uuid to StartedActiveScanContainer to get ParmGenMacroTrace later

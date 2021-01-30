@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,16 +34,106 @@ public class ParmGenMacroTraceProvider {
 
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
-    private static ParmGenMacroTrace pmt_originalbase = new ParmGenMacroTrace();
-    private static Map<UUID, ParmGenMacroTrace> pmtmap = new ConcurrentHashMap<>();
+    private Map<UUID, ParmGenMacroTrace> pmtmap;
+    private List<ParmGenMacroTrace> pmtList;
+
+    // The following parameters belong to the application scope.
+    // so these parameters keep value until ending application.
+    private boolean CBInheritFromCache =
+            false; // == true then Cookies is updated with cache from begin.
+    private boolean CBFinalResponse =
+            false; // == true then scan target request's response is updated with last request's
+    // response in macro request list.
+    private boolean CBResetToOriginal = false; // == true use original requestresponse.
+    private boolean CBreplaceCookie = false; // == true then overwrite Cookie
+    private boolean CBreplaceTrackingParam = false; // == true then overwrite Tracking Tokens
+    private int waittimer = 0; // wait timer (msec)
+
+    public void setCBInheritFromCache(boolean b) {
+        CBInheritFromCache = b;
+    }
+
+    public void setCBFinalResponse(boolean b) {
+        CBFinalResponse = b;
+    }
+
+    public void setCBResetToOriginal(boolean b) {
+        CBResetToOriginal = b;
+    }
+
+    public void setCBreplaceCookie(boolean b) {
+        CBreplaceCookie = b;
+    }
+
+    public void setCBreplaceTrackingParam(boolean _b) {
+        CBreplaceTrackingParam = _b;
+    }
+
+    public void setWaitTimer(String msec) {
+        try {
+            waittimer = Integer.parseInt(msec); // msec
+            if (waittimer <= 0) waittimer = 0;
+        } catch (Exception e) {
+            waittimer = 0;
+        }
+    }
+
+    public boolean getCBInheritFromCache() {
+        return this.CBInheritFromCache;
+    }
+
+    public boolean getCBFinalResponse() {
+        return this.CBFinalResponse;
+    }
+
+    public boolean getCBResetToOriginal() {
+        return this.CBResetToOriginal;
+    }
+
+    public boolean getCBreplaceCookie() {
+        return this.CBreplaceCookie;
+    }
+
+    public boolean getCBreplaceTrackingParam() {
+        return this.CBreplaceTrackingParam;
+    }
+
+    public int getWaitTimer() {
+        return this.waittimer;
+    }
+
+    public boolean isBaseLineMode() {
+        return !CBreplaceTrackingParam;
+    }
+
+    public ParmGenMacroTraceProvider() {
+        pmtmap = new ConcurrentHashMap<>();
+        ParmGenMacroTrace pmt_originalbase = new ParmGenMacroTrace();
+        pmtList = new ArrayList<>();
+        pmtList.add(pmt_originalbase);
+    }
+
+    public void clear() {
+        pmtmap.clear();
+        ParmGenMacroTrace pmt_originalbase = pmtList.get(0);
+        pmtList.clear();
+        pmt_originalbase.clear();
+        pmtList.add(pmt_originalbase);
+    }
 
     /**
-     * get original ParmGenMacroTrace base instance for configuration ( for GUI )
+     * get ParmGenMacroTrace base instance for configuration ( for GUI )
      *
-     * @return ParmGenMacroTrace baseinstance
+     * @param tabindex
+     * @return ParmGenMacroTrace baseinstance or maybe null.
      */
-    public static ParmGenMacroTrace getOriginalBase() {
-        return pmt_originalbase;
+    public ParmGenMacroTrace getBaseInstance(int tabIndex) {
+        try {
+            return pmtList.get(tabIndex);
+        } catch (IndexOutOfBoundsException e) {
+
+        }
+        return null;
     }
 
     /**
@@ -50,14 +142,15 @@ public class ParmGenMacroTraceProvider {
      * @param sender
      * @return ParmGenMacroTrace
      */
-    public static <T> ParmGenMacroTrace getNewParmGenMacroTraceInstance(
+    public <T> ParmGenMacroTrace getNewParmGenMacroTraceInstance(
             T sender, ParmGenMacroTraceParams pmtParams) {
-        ParmGenMacroTrace newpmt = pmt_originalbase.getScanInstance(sender, pmtParams);
+        ParmGenMacroTrace newpmt =
+                getBaseInstance(pmtParams.getTabIndex()).getScanInstance(sender, pmtParams, this);
         pmtmap.put(newpmt.getUUID(), newpmt);
         return newpmt;
     }
 
-    public static ParmGenMacroTrace getRunningInstance(UUID uuid) {
+    public ParmGenMacroTrace getRunningInstance(UUID uuid) {
         try {
             return pmtmap.get(uuid);
         } catch (Exception e) {
@@ -66,7 +159,7 @@ public class ParmGenMacroTraceProvider {
         return null;
     }
 
-    public static synchronized void removeEndInstance(UUID uuid) {
+    public synchronized void removeEndInstance(UUID uuid) {
         pmtmap.remove(uuid);
     }
 }

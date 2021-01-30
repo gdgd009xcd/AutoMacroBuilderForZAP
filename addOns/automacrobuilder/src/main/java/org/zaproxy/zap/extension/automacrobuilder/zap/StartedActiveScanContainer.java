@@ -10,8 +10,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.parosproxy.paros.core.scanner.Scanner;
+import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.ascan.ActiveScan;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 
 /**
  * StartedActiveScanContainer
@@ -23,13 +26,15 @@ public class StartedActiveScanContainer {
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
+    private ParmGenMacroTraceProvider pmtProvider = null;
     private Map<ActiveScan, ParmGenMacroTraceParams> ascanmap = null;
     private static final ThreadLocal<Long> STARTED_THREADS = new ThreadLocal<Long>();
     private static final ThreadLocal<UUID> STARTED_UUIDS = new ThreadLocal<>();
     private static final ThreadLocal<ParmGenMacroTraceParams> STARTED_PMTPARAMS =
             new ThreadLocal<>();
 
-    StartedActiveScanContainer() {
+    StartedActiveScanContainer(ParmGenMacroTraceProvider pmtProvider) {
+        this.pmtProvider = pmtProvider;
         ascanmap = new ConcurrentHashMap<>();
     }
 
@@ -171,5 +176,46 @@ public class StartedActiveScanContainer {
      */
     public UUID getUUID() {
         return STARTED_UUIDS.get();
+    }
+
+    /**
+     * get Running thread instance of ParmGenMacroTrace
+     *
+     * @return
+     */
+    public ParmGenMacroTrace getRunningInstance() {
+        UUID uuid = getUUID();
+        return this.pmtProvider.getRunningInstance(uuid);
+    }
+
+    /**
+     * update ParmGenMacroTrace of baseInstance with runningInstance.
+     *
+     * @param tabindex
+     * @param runningInstance
+     */
+    public void updateBaseInstance(ParmGenMacroTrace runningInstance) {
+        int tabIndex = runningInstance.getTabIndex();
+        LOGGER4J.debug("updateBaseInstance tabIndex:" + tabIndex);
+        ParmGenMacroTrace pmtBase = this.pmtProvider.getBaseInstance(tabIndex);
+        if (pmtBase != null) {
+            pmtBase.updateOriginalBase(runningInstance);
+        }
+    }
+
+    public void removeEndInstance() {
+        try {
+            UUID uuid = getUUID();
+            this.pmtProvider.removeEndInstance(uuid);
+        } catch (Exception e) {
+            LOGGER4J.error("", e);
+        } finally {
+            removeUUID(); // cleanup UUID for this thread.
+        }
+    }
+
+    public ParmGenMacroTrace getNewRunningInstance(HttpSender sender) {
+        ParmGenMacroTraceParams pmtParams = getParmGenMacroTraceParams();
+        return this.pmtProvider.getNewParmGenMacroTraceInstance(sender, pmtParams);
     }
 }

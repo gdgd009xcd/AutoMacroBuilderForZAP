@@ -1,12 +1,14 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 public class ParmGenMacroTraceParams {
+    private int tabIndex = -1; // Macro Request List tabindex in MacroBuilderUI
     private int selected_request = -1; // scan target request stepno in ParmGenMacroTrace stepno
     private int last_stepno = -1; // scan last request stepno in ParmGenMacroTrace stepno
 
-    public ParmGenMacroTraceParams(int pos, int lastStepNo) {
+    public ParmGenMacroTraceParams(int pos, int lastStepNo, int tabindex) {
         setSelectedRequestNo(pos);
         setLastStepNo(lastStepNo);
+        this.tabIndex = tabindex;
     }
 
     public ParmGenMacroTraceParams(String hv) {
@@ -19,7 +21,7 @@ public class ParmGenMacroTraceParams {
      * @param current
      */
     private void setSelectedRequestNo(int current) {
-        selected_request = current;
+        this.selected_request = current;
     }
 
     /**
@@ -28,7 +30,7 @@ public class ParmGenMacroTraceParams {
      * @return
      */
     public int getSelectedRequestNo() {
-        return selected_request;
+        return this.selected_request;
     }
 
     /**
@@ -38,7 +40,7 @@ public class ParmGenMacroTraceParams {
      * @param last
      */
     private void setLastStepNo(int last) {
-        last_stepno = last;
+        this.last_stepno = last;
     }
 
     /**
@@ -48,29 +50,38 @@ public class ParmGenMacroTraceParams {
      * @return
      */
     public int getLastStepNo() {
-        return last_stepno;
+        return this.last_stepno;
+    }
+
+    /**
+     * get Macro Request List tabIndex in MacroBuilderUI
+     *
+     * @return
+     */
+    public int getTabIndex() {
+        return this.tabIndex;
     }
 
     public String toString() {
-        return Integer.toString(selected_request) + "|" + Integer.toString(last_stepno);
+        return Integer.toString(this.selected_request)
+                + "|"
+                + Integer.toString(this.last_stepno)
+                + "|"
+                + Integer.toString(this.tabIndex);
     }
 
     private void setString(String s) {
         if (s != null) {
             String[] nv = s.split("\\|");
-            String[] nvpair = new String[2];
-            if (nv.length > 0) {
-                nvpair[0] = nv[0]; // nv[0] is not null
-            } else {
-                nvpair[0] = "-1";
+            int nvlen = nv.length;
+            String[] nvpair = new String[nvlen];
+            while (nvlen-- > 0) {
+                nvpair[nvlen] = nv[nvlen];
             }
-            if (nv.length > 1) {
-                nvpair[1] = nv[1]; // nv[1] is not null
-            } else {
-                nvpair[1] = "-1";
-            }
-            selected_request = Integer.parseInt(nvpair[0]);
-            last_stepno = Integer.parseInt(nvpair[1]);
+
+            selected_request = nv.length > 0 ? Integer.parseInt(nvpair[0]) : -1;
+            last_stepno = nv.length > 1 ? Integer.parseInt(nvpair[1]) : -1;
+            this.tabIndex = nv.length > 2 ? Integer.parseInt(nvpair[2]) : -1;
         }
     }
 }

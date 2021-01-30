@@ -47,14 +47,18 @@ public class PopUpItemSingleSend extends JMenuItem {
                     PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
 
                     if (newrequest != null) {
-                        int currentSelectedPos = f_mbui.getCurrentSelectedRequestIndex();
-                        ParmGenMacroTrace pmt = f_mbui.getParmGenMacroTrace();
+                        int selectedTabIndex = f_mbui.getSelectedTabIndexOfMacroRequestList();
+                        int currentSelectedPos =
+                                f_mbui.getRequestJListSelectedIndexAtTabIndex(selectedTabIndex);
+                        ParmGenMacroTrace pmt =
+                                f_mbui.getParmGenMacroTraceAtTabIndex(selectedTabIndex);
                         int subSequenceScanLimit = f_mbui.getSubSequenceScanLimit();
                         int lastStepNo =
                                 pmt.getLastStepNo(currentSelectedPos, subSequenceScanLimit);
                         final HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
                         final ParmGenMacroTraceParams pmtParams =
-                                new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
+                                new ParmGenMacroTraceParams(
+                                        currentSelectedPos, lastStepNo, selectedTabIndex);
                         final Thread t =
                                 new Thread(
                                         new Runnable() {

@@ -63,15 +63,14 @@ public class ParmGenMacroTrace extends ClientDependent {
     ListIterator<PRequestResponse> oit = null; // iterator for resquestresponse results
     ListIterator<PRequestResponse> cit = null; // iterator for original requestresponse
 
-    boolean MBCookieUpdate = false; // == true update Cookies
-    boolean CBInheritFromCache = false; // == true then Cookies is updated with cache from begin.
-    boolean MBFinalResponse =
+    private boolean CBInheritFromCache =
+            false; // == true then Cookies is updated with cache from begin.
+    private boolean CBFinalResponse =
             false; // == true then scan target request's response is updated with last request's
     // response in macro request list.
-    boolean MBResetToOriginal = false; // == true use original requestresponse.
-    boolean MBreplaceCookie = false; // == true then overwrite Cookie
-    boolean MBmonitorofprocessing = false;
-    boolean MBreplaceTrackingParam = false;
+    private boolean CBResetToOriginal = false; // == true use original requestresponse.
+    private boolean CBreplaceCookie = false; // == true then overwrite Cookie
+    private boolean CBreplaceTrackingParam = false; // == true then overwrite Tracking Tokens
 
     int state = PMT_POSTMACRO_NULL;
     // int state possible values
@@ -86,6 +85,8 @@ public class ParmGenMacroTrace extends ClientDependent {
     private int stepno = -1; // current running request step no.
 
     private int last_stepno = -1; // postmacro request performs until this step no.
+
+    private int tabIndex = -1; // index of Macro Request List tab in MacroBuilderUI
 
     private ParmGenTWait TWaiter = null;
     private int waittimer = 0; // wait timer (msec)
@@ -135,7 +136,8 @@ public class ParmGenMacroTrace extends ClientDependent {
      *
      * @return
      */
-    public <T> ParmGenMacroTrace getScanInstance(T sender, ParmGenMacroTraceParams pmtParams) {
+    public <T> ParmGenMacroTrace getScanInstance(
+            T sender, ParmGenMacroTraceParams pmtParams, ParmGenMacroTraceProvider pmtProvider) {
         ParmGenMacroTrace nobj = new ParmGenMacroTrace();
         nobj.sender = sender;
         nobj.threadid = Thread.currentThread().getId();
@@ -145,20 +147,20 @@ public class ParmGenMacroTrace extends ClientDependent {
         nobj.selected_request = pmtParams.getSelectedRequestNo(); // specified scan target request
         nobj.last_stepno =
                 pmtParams.getLastStepNo() == -1 ? nobj.rlist.size() - 1 : pmtParams.getLastStepNo();
+        nobj.tabIndex = pmtParams.getTabIndex();
         nobj.fetchResVal = this.fetchResVal != null ? this.fetchResVal.clone() : null; // deepclone
         nobj.cookieMan = this.cookieMan != null ? this.cookieMan.clone() : null; // deepclone
         nobj.savelist = new HashMap<>();
         nobj.toolbaseline = this.toolbaseline != null ? this.toolbaseline.clone() : null;
-        nobj.MBCookieUpdate = this.MBCookieUpdate;
         nobj.CBInheritFromCache =
-                this.CBInheritFromCache; // ==true inherit CSRFtoken/cookie values from cache
-        nobj.MBFinalResponse = this.MBFinalResponse;
-        nobj.MBResetToOriginal = this.MBResetToOriginal;
-        nobj.MBreplaceCookie = this.MBreplaceCookie;
-        nobj.MBmonitorofprocessing = this.MBmonitorofprocessing;
-        nobj.MBreplaceTrackingParam = this.MBreplaceTrackingParam;
+                pmtProvider.getCBInheritFromCache(); // ==true inherit CSRFtoken/cookie values from
+        // cache
+        nobj.CBFinalResponse = pmtProvider.getCBFinalResponse();
+        nobj.CBResetToOriginal = pmtProvider.getCBResetToOriginal();
+        nobj.CBreplaceCookie = pmtProvider.getCBreplaceCookie();
+        nobj.CBreplaceTrackingParam = pmtProvider.getCBreplaceTrackingParam();
 
-        nobj.waittimer = this.waittimer;
+        nobj.waittimer = pmtProvider.getWaitTimer();
 
         nobj.cachedAppValues = null;
 
@@ -186,49 +188,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         ui = _ui;
     }
 
-    public void setCBInheritFromCache(boolean b) {
-        CBInheritFromCache = b;
-    }
-
-    public void setMBFinalResponse(boolean b) {
-        MBFinalResponse = b;
-    }
-
-    public void setMBResetToOriginal(boolean b) {
-        MBResetToOriginal = b;
-    }
-
-    public void setMBreplaceCookie(boolean b) {
-        MBreplaceCookie = b;
-    }
-
-    public void setMBmonitorofprocessing(boolean b) {
-        MBmonitorofprocessing = b;
-    }
-
-    public boolean isMBmonitorofprocessing() {
-        return MBmonitorofprocessing;
-    }
-
-    public void setMBreplaceTrackingParam(boolean _b) {
-        MBreplaceTrackingParam = _b;
-    }
-
-    public boolean isBaseLineMode() {
-        return !MBreplaceTrackingParam;
-    }
-
     boolean isOverWriteCurrentRequestTrackigParam() {
-        return !MBreplaceTrackingParam && isCurrentRequest();
-    }
-
-    public void setWaitTimer(String msec) {
-        try {
-            waittimer = Integer.parseInt(msec); // msec
-            if (waittimer <= 0) waittimer = 0;
-        } catch (Exception e) {
-            waittimer = 0;
-        }
+        return !CBreplaceTrackingParam && isCurrentRequest();
     }
 
     // ３）カレントリクエスト終了(レスポンス受信後)後に実行
@@ -443,7 +404,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                         continue;
                     }
 
-                    if (MBResetToOriginal) {
+                    if (CBResetToOriginal) {
                         ppr = opr; // オリジナルにリセット
                     }
 
@@ -529,7 +490,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
             boolean ReplaceCookieflg = true;
             if (isCurrentRequest()) {
-                ReplaceCookieflg = MBreplaceCookie;
+                ReplaceCookieflg = CBreplaceCookie;
             }
 
             if (preq.setCookies(cookiemap, ReplaceCookieflg)) {}
@@ -566,7 +527,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                             continue;
                         }
                         postmacro_RequestResponse = null;
-                        if (MBResetToOriginal) {
+                        if (CBResetToOriginal) {
                             ppr = opr;
                         }
 
@@ -667,6 +628,7 @@ public class ParmGenMacroTrace extends ClientDependent {
             rlist = _rlist; // reference共有
             originalrlist = ListDeepCopy.listDeepCopyPRequestResponse(_rlist); // Must Do Deep Copy
         } else {
+            rlist.addAll(_rlist);
             originalrlist.addAll(ListDeepCopy.listDeepCopyPRequestResponse(_rlist));
         }
         LOGGER4J.debug("setRecords:" + rlist.size() + "/" + originalrlist.size());
@@ -677,13 +639,13 @@ public class ParmGenMacroTrace extends ClientDependent {
      *
      * @param pmt
      */
-    public void updateOriginalBase(ParmGenMacroTrace pmt) {
-        int osiz = this.rlist != null ? this.rlist.size() : 0;
-        int ssiz = pmt.savelist != null ? pmt.savelist.size() : 0;
+    public void updateOriginalBase(ParmGenMacroTrace runningInstance) {
+        int ssiz = runningInstance.savelist != null ? runningInstance.savelist.size() : 0;
 
+        LOGGER4J.debug("updateOriginalBase ssiz:" + ssiz);
         if (ssiz > 0) {
             List<Map.Entry<Integer, PRequestResponse>> listents =
-                    pmt.savelist.entrySet().stream()
+                    runningInstance.savelist.entrySet().stream()
                             .sorted(Map.Entry.comparingByKey())
                             .collect(Collectors.toList());
             if (this.rlist == null) {
@@ -706,14 +668,14 @@ public class ParmGenMacroTrace extends ClientDependent {
                         }
                     });
 
-            // so update is omitted.
-            this.ui.updaterlist(this.rlist);
+            // below updaterlist no need execute. because UI does not have rlist.
+            // this.ui.updaterlist(this.rlist);
             // private FetchResponseVal fetchResVal = null; // token cache  has DeepCloneable
-            this.fetchResVal = pmt.fetchResVal;
+            this.fetchResVal = runningInstance.fetchResVal;
             // private ParmGenCookieManager cookieMan = null; // cookie manager has DeepCloneable
-            this.cookieMan = pmt.cookieMan;
+            this.cookieMan = runningInstance.cookieMan;
             // PRequestResponse toolbaseline = null;
-            this.toolbaseline = pmt.toolbaseline;
+            this.toolbaseline = runningInstance.toolbaseline;
             LOGGER4J.debug("result update succeeded. size:" + ssiz);
         }
     }
@@ -759,8 +721,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         return rlist;
     }
 
-    public boolean isMBFinalResponse() {
-        return MBFinalResponse;
+    public boolean isCBFinalResponse() {
+        return CBFinalResponse;
     }
 
     public int getStepNo() {
@@ -794,7 +756,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     public PRequestResponse getRequestResponse(int pos) {
         if (rlist != null && rlist.size() > 0) {
             PRequestResponse pqr = rlist.get(pos);
-            if (MBResetToOriginal) {
+            if (CBResetToOriginal) {
                 pqr = originalrlist.get(pos);
             }
 
@@ -815,7 +777,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         return null;
     }
 
-    public void sendToRepeater(int currentSelectedPos) {
+    public void sendToRepeater(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
@@ -832,7 +794,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                 int subSequenceScanLimit = ui.getSubSequenceScanLimit();
                 int lastStepNo = getLastStepNo(currentSelectedPos, subSequenceScanLimit);
                 ParmGenMacroTraceParams pmtParams =
-                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
+                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo, tabIndex);
                 pqr.request.setParamsCustomHeader(pmtParams);
                 burpSendToRepeater(
                         host,
@@ -844,7 +806,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
-    public void sendToScanner(int currentSelectedPos) {
+    public void sendToScanner(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
@@ -861,7 +823,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                 int subSequenceScanLimit = ui.getSubSequenceScanLimit();
                 int lastStepNo = getLastStepNo(currentSelectedPos, subSequenceScanLimit);
                 ParmGenMacroTraceParams pmtParams =
-                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
+                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo, tabIndex);
 
                 pqr.request.setParamsCustomHeader(pmtParams);
                 burpDoActiveScan(host, port, useHttps, pqr.request.getByteMessage());
@@ -869,7 +831,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
-    public void sendToIntruder(int currentSelectedPos) {
+    public void sendToIntruder(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
@@ -886,7 +848,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                 int subSequenceScanLimit = ui.getSubSequenceScanLimit();
                 int lastStepNo = getLastStepNo(currentSelectedPos, subSequenceScanLimit);
                 ParmGenMacroTraceParams pmtParams =
-                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
+                        new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo, tabIndex);
                 pqr.request.setParamsCustomHeader(pmtParams);
                 burpSendToIntruder(host, port, useHttps, pqr.request.getByteMessage());
             }
@@ -966,10 +928,6 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
-    public List<PRequestResponse> getOriginalrlist() {
-        return originalrlist;
-    }
-
     public void parseSetCookie(PRequestResponse pqrs) {
         // カレントリクエストのset-cookie値をcookie.jarに保管
 
@@ -998,5 +956,31 @@ public class ParmGenMacroTrace extends ClientDependent {
         int rlistSize = rlist.size();
         if (lastStepNo > rlistSize || subSequenceScanLimit < 0) return -1;
         return lastStepNo;
+    }
+
+    /**
+     * get index of Macro Request List tab in MacroBuilderUI
+     *
+     * @return
+     */
+    public int getTabIndex() {
+        return this.tabIndex;
+    }
+
+    /**
+     * get Iterator of PRequestResponse
+     *
+     * @return
+     */
+    public Iterator<PRequestResponse> getIteratorOfRlist() {
+        return rlist.iterator();
+    }
+
+    public List<PRequestResponse> getPRequestResponseList() {
+        return rlist;
+    }
+
+    public List<PRequestResponse> getOriginalPRequestResponseList() {
+        return originalrlist;
     }
 }

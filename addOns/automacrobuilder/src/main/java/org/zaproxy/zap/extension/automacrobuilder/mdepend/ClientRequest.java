@@ -153,7 +153,7 @@ public class ClientRequest implements InterfaceClientRequest {
      */
     public void updateCurrentResponseWithFinalResponse(
             ParmGenMacroTrace pmt, HttpMessage currentmessage) {
-        if (pmt.isMBFinalResponse()) {
+        if (pmt.isCBFinalResponse()) {
             PResponse finalresponse = pmt.getPostMacroPResponse();
             if (finalresponse != null) {
 

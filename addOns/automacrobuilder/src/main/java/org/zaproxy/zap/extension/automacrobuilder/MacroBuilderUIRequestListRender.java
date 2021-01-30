@@ -24,15 +24,14 @@ import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")
 public class MacroBuilderUIRequestListRender extends DefaultListCellRenderer {
     ParmGenMacroTrace pmt;
 
-    public MacroBuilderUIRequestListRender(MacroBuilderUI _ui) {
-        pmt = _ui.getParmGenMacroTrace();
+    public MacroBuilderUIRequestListRender(ParmGenMacroTrace pmt) {
+        this.pmt = pmt;
     }
 
     @Override

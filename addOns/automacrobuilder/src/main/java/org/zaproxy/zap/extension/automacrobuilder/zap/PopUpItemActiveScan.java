@@ -62,13 +62,17 @@ public class PopUpItemActiveScan extends JMenuItem {
                 ev -> {
                     PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(this.mbui);
                     if (newrequest != null) {
-                        ParmGenMacroTrace pmt = this.mbui.getParmGenMacroTrace();
-                        int currentSelectedPos = this.mbui.getCurrentSelectedRequestIndex();
+                        int selectedTabIndex = this.mbui.getSelectedTabIndexOfMacroRequestList();
+                        int currentSelectedPos =
+                                this.mbui.getRequestJListSelectedIndexAtTabIndex(selectedTabIndex);
+                        ParmGenMacroTrace pmt =
+                                this.mbui.getParmGenMacroTraceAtTabIndex(selectedTabIndex);
                         int subSequenceScanLimit = this.mbui.getSubSequenceScanLimit();
                         int lastStepNo =
                                 pmt.getLastStepNo(currentSelectedPos, subSequenceScanLimit);
                         ParmGenMacroTraceParams targetStepNo =
-                                new ParmGenMacroTraceParams(currentSelectedPos, lastStepNo);
+                                new ParmGenMacroTraceParams(
+                                        currentSelectedPos, lastStepNo, selectedTabIndex);
                         this.extension.setTargetStepNo(targetStepNo);
 
                         PRequestResponse prr =
