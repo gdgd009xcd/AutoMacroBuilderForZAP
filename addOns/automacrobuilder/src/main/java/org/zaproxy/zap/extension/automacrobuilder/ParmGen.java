@@ -40,7 +40,7 @@ import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenTop;
 // main class
 public class ParmGen {
 
-    public static List<AppParmsIni> parmcsv = null;
+    // public static List<AppParmsIni> parmcsv = null;
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
@@ -123,7 +123,7 @@ public class ParmGen {
                 ParmVars.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
 
                 pmt.ui.Redraw();
-                ParmVars.Saved();
+                ParmVars.Saved(true);
             } else { // JSON parse failed by something wrong syntax/value..
                 rlist = null;
             }
@@ -364,7 +364,7 @@ public class ParmGen {
                         byte[] CRLF = {0x0d, 0x0a};
                         byte[] LASTHYPHEN = {0x2d, 0x2d};
                         byte[] partheader = null;
-                        String partenc = "";
+                        String partenc = Encode.ISO_8859_1.getIANACharsetName();
                         String neworg_content_iso8859 = null;
                         boolean org_content_isupdated = false;
                         int endOfData = _contarray.getBytes().length;
@@ -588,10 +588,11 @@ public class ParmGen {
     // constructor for runnig macros
     public ParmGen(ParmGenMacroTrace _pmt) {
         pmt = _pmt;
-        if (pmt != null && parmcsv != null) {
+        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
+        if (pmt != null && appParmsIniList != null) {
             if (pmt.initializedCachedAppValues()) {
                 AppParmsIni pini = null;
-                Iterator<AppParmsIni> it = parmcsv.iterator();
+                Iterator<AppParmsIni> it = appParmsIniList.iterator();
                 while (it.hasNext()) {
                     pini = it.next();
                     List<AppValue> parmlist = pini.getAppValueReadWriteOriginal();
@@ -614,25 +615,26 @@ public class ParmGen {
         initMain(_parmcsv);
     }
 
-    private void initMain(List<AppParmsIni> _newparmcsv) {
+    private void initMain(List<AppParmsIni> newAppParmsIniList) {
         // main start.
         // csv load
-        // parmcsvはstatic
-        if (parmcsv == null || _newparmcsv != null) {
+        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
+        if (appParmsIniList == null || newAppParmsIniList != null) {
 
-            parmcsv = _newparmcsv;
+            pmt.setAppParmsIniList(newAppParmsIniList);
 
             pmt.nullfetchResValAndCookieMan();
         }
     }
 
     private void nullset() {
-        parmcsv = null;
+        if (pmt != null) {
+            pmt.setAppParmsIniList(null);
+        }
     }
 
-    public static void clearAll() {
-        LOGGER4J.debug("clearAll.");
-        parmcsv = null;
+    public static void clearTwin() {
+        LOGGER4J.debug("clearTwin.");
         twin = null;
     }
 
@@ -643,7 +645,6 @@ public class ParmGen {
         List<AppParmsIni> newparmcsv = loadGSON(fname);
         if (newparmcsv != null) {
             nullset();
-
             initMain(newparmcsv);
             noerror = true;
         }
@@ -665,7 +666,8 @@ public class ParmGen {
         ParmGenBinUtil boundaryarray = null;
         ParmGenBinUtil contarray = null;
 
-        if (parmcsv == null || parmcsv.size() <= 0) {
+        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
+        if (appParmsIniList == null || appParmsIniList.size() <= 0) {
             // NOP
             if (pmt.isRunning()) {
                 PRequest prequest = new PRequest(_h, port, isSSL, requestbytes, ParmVars.enc);
@@ -706,7 +708,7 @@ public class ParmGen {
             if (url != null) {
 
                 AppParmsIni pini = null;
-                ListIterator<AppParmsIni> it = parmcsv.listIterator();
+                ListIterator<AppParmsIni> it = appParmsIniList.listIterator();
                 while (it.hasNext()) {
                     pini = it.next();
                     Matcher urlmatcher = pini.getPatternUrl().matcher(url);
@@ -820,7 +822,7 @@ public class ParmGen {
             }
 
             AppParmsIni pini = null;
-            Iterator<AppParmsIni> it = parmcsv.iterator();
+            Iterator<AppParmsIni> it = appParmsIniList.iterator();
             int row = 0;
             while (it.hasNext()) {
                 pini = it.next();
@@ -866,7 +868,8 @@ public class ParmGen {
         ParmGenBinUtil boundaryarray = null;
         ParmGenBinUtil contarray = null;
 
-        if (parmcsv == null || parmcsv.size() <= 0) {
+        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
+        if (appParmsIniList == null || appParmsIniList.size() <= 0) {
             // NOP
             if (pmt.isRunning()) {
                 // PRequest prequest = new PRequest(_h, port, isSSL, requestbytes, ParmVars.enc);
@@ -909,7 +912,7 @@ public class ParmGen {
             if (url != null) {
 
                 AppParmsIni pini = null;
-                ListIterator<AppParmsIni> it = parmcsv.listIterator();
+                ListIterator<AppParmsIni> it = appParmsIniList.listIterator();
                 while (it.hasNext()) {
                     pini = it.next();
                     Matcher urlmatcher = pini.getPatternUrl().matcher(url);
@@ -1021,7 +1024,7 @@ public class ParmGen {
             }
 
             AppParmsIni pini = null;
-            Iterator<AppParmsIni> it = parmcsv.iterator();
+            Iterator<AppParmsIni> it = appParmsIniList.iterator();
             int row = 0;
             while (it.hasNext()) {
                 pini = it.next();
@@ -1067,6 +1070,7 @@ public class ParmGen {
 
         int updtcnt = 0;
 
+        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
         PRequest prequest = prs.request;
         PResponse presponse = prs.response;
         String req_contentMimeType = prequest.getContentMimeType();
@@ -1074,10 +1078,10 @@ public class ParmGen {
         // if content_type/subtype matches excludeMimeType regex then skip below codes..
         if (!ParmVars.isMimeTypeExcluded(res_contentMimeType)) {
             // ### skip start
-            if (url != null && parmcsv != null) {
+            if (url != null && appParmsIniList != null) {
 
                 AppParmsIni pini = null;
-                Iterator<AppParmsIni> it = parmcsv.iterator();
+                Iterator<AppParmsIni> it = appParmsIniList.iterator();
                 int row = 0;
                 while (it.hasNext()) {
                     pini = it.next();
@@ -1152,60 +1156,5 @@ public class ParmGen {
         }
 
         return updtcnt;
-    }
-
-    /**
-     * exchange SetToStep minpos and maxpos in parmcsv
-     *
-     * @param minpos
-     * @param maxpos
-     */
-    public static void exchangeStepNo(int minpos, int maxpos) {
-        if (parmcsv != null && !parmcsv.isEmpty()) {
-            parmcsv.stream()
-                    .forEach(
-                            pini_filtered -> {
-                                int settostep = pini_filtered.getSetToStep();
-                                if (settostep == minpos) {
-                                    pini_filtered.setSetToStep(maxpos);
-                                } else if (settostep == maxpos) {
-                                    pini_filtered.setSetToStep(minpos);
-                                }
-                                int fromstep = pini_filtered.getTrackFromStep();
-                                if (fromstep == minpos) {
-                                    pini_filtered.setTrackFromStep(maxpos);
-                                } else if (fromstep == maxpos) {
-                                    pini_filtered.setTrackFromStep(minpos);
-                                }
-                            });
-        }
-    }
-
-    /**
-     * Get AppParmsIni which has stepno specified in TrackFromStep/SetToStep parameter
-     *
-     * @param stepno
-     * @return
-     */
-    public static List<AppParmsIni> getAppParmIniHasStepNoSpecified(int stepno) {
-        List<AppParmsIni> hasnolist = new ArrayList<>();
-
-        if (parmcsv != null && !parmcsv.isEmpty()) {
-            parmcsv.stream()
-                    .filter(
-                            pini -> {
-                                if (pini.getTrackFromStep() >= stepno
-                                        || (pini.getSetToStep() >= stepno
-                                                && pini.getSetToStep() != ParmVars.TOSTEPANY)) {
-                                    return true;
-                                }
-                                return false;
-                            })
-                    .forEach(
-                            pini_filtered -> {
-                                hasnolist.add(pini_filtered);
-                            });
-        }
-        return hasnolist;
     }
 }

@@ -23,15 +23,22 @@ import java.awt.CardLayout;
 import java.awt.Font;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import javax.swing.JTextPane;
 import org.parosproxy.paros.Constant;
+import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionAdaptor;
 import org.parosproxy.paros.extension.ExtensionHook;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.zap.authentication.AuthenticationMethodType;
+import org.zaproxy.zap.extension.authentication.ExtensionAuthentication;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
+import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
+import org.zaproxy.zap.extension.sessions.ExtensionSessionManagement;
+import org.zaproxy.zap.session.SessionManagementMethodType;
 import org.zaproxy.zap.utils.FontUtils;
 import org.zaproxy.zap.view.ZapMenuItem;
 
@@ -50,7 +57,10 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
     // The i18n prefix, by default the package name - defined in one place to make it easier
     // to copy and change this example
-    protected static final String PREFIX = "autoMacroBuilder";
+    public static final String PREFIX = "autoMacroBuilder";
+
+    // URL for AutoMacroBuilder
+    private String AMBURL = "https://github.com/gdgd009xcd/AutoMacroBuilderForZAP";
 
     /**
      * Relative path (from add-on package) to load add-on resources.
@@ -81,6 +91,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     public ExtensionAutoMacroBuilder() {
         super(NAME);
         setI18nPrefix(PREFIX);
+        ParmVars.isSaved();
         this.pmtProvider = new ParmGenMacroTraceProvider();
         this.pmt = pmtProvider.getBaseInstance(0);
 
@@ -117,6 +128,27 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         // add listener
         extensionHook.addHttpSenderListener(
                 new MyFirstSenderListener(extwrapper.getStartedActiveScanContainer()));
+
+        ExtensionAuthentication extensionAuthentication =
+                Control.getSingleton()
+                        .getExtensionLoader()
+                        .getExtension(ExtensionAuthentication.class);
+        List<AuthenticationMethodType> methodTypes =
+                extensionAuthentication.getAuthenticationMethodTypes();
+        if (methodTypes != null) {
+            methodTypes.add(new AutoMacroBuilderAuthenticationMethodType(extwrapper, this.mbui));
+        }
+
+        ExtensionSessionManagement extensionSessionManagement =
+                Control.getSingleton()
+                        .getExtensionLoader()
+                        .getExtension(ExtensionSessionManagement.class);
+        List<SessionManagementMethodType> sessMethodTypes =
+                extensionSessionManagement.getSessionManagementMethodTypes();
+        if (sessMethodTypes != null) {
+            sessMethodTypes.add(new AutoMacroBuilderSessionManagementMethodType());
+        }
+        LOGGER4J.debug("succeeded getting methodTypes: size=" + methodTypes.size());
     }
 
     @Override
@@ -135,6 +167,21 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         // are automatically removed by the base unload() method.
         // If you use/add other components through other methods you might need to free/remove them
         // here (if the extension declares that can be unloaded, see above method).
+        ExtensionAuthentication extensionAuthentication =
+                Control.getSingleton()
+                        .getExtensionLoader()
+                        .getExtension(ExtensionAuthentication.class);
+        List<AuthenticationMethodType> methodTypes =
+                extensionAuthentication.getAuthenticationMethodTypes();
+        AuthenticationMethodType removeMethodType = null;
+        for (AuthenticationMethodType mType : methodTypes) {
+            if (mType.getName().equals(AutoMacroBuilderAuthenticationMethodType.METHOD_NAME)) {
+                removeMethodType = mType;
+            }
+        }
+        if (removeMethodType != null) {
+            methodTypes.remove(removeMethodType);
+        }
     }
 
     private AbstractPanel getStatusPanel() {
@@ -241,7 +288,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     @Override
     public URL getURL() {
         try {
-            return new URL(Constant.ZAP_EXTENSIONS_PAGE);
+            return new URL(AMBURL);
         } catch (MalformedURLException e) {
             return null;
         }

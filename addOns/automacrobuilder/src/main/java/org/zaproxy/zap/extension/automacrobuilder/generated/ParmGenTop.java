@@ -8,6 +8,8 @@ import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.DefaultComboBoxModel;
@@ -128,10 +130,12 @@ public class ParmGenTop extends javax.swing.JFrame {
                     v = Integer.toString(row) + Integer.toString(column) + Boolean.toString((boolean)cell);
                     // column == 0 は、pauseボタン。
                     if ( column == 0){
-                        //ParmGen pglocal = new ParmGen(pmt);
-                        AppParmsIni pini = ParmGen.parmcsv.get(row);
-                        if(pini!=null){
-                            pini.updatePause((boolean)cell);
+                        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
+                        if (appParmsIniList != null) {
+                            AppParmsIni pini = appParmsIniList.get(row);
+                            if (pini != null) {
+                                pini.updatePause((boolean) cell);
+                            }
                         }
                     }
                 }
@@ -175,8 +179,12 @@ public class ParmGenTop extends javax.swing.JFrame {
     public void updateRowDisp(AppParmsIni pini){
 
         if(pini != null){//新規
-            csv.add(pini);
-            ParmGen pgen = new ParmGen(pmt, csv.getrecords());//update
+            List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
+            if (appParmsIniList == null) {
+                appParmsIniList = new ArrayList<>();
+            }
+            appParmsIniList.add(pini);
+            // ParmGen pgen = new ParmGen(pmt, csv.getrecords());//update
         }
         //overwirte
         //ParmGenCSV csv = new ParmGenCSV(null, pmt);
@@ -471,7 +479,8 @@ public class ParmGenTop extends javax.swing.JFrame {
         AppParmsIni rec = null;
         if ( rowsSelected.length> 0){
             current_row = rowsSelected[0];
-            rec = csv.getAppParmsIni(current_row);
+            rec = pmt.getAppParmsIni(current_row);
+            // rec = csv.getAppParmsIni(current_row);
         }
         new ParmGenNew(this, rec).setVisible(true);
     }//GEN-LAST:event_ModActionPerformed
@@ -502,7 +511,8 @@ public class ParmGenTop extends javax.swing.JFrame {
         AppParmsIni rec = null;
         if ( rowsSelected.length> 0){
             current_row = rowsSelected[0];
-            csv.del(current_row);
+            pmt.removeAppParmsIni(current_row);
+            //csv.del(current_row);
             model.removeRow(current_row);
             if(current_row>0){
                 current_row--;

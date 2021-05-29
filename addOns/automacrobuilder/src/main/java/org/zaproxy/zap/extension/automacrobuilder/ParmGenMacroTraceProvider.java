@@ -124,7 +124,7 @@ public class ParmGenMacroTraceProvider {
     /**
      * get ParmGenMacroTrace base instance for configuration ( for GUI )
      *
-     * @param tabindex
+     * @param tabIndex
      * @return ParmGenMacroTrace baseinstance or maybe null.
      */
     public ParmGenMacroTrace getBaseInstance(int tabIndex) {

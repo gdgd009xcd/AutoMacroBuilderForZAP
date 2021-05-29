@@ -37,6 +37,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     MacroBuilderUI ui = null;
 
+    private List<AppParmsIni> appParmsIniList = null;
+
     // ============== instance unique members(copy per thread) BEGIN ==========
 
     private List<PRequestResponse> rlist = null; // requestresponse results
@@ -129,6 +131,31 @@ public class ParmGenMacroTrace extends ClientDependent {
         return msg;
     }
 
+    public List<AppParmsIni> getAppParmsIniList() {
+        return this.appParmsIniList;
+    }
+
+    public AppParmsIni getAppParmsIni(int i) {
+        if (this.appParmsIniList != null && this.appParmsIniList.size() > i) {
+            return this.appParmsIniList.get(i);
+        }
+        return null;
+    }
+
+    public Iterator<AppParmsIni> getIteratorOfAppParmsIni() {
+        return this.appParmsIniList.iterator();
+    }
+
+    public void removeAppParmsIni(int i) {
+        if (this.appParmsIniList != null && this.appParmsIniList.size() > i) {
+            this.appParmsIniList.remove(i);
+        }
+    }
+
+    public void setAppParmsIniList(List<AppParmsIni> appParmsIniList) {
+        this.appParmsIniList = appParmsIniList;
+    }
+
     public ParmGenMacroTrace() {}
 
     /**
@@ -144,6 +171,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         // nobj.setUUID(UUIDGenerator.getUUID()); // already set in super.constructor
         nobj.rlist = this.rlist; // reference
         nobj.originalrlist = this.originalrlist; // reference
+        nobj.appParmsIniList = this.appParmsIniList; // reference
         nobj.selected_request = pmtParams.getSelectedRequestNo(); // specified scan target request
         nobj.last_stepno =
                 pmtParams.getLastStepNo() == -1 ? nobj.rlist.size() - 1 : pmtParams.getLastStepNo();
@@ -171,7 +199,9 @@ public class ParmGenMacroTrace extends ClientDependent {
     // setter
     //
     public void clear() {
-        ParmGen.clearAll();
+        ParmGen.clearTwin();
+        this.cachedAppValues = null;
+        this.appParmsIniList = null;
         macroEnded();
         rlist = null;
         originalrlist = null;
@@ -446,6 +476,19 @@ public class ParmGenMacroTrace extends ClientDependent {
         state = PMT_PREMACRO_END;
     }
 
+    /**
+     * get PRequestResponse message from savelist
+     *
+     * @param no
+     * @return
+     */
+    public PRequestResponse getPRequestResponseFromSaveList(int no) {
+        if (savelist != null && savelist.size() > no) {
+            return savelist.get(no);
+        }
+        return null;
+    }
+
     PRequest configureRequest(PRequest preq) {
         if (isRunning()) { // MacroBuilder list > 0 && state is Running.
             // preq.setUUID2CustomHeader(this.getUUID());
@@ -637,7 +680,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     /**
      * Update OriginalBase
      *
-     * @param pmt
+     * @param runningInstance
      */
     public void updateOriginalBase(ParmGenMacroTrace runningInstance) {
         int ssiz = runningInstance.savelist != null ? runningInstance.savelist.size() : 0;
@@ -676,6 +719,8 @@ public class ParmGenMacroTrace extends ClientDependent {
             this.cookieMan = runningInstance.cookieMan;
             // PRequestResponse toolbaseline = null;
             this.toolbaseline = runningInstance.toolbaseline;
+            // update selected_request maybe if runningInstance is Not made from this.
+            setCurrentRequest(runningInstance.selected_request);
             LOGGER4J.debug("result update succeeded. size:" + ssiz);
         }
     }
@@ -982,5 +1027,65 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     public List<PRequestResponse> getOriginalPRequestResponseList() {
         return originalrlist;
+    }
+
+    public int getRequestListSize() {
+        return rlist != null ? rlist.size() : -1;
+    }
+
+    /**
+     * exchange SetToStep minpos and maxpos in parmcsv
+     *
+     * @param minpos
+     * @param maxpos
+     */
+    public void exchangeStepNo(int minpos, int maxpos) {
+        List<AppParmsIni> appParmsIniList = getAppParmsIniList();
+        if (appParmsIniList != null && !appParmsIniList.isEmpty()) {
+            appParmsIniList.stream()
+                    .forEach(
+                            pini_filtered -> {
+                                int settostep = pini_filtered.getSetToStep();
+                                if (settostep == minpos) {
+                                    pini_filtered.setSetToStep(maxpos);
+                                } else if (settostep == maxpos) {
+                                    pini_filtered.setSetToStep(minpos);
+                                }
+                                int fromstep = pini_filtered.getTrackFromStep();
+                                if (fromstep == minpos) {
+                                    pini_filtered.setTrackFromStep(maxpos);
+                                } else if (fromstep == maxpos) {
+                                    pini_filtered.setTrackFromStep(minpos);
+                                }
+                            });
+        }
+    }
+
+    /**
+     * Get AppParmsIni which has stepno specified in TrackFromStep/SetToStep parameter
+     *
+     * @param stepno
+     * @return
+     */
+    public List<AppParmsIni> getAppParmIniHasStepNoSpecified(int stepno) {
+        List<AppParmsIni> hasnolist = new ArrayList<>();
+        List<AppParmsIni> appParmsIniList = getAppParmsIniList();
+        if (appParmsIniList != null && !appParmsIniList.isEmpty()) {
+            appParmsIniList.stream()
+                    .filter(
+                            pini -> {
+                                if (pini.getTrackFromStep() >= stepno
+                                        || (pini.getSetToStep() >= stepno
+                                                && pini.getSetToStep() != ParmVars.TOSTEPANY)) {
+                                    return true;
+                                }
+                                return false;
+                            })
+                    .forEach(
+                            pini_filtered -> {
+                                hasnolist.add(pini_filtered);
+                            });
+        }
+        return hasnolist;
     }
 }

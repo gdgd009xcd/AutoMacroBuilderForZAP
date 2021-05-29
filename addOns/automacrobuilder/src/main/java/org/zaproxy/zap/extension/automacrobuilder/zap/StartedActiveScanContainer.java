@@ -191,7 +191,6 @@ public class StartedActiveScanContainer {
     /**
      * update ParmGenMacroTrace of baseInstance with runningInstance.
      *
-     * @param tabindex
      * @param runningInstance
      */
     public void updateBaseInstance(ParmGenMacroTrace runningInstance) {

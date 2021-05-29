@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "0.9.8"
+version = "0.9.9"
 description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {
@@ -47,13 +47,19 @@ spotless {
     }
 }
 
+val jar by tasks.getting(Jar::class) {
+    manifest {
+        attributes["Multi-Release"] = "true"
+    }
+}
+
 zapAddOn {
     addOnName.set("automacrobuilder")
 
     // addOnStatus.set(AddOnStatus.ALPHA|BETA|RELEASE)
     addOnStatus.set(AddOnStatus.ALPHA)
 
-    zapVersion.set("2.7.0")
+    zapVersion.set("2.9.0")
 
     manifest {
         author.set("gdgd009xcd")
