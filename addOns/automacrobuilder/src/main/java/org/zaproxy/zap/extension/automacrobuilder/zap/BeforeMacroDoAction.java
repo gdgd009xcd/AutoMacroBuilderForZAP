@@ -42,7 +42,9 @@ public class BeforeMacroDoAction implements InterfaceDoAction {
         actions.add(
                 (t, o) -> {
                     pmt.startBeforePreMacro(o);
-                    ParmGenMacroTrace.clientrequest.startZapCurrentRequest(pmt, msg);
+                    if (msg != null) {
+                        ParmGenMacroTrace.clientrequest.startZapCurrentRequest(pmt, msg);
+                    }
                     return false;
                 });
 

@@ -2,6 +2,10 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## 3 - 2021-06-25
+### ver1.0.0
+- new feature: AutoMacroBuilder now support ZAPROXY's context and authentication scheme
+- improve: setting Multi-Release: true in the MANIFEST.MF file for using java 9+
 
 ## 2 - 2020-12-22
 

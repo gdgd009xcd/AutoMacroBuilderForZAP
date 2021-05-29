@@ -167,4 +167,37 @@ public class ZapUtil {
         boolean isSSL = requestheader.isSecure();
         return new PRequest(host, port, isSSL, requestbin.getBytes(), pageenc);
     }
+
+    /**
+     * get integer value from parsed String value<br>
+     * if String value is null or empty or non integer value,<br>
+     * then return defaultInt value.
+     *
+     * @param valString
+     * @param defaultInt
+     * @return
+     */
+    public static int parseInt(String valString, int defaultInt) {
+        int resultInt = defaultInt;
+        if (valString != null && !valString.isEmpty()) {
+            try {
+                resultInt = Integer.parseInt(valString);
+            } catch (NumberFormatException e) {
+                resultInt = defaultInt;
+            }
+        }
+        return resultInt;
+    }
+
+    /**
+     * get String representation of int val<br>
+     * if val < 0 then this method return defaultString
+     *
+     * @param val
+     * @param defaultString
+     * @return
+     */
+    public static String int2String(int val, String defaultString) {
+        return val >= 0 ? Integer.toString(val) : defaultString;
+    }
 }

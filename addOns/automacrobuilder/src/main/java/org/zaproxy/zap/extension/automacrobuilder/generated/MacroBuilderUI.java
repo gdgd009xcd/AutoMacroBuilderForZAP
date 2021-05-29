@@ -48,7 +48,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     ParmGenMacroTraceProvider pmtProvider = null;
     List<JList<String>> requestJLists = null;
     List<DisplayInfoOfRequestListTab> displayInfoTabs = null;
-    int MacroRequestListTabsSelectedIndex = 0;
+    int MacroRequestListTabsCurrentIndex = 0;
 
     int EditTarget = -1;
     Encode EditPageEnc = Encode.ISO_8859_1;
@@ -63,7 +63,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     @SuppressWarnings("unchecked")
     public MacroBuilderUI(ParmGenMacroTraceProvider pmtProvider) {
         int tabIndex = 0;
-        this.MacroRequestListTabsSelectedIndex = 0;
+        this.MacroRequestListTabsCurrentIndex = 0;
         this.pmtProvider = pmtProvider;
         ParmGenMacroTrace pmt = this.pmtProvider.getBaseInstance(tabIndex);
         displayInfoTabs = new ArrayList<>();
@@ -123,12 +123,35 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
 
     /**
-     * get ParmGenMacroTrace of selected tab
+     * get ParmGenMacroTrace of selected tab<br>
+     * <br>
+     * Caution: This function may return null<br>
+     * if there are no tabs selected in the macro request list.
      *
      * @return ParmGenMacroTrace or maybe null
      */
-    private ParmGenMacroTrace getSelectedParmGenMacroTrace() {
+    public ParmGenMacroTrace getSelectedParmGenMacroTrace() {
         return this.pmtProvider.getBaseInstance(getSelectedTabIndexOfMacroRequestList());
+    }
+
+    /**
+     * get tabIndex of current(default) value.<br>
+     * current tab may be a tab with tabIndex 0 which means default tab.
+     *
+     * @return
+     */
+    public int getMacroRequestListTabsCurrentIndex() {
+        return this.MacroRequestListTabsCurrentIndex;
+    }
+
+    /**
+     * get ParmGenMacroTrace of current(default) tab<br>
+     * current tab may be a tab with tabIndex 0 which means default tab.
+     *
+     * @return
+     */
+    public ParmGenMacroTrace getCurrentParmGenMacroTrace() {
+        return getParmGenMacroTraceAtTabIndex(this.MacroRequestListTabsCurrentIndex);
     }
 
     /**
@@ -147,7 +170,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      * @param tabIndex
      * @return 
      */
-    private List<PRequestResponse> getPRequestResponseListAtTabIndex(int tabIndex) {
+    public List<PRequestResponse> getPRequestResponseListAtTabIndex(int tabIndex) {
         ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(tabIndex);
         if (pmt != null) {
             return pmt.getPRequestResponseList();
@@ -157,7 +180,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     
     @SuppressWarnings("unchecked")
     public void clear() {
-        this.MacroRequestListTabsSelectedIndex = 0;
+        this.MacroRequestListTabsCurrentIndex = 0;
         displayInfoTabs = new ArrayList<>();
         displayInfoTabs.add(new DisplayInfoOfRequestListTab(-1, false, false, false));
         //JListをクリアするには、modelのremove & jListへModelセットが必須。
@@ -181,13 +204,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         MacroResponse.setText("");
         MacroComments.setText("");
         this.pmtProvider.clear();
+        ParmVars.Saved(false);
     }
 
     @SuppressWarnings("unchecked")
     public void addNewRequests(List<PRequestResponse> _rlist) {
         AppParmsIni pini;
         
-        ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(MacroRequestListTabsSelectedIndex);
+        ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(this.MacroRequestListTabsCurrentIndex);
 
         if (_rlist != null && pmt != null) {
             
@@ -888,6 +912,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
 
         ParmGen.twin.VisibleWhenJSONSaved(this);
+        updateSelectedTabIndex();
             
 
     }//GEN-LAST:event_customActionPerformed
@@ -1466,27 +1491,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     private void LoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoadActionPerformed
         // TODO add your handling code here:
-        File cfile = new File(ParmVars.getParmFile());
-        String dirname = cfile.getParent();
-        JFileChooser jfc = new JFileChooser(dirname);
-        jfc.setSelectedFile(cfile);
-        ParmFileFilter pFilter=new ParmFileFilter();
-        jfc.setFileFilter(pFilter);
-        if(jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            //code to handle choosed file here.
-            File file = jfc.getSelectedFile();
-            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
-
-            ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
-            if (pmt == null) return;
-            ParmGen pgen = new ParmGen(pmt);//20200208 なにもしないコンストラクター＞スタティックに置き換える。
-            if(pgen.checkAndLoadFile(name)){//20200208 再読み込み -> 明示的なファイルのロード、チェック、チェックOKのみパラメータ更新する。
-                //load succeeded..
-            }
-            
-            
-        }
-        
+        loadProject();
     }//GEN-LAST:event_LoadActionPerformed
 
     private void RepeaterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RepeaterActionPerformed
@@ -1564,6 +1569,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
                 csv.GSONsave();
             }
+            updateSelectedTabIndex();
         }
     }//GEN-LAST:event_SaveActionPerformed
 
@@ -1681,7 +1687,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             DefaultListModel<String> requestJListModel = (DefaultListModel<String>)requestJList.getModel();
             requestJListModel.set(pos-1, upelem);
             requestJListModel.set(pos, downelem);
-            ParmGen.exchangeStepNo(pos-1, pos);
+            pmt.exchangeStepNo(pos-1, pos);
 
             if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
                 ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
@@ -1724,7 +1730,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             DefaultListModel<String> requestJListModel = (DefaultListModel<String>) requestJList.getModel();
             requestJListModel.set(pos, upelem);
             requestJListModel.set(pos+1, downelem);
-            ParmGen.exchangeStepNo(pos, pos+1);
+            pmt.exchangeStepNo(pos, pos+1);
 
             if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
                 ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
@@ -1744,7 +1750,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if ( pos != -1 ) {
             ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(selectedTabIndex);
             List<PRequestResponse> prequestResponseList = pmt.getPRequestResponseList();
-            List<AppParmsIni> hasposlist = ParmGen.getAppParmIniHasStepNoSpecified(pos);
+            List<AppParmsIni> hasposlist = pmt.getAppParmIniHasStepNoSpecified(pos);
             if ( !hasposlist.isEmpty()) {
                 PRequestResponse pqrs = prequestResponseList.get(pos);
                 String m = String.format(
@@ -1907,13 +1913,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     private void MacroRequestListTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_MacroRequestListTabsStateChanged
         // TODO add your handling code here:
-        int selectedindex = MacroRequestListTabs.getSelectedIndex();
-        if (selectedindex != -1) MacroRequestListTabsSelectedIndex = selectedindex;
+        updateSelectedTabIndex();
     }//GEN-LAST:event_MacroRequestListTabsStateChanged
 
-    public int getMacroRequestListTabsSelectedIndex() {
-        return this.MacroRequestListTabsSelectedIndex;
-    }
+
     
     public StyledDocumentWithChunk getMacroRequestStyledDocument() {
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
@@ -2082,6 +2085,47 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         return pos;
     }
 
+    /**
+     * Load Project file.
+     *
+     * @return true - succeeded, false - load failed.
+     */
+    public boolean loadProject() {
+        // TODO add your handling code here:
+        File cfile = new File(ParmVars.getParmFile());
+        String dirname = cfile.getParent();
+        JFileChooser jfc = new JFileChooser(dirname);
+        jfc.setSelectedFile(cfile);
+        ParmFileFilter pFilter=new ParmFileFilter();
+        jfc.setFileFilter(pFilter);
+        if(jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            //code to handle choosed file here.
+            File file = jfc.getSelectedFile();
+            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
+
+            return loadProjectFromFile(name);
+        }
+        return false;
+    }
+
+    /**
+     * load project from specified filename.
+     *
+     * @param filename project file name
+     * @return true - success false - failed
+     */
+    public boolean loadProjectFromFile(String filename) {
+        ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
+        if (pmt == null) return false;
+        ParmGen pgen = new ParmGen(pmt);//20200208 なにもしないコンストラクター＞スタティックに置き換える。
+        if(pgen.checkAndLoadFile(filename)){//20200208 再読み込み -> 明示的なファイルのロード、チェック、チェックOKのみパラメータ更新する。
+            //load succeeded..
+            updateSelectedTabIndex();
+            return true;
+        }
+        return false;
+    }
+
     static class DisplayInfoOfRequestListTab {
         public int selected_request_idx = -1;
         public boolean isLoadedMacroCommentContents = false;
@@ -2099,6 +2143,30 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             this.isLoadedMacroResponseContents = isLoadedMacroResponseContents;
         }
     }
+
+    /**
+     * get MacroRequest Tab Title String
+     * @param tabIndex
+     * @return
+     */
+    public String getMacroRequestTabTitleAt(int tabIndex) {
+        return MacroRequestListTabs.getTitleAt(tabIndex);
+    }
+
+    public int getMacroRequestTabCount() {
+        return MacroRequestListTabs.getTabCount();
+    }
+
+    public ParmGenMacroTraceProvider getParmGenMacroTraceProvider() {
+        return this.pmtProvider;
+    }
+
+    private void updateSelectedTabIndex() {
+        int selectedindex = MacroRequestListTabs.getSelectedIndex();
+        if (selectedindex != -1) MacroRequestListTabsCurrentIndex = selectedindex;
+        logger4j.debug("selectedindex:" + selectedindex + " MacroRequestListTabsCurrentIndex:" + MacroRequestListTabsCurrentIndex);
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox CBinheritFromCache;

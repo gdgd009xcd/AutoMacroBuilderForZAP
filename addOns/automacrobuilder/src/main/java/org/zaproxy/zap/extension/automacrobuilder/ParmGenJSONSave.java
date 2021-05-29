@@ -38,7 +38,6 @@ public class ParmGenJSONSave {
     private static org.apache.logging.log4j.Logger logger4j =
             org.apache.logging.log4j.LogManager.getLogger();
     ParmGenMacroTrace pmt = null;
-    private List<AppParmsIni> records;
     Iterator<AppParmsIni> it;
     ParmGenWriteFile pfile;
     public static final String JSONVERSION = "1.1"; // OUTPUT JSON VERSION
@@ -83,34 +82,20 @@ public class ParmGenJSONSave {
 
     private void saveParmGenSetUp(ParmGenMacroTrace _pmt, List<AppParmsIni> _newparmcsv) {
         pmt = _pmt;
-        ParmGen pgen = new ParmGen(_pmt, _newparmcsv);
-        records = ParmGen.parmcsv;
-        logger4j.debug("records is " + (records == null ? "null" : "No null"));
-        if (records == null) {
-            records = new ArrayList<AppParmsIni>();
+        List<AppParmsIni> currentparmcsv = pmt.getAppParmsIniList();
+        if (_newparmcsv == null) {
+            if (currentparmcsv != null && !currentparmcsv.isEmpty()) {
+                _newparmcsv = currentparmcsv; // remains original parmcsv
+            } else {
+                _newparmcsv = new ArrayList<>();
+            }
         }
+        pmt.setAppParmsIniList(_newparmcsv);
+        // ParmGen pgen = new ParmGen(_pmt, _newparmcsv);
+        // records = ParmGen.parmcsv;
+        logger4j.debug("records is " + (_newparmcsv == null ? "null" : "No null"));
+
         rewindAppParmsIni();
-    }
-
-    public void setParms(ArrayList<AppParmsIni> _records) {
-        records = _records; // reference
-    }
-
-    public List<AppParmsIni> getrecords() {
-        return records;
-    }
-
-    public void add(AppParmsIni pini) {
-
-        records.add(pini);
-    }
-
-    public void mod(int i, AppParmsIni pini) {
-        records.set(i, pini);
-    }
-
-    public void del(int i) {
-        records.remove(i);
     }
 
     private String escapeDelimiters(String _d, String code) {
@@ -167,7 +152,7 @@ public class ParmGenJSONSave {
                     gsobject.ExcludeMimeTypes.add(mtype);
                 });
 
-        Iterator<AppParmsIni> it = records.iterator();
+        Iterator<AppParmsIni> it = pmt.getIteratorOfAppParmsIni();
         while (it.hasNext()) {
             AppParmsIni prec = it.next();
             // String URL, String initval, String valtype, String incval, ArrayList<ParmGenParam>
@@ -240,18 +225,11 @@ public class ParmGenJSONSave {
 
         pfile.close();
         pfile = null;
-        ParmVars.Saved();
-    }
-
-    public AppParmsIni getAppParmsIni(int i) {
-        if (records.size() > i) {
-            return records.get(i);
-        }
-        return null;
+        ParmVars.Saved(true);
     }
 
     public void rewindAppParmsIni() {
-        it = records.iterator();
+        it = pmt.getIteratorOfAppParmsIni();
     }
 
     public AppParmsIni getNextAppParmsIni() {
@@ -259,9 +237,5 @@ public class ParmGenJSONSave {
             return it.next();
         }
         return null;
-    }
-
-    public int sizeAppParmsIni() {
-        return records.size();
     }
 }

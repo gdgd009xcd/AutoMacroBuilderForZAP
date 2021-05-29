@@ -35,7 +35,7 @@ public class StartedActiveScanContainer {
 
     StartedActiveScanContainer(ParmGenMacroTraceProvider pmtProvider) {
         this.pmtProvider = pmtProvider;
-        ascanmap = new ConcurrentHashMap<>();
+        this.ascanmap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -191,7 +191,6 @@ public class StartedActiveScanContainer {
     /**
      * update ParmGenMacroTrace of baseInstance with runningInstance.
      *
-     * @param tabindex
      * @param runningInstance
      */
     public void updateBaseInstance(ParmGenMacroTrace runningInstance) {
@@ -217,5 +216,11 @@ public class StartedActiveScanContainer {
     public ParmGenMacroTrace getNewRunningInstance(HttpSender sender) {
         ParmGenMacroTraceParams pmtParams = getParmGenMacroTraceParams();
         return this.pmtProvider.getNewParmGenMacroTraceInstance(sender, pmtParams);
+    }
+
+    public void addRunningInstance(ParmGenMacroTrace runningInstance) {
+        UUID uuid = runningInstance.getUUID();
+        addUUID(uuid);
+        this.pmtProvider.addRunningInstance(runningInstance);
     }
 }

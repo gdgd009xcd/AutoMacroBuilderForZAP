@@ -124,7 +124,7 @@ public class ParmGenMacroTraceProvider {
     /**
      * get ParmGenMacroTrace base instance for configuration ( for GUI )
      *
-     * @param tabindex
+     * @param tabIndex
      * @return ParmGenMacroTrace baseinstance or maybe null.
      */
     public ParmGenMacroTrace getBaseInstance(int tabIndex) {
@@ -157,6 +157,10 @@ public class ParmGenMacroTraceProvider {
             LOGGER4J.debug("NULL");
         }
         return null;
+    }
+
+    public void addRunningInstance(ParmGenMacroTrace runningInstancePmt) {
+        pmtmap.put(runningInstancePmt.getUUID(), runningInstancePmt);
     }
 
     public synchronized void removeEndInstance(UUID uuid) {

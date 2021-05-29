@@ -128,8 +128,8 @@ public class ParmVars {
         return issaved;
     }
 
-    public static void Saved() {
-        issaved = true;
+    public static void Saved(boolean b) {
+        issaved = b;
     }
 
     private static void setRegexPatternExcludeMimeType(List<String> excludeMimeTypes) {

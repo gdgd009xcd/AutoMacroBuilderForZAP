@@ -20,6 +20,7 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 /** @author gdgd009xcd */
 public class ParmGenTrackKeyPerThread implements DeepClone {
 
-    private HashMap<UUID, ParmGenTrackingParam> trackjar =
+    private Map<UUID, ParmGenTrackingParam> trackjar =
             null; // Integer: unique key(ascend order.) ParmGenTrackingParam: tracking value
 
     /**

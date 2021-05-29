@@ -58,12 +58,12 @@ class ParseHTTPHeaders implements DeepClone {
     int port;
     public ArrayList<String> pathparams;
     public ArrayList<String[]> cookieparams;
-    private HashMap<String, String> hashqueryparams;
-    private HashMap<String, String> hashbodyparams;
+    private Map<String, String> hashqueryparams;
+    private Map<String, String> hashbodyparams;
     private ArrayList<String[]> queryparams;
     private ArrayList<String[]> bodyparams;
     ArrayList<String[]> headers;
-    HashMap<String, ParmGenHeader> hkeyUpper_Headers = null; // key is UpperCase
+    Map<String, ParmGenHeader> hkeyUpper_Headers = null; // key is UpperCase
     private ArrayList<String> setcookieheaders; // Set-Cookie headers
     // REMOVE private HashMap<String,ArrayList<String[]>> set_cookieparams;//String Key, ArrayList
     // name=value pair
@@ -1118,7 +1118,7 @@ class ParseHTTPHeaders implements DeepClone {
         }
     }
 
-    HashMap<String, ParmGenHeader> getheadersHash() {
+    Map<String, ParmGenHeader> getheadersHash() {
         return hkeyUpper_Headers;
     }
 
