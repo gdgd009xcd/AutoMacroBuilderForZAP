@@ -1066,7 +1066,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if (evt.isPopupTrigger()) {
             PopupMenuForRequestList.show(evt.getComponent(), evt.getX(), evt.getY());
         }
-        if ((evt.getModifiers() & InputEvent.BUTTON1_MASK) != 0) { // left button clicked
+        if ((evt.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0) { // left button clicked
             DisplayInfoOfRequestListTab displayInfo = getSelectedDisplayInfoTab();
             JList<String> requestJList = getSelectedRequestJList();
             if (requestJList == null) return;

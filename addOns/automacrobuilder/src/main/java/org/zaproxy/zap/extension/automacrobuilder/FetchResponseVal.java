@@ -152,7 +152,7 @@ class FetchResponseVal implements DeepClone {
                         }
                     }
                     if (rval != null) {
-                        distances.put(tk, new Integer(newdistance));
+                        distances.put(tk, Integer.valueOf(newdistance));
                     }
                 }
             }

@@ -645,7 +645,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                     ParmGenMacroTrace pmt =
                             this.mbUI.getParmGenMacroTraceAtTabIndex(method.tabIndex);
                     if (pmt != null) {
-                        if (pmt.getRequestListSize() < targetStepNo) {
+                        if (pmt.getRequestListSize() > targetStepNo) {
                             method.targetStepNo = targetStepNo;
                         }
                     }

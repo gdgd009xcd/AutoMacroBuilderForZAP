@@ -96,10 +96,10 @@ public class ThreadManager {
         results = new HashMap<>(); // for test use only.
         thcount = 0;
         actionlist = new CopyOnWriteArrayList<>();
-        debug_endedcount = new Long(0);
-        debug_totalcount = new Long(0);
-        debug_intrcount = new Long(0);
-        debug_maxpmapsize = new Long(0);
+        debug_endedcount = Long.valueOf(0);
+        debug_totalcount = Long.valueOf(0);
+        debug_intrcount = Long.valueOf(0);
+        debug_maxpmapsize = Long.valueOf(0);
     }
 
     private String getThreadStatus(Thread.State st) {
@@ -201,7 +201,7 @@ public class ThreadManager {
                 }
             }
 
-            Long oldid = new Long(-1);
+            Long oldid = Long.valueOf(-1);
             if (endedp == null || endedp.size() <= 0) {
                 Optional<Long> optval =
                         pmap.entrySet().stream().map(ent -> ent.getKey()).findFirst();
