@@ -21,6 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jsoup.Jsoup;
@@ -34,8 +35,8 @@ public class ParmGenParser implements DeepClone {
     String htmltext;
     Document doc;
     Elements elems;
-    HashMap<ParmGenTokenKey, ParmGenTokenValue> map;
-    HashMap<ParmGenTokenKey, ParmGenTokenValue> defmap; // T_DEFAULT
+    Map<ParmGenTokenKey, ParmGenTokenValue> map;
+    Map<ParmGenTokenKey, ParmGenTokenValue> defmap; // T_DEFAULT
 
     private void init() {
         htmltext = null;
@@ -276,7 +277,7 @@ public class ParmGenParser implements DeepClone {
                 }
             }
         }
-        HashMap<ParmGenTokenKey, ParmGenTokenValue> selectmap = map;
+        Map<ParmGenTokenKey, ParmGenTokenValue> selectmap = map;
         if (_tokentype == AppValue.TokenTypeNames.DEFAULT) {
             selectmap = defmap;
         }

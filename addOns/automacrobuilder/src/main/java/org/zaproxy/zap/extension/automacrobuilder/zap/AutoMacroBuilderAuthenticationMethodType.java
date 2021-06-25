@@ -45,11 +45,14 @@ import org.zaproxy.zap.view.LayoutHelper;
 public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMethodType {
     public static final String CONTEXT_CONFIG_AUTH_AUTOMACRO =
             AuthenticationMethod.CONTEXT_CONFIG_AUTH + ".automacro";
-    public static final String CONTEXT_CONFIG_AUTH_AUTOMACRO_ITEMNO =
+    public static final String CONTEXT_CONFIG_AUTH_AUTOMACRO_ITEMS =
             CONTEXT_CONFIG_AUTH_AUTOMACRO + ".itemno";
+    public static final String CONTEXT_CONFIG_AUTH_AUTOMACRO_OTHERS =
+            CONTEXT_CONFIG_AUTH_AUTOMACRO + ".others";
     private static String API_METHOD_NAME = "autoMacroBuilderAuthentication";
     public static String METHOD_NAME = "autoMacroBuilderMethod";
     private static String TARGET_SELECT_NAME_LABEL = "Target:";
+    private static String ALWAYS_AUTH_NAME_LABEL = "Always authenticate";
     private MacroBuilderUI mbUI;
     private ExtensionActiveScanWrapper extwrapper;
 
@@ -69,6 +72,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
         private String projectFilename;
         private int tabIndex;
         private int targetStepNo;
+        private boolean alwaysAuthenticate;
         private MacroBuilderUI mbUI;
         private ExtensionActiveScanWrapper extwrapper;
         HttpSender httpSender = null;
@@ -79,13 +83,19 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 int itemno,
                 String projectFilename,
                 int tabIndex,
-                int targetStepNo) {
+                int targetStepNo,
+                boolean alwaysAuthenticate) {
             this.extwrapper = extwrapper;
             this.mbUI = mbUI;
             this.itemNo = itemno;
             this.projectFilename = projectFilename;
             this.tabIndex = tabIndex;
             this.targetStepNo = targetStepNo;
+            this.alwaysAuthenticate = alwaysAuthenticate;
+        }
+
+        public boolean isAlwaysAuthenticate() {
+            return this.alwaysAuthenticate;
         }
 
         /**
@@ -112,7 +122,8 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                     this.itemNo,
                     this.projectFilename,
                     this.tabIndex,
-                    this.targetStepNo);
+                    this.targetStepNo,
+                    this.alwaysAuthenticate);
         }
 
         /**
@@ -159,14 +170,16 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             beforemacroprovider.setParameters(
                     scon, null, HttpSender.MANUAL_REQUEST_INITIATOR, getHttpSender());
             ThreadManagerProvider.getThreadManager().beginProcess(beforemacroprovider);
-            WebSession session = null;
+            ParmGenMacroTrace runningInstancePmt = scon.getRunningInstance();
+
+            WebSession wsession = null;
             if (sessionManagementMethod
                     instanceof
                     AutoMacroBuilderSessionManagementMethodType
                             .AutoMacroBuilderSessionManagementMethod) {
-                session =
+                wsession =
                         new AutoMacroBuilderSessionManagementMethodType.AutoMacroBuilderSession(
-                                scon);
+                                scon, user, runningInstancePmt.getCopyInstanceForSession(), this);
             } else {
                 int beginProcessLastStepNo = this.targetStepNo - 1;
                 PRequestResponse pRequestResponseForSession =
@@ -176,13 +189,13 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 }
                 if (pRequestResponseForSession != null) {
                     HttpMessage htmess = ZapUtil.getHttpMessage(pRequestResponseForSession);
-                    session = sessionManagementMethod.extractWebSession(htmess);
+                    wsession = sessionManagementMethod.extractWebSession(htmess);
                 }
-                if (session == null) {
-                    session = sessionManagementMethod.createEmptyWebSession();
+                if (wsession == null) {
+                    wsession = sessionManagementMethod.createEmptyWebSession();
                 }
             }
-            return session;
+            return wsession;
         }
 
         /**
@@ -272,6 +285,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
 
         private AutoMacroBuilderAuthenticationMethod method;
         private JComboBox<String> targetSelectComboBox;
+        private JCheckBox alwaysAuthenticateCheckBox;
         private JButton projectLoad;
         private JButton tabIndexConfig;
         private JTextField projectFileName;
@@ -324,6 +338,24 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                     });
             rowy++;
             // row 1
+            this.alwaysAuthenticateCheckBox = new JCheckBox(ALWAYS_AUTH_NAME_LABEL);
+            this.alwaysAuthenticateCheckBox.setSelected(true);
+            this.add(this.alwaysAuthenticateCheckBox, LayoutHelper.getGBC(0, rowy, 5, 1.0d, 0.0d));
+            this.alwaysAuthenticateCheckBox.addActionListener(
+                    e -> {
+                        if (this.method != null) {
+                            this.method.alwaysAuthenticate =
+                                    this.alwaysAuthenticateCheckBox.isSelected();
+                            LOGGER4J.debug(
+                                    "alwaysAuthenticate: "
+                                            + (this.method.alwaysAuthenticate ? "TRUE" : "FALSE"));
+                        } else {
+                            LOGGER4J.debug("method is NULL");
+                        }
+                    });
+            rowy++;
+
+            // row 2
             this.projectLoad = new JButton("Load");
             this.add(this.projectLoad, LayoutHelper.getGBC(0, rowy, 1, 0.0d, 0.0d));
 
@@ -346,7 +378,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                         }
                     });
             rowy++;
-            // row 2
+            // row 3
             this.tabIndexConfig = new JButton("Config");
             this.tabIndexConfig.addActionListener(
                     e -> {
@@ -367,7 +399,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             this.tabIndex = new JTextField();
             this.add(this.tabIndex, LayoutHelper.getGBC(2, rowy, 2, 0.8d, 0.0d));
             rowy++;
-            // row 3
+            // row 4
             this.add(
                     new JLabel("Target Request No:"),
                     LayoutHelper.getGBC(
@@ -421,6 +453,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             this.method.projectFilename = this.projectFileName.getText();
             this.method.tabIndex = ZapUtil.parseInt(this.tabIndex.getText(), -1);
             this.method.targetStepNo = ZapUtil.parseInt(this.targetStepNo.getText(), -1);
+            this.method.alwaysAuthenticate = this.alwaysAuthenticateCheckBox.isSelected();
             // save dummy User for authenticate
             ExtensionUserManagement userExt = getUserExt();
             if (userExt != null && userExt.getUIConfiguredUsers(context.getId()).size() == 0) {
@@ -445,6 +478,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                     this.method.tabIndex == -1 ? "" : String.valueOf(this.method.tabIndex));
             this.targetStepNo.setText(
                     this.method.targetStepNo == -1 ? "" : String.valueOf(this.method.targetStepNo));
+            this.alwaysAuthenticateCheckBox.setSelected(this.method.alwaysAuthenticate);
             LOGGER4J.debug("bindMethod called itemNo:" + this.method.itemNo);
             if (this.firstCalled) {
                 LOGGER4J.debug("firstCalled in bindMethod");
@@ -518,7 +552,8 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 0,
                 projectFileName,
                 currentTabIndexVal,
-                currentTargetStepNo);
+                currentTargetStepNo,
+                true);
     }
 
     @Override
@@ -584,10 +619,38 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
         AutoMacroBuilderAuthenticationMethod method = createAuthenticationMethod(contextId);
         List<String> names =
                 session.getContextDataStrings(contextId, RecordContext.TYPE_AUTH_METHOD_FIELD_1);
-        if (names != null && names.size() > 0) {
+        if (names != null && names.size() > 1) {
             String name = names.get(0);
             int itemno = TargetSelectItem.getInt(name);
             method.itemNo = itemno;
+            String boolValue = names.get(1);
+            if (boolValue.equals("TRUE")) {
+                method.alwaysAuthenticate = true;
+            } else {
+                method.alwaysAuthenticate = false;
+            }
+        }
+        List<String> otherDatas =
+                session.getContextDataStrings(contextId, RecordContext.TYPE_AUTH_METHOD_FIELD_2);
+        if (otherDatas != null && otherDatas.size() > 2) {
+            String projectFileName = otherDatas.get(0);
+            String tabIndexString = otherDatas.get(1);
+            String targetStepNoString = otherDatas.get(2);
+            if (this.mbUI.loadProjectFromFile(projectFileName)) {
+                method.projectFilename = projectFileName;
+                int tabIndex = Integer.parseInt(tabIndexString);
+                int targetStepNo = Integer.parseInt(targetStepNoString);
+                if (tabIndex < this.mbUI.getMacroRequestTabCount()) {
+                    method.tabIndex = tabIndex;
+                    ParmGenMacroTrace pmt =
+                            this.mbUI.getParmGenMacroTraceAtTabIndex(method.tabIndex);
+                    if (pmt != null) {
+                        if (pmt.getRequestListSize() < targetStepNo) {
+                            method.targetStepNo = targetStepNo;
+                        }
+                    }
+                }
+            }
         }
         return method;
     }
@@ -608,13 +671,24 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 instanceof
                 AutoMacroBuilderAuthenticationMethodType.AutoMacroBuilderAuthenticationMethod))
             throw new UnsupportedAuthenticationMethodException(
-                    "Script based authentication type only supports: "
+                    "AutoMacroBuilder authentication type only supports: "
                             + AutoMacroBuilderAuthenticationMethodType
                                     .AutoMacroBuilderAuthenticationMethod.class);
         AutoMacroBuilderAuthenticationMethod method =
                 (AutoMacroBuilderAuthenticationMethod) authenticationMethod;
         String itemName = TargetSelectItem.getName(method.itemNo);
-        session.setContextData(contextId, RecordContext.TYPE_AUTH_METHOD_FIELD_1, itemName);
+        String alwaysAuthenticateBoolValue = method.alwaysAuthenticate ? "TRUE" : "FALSE";
+        List<String> names = new ArrayList<>();
+        names.add(itemName);
+        names.add(alwaysAuthenticateBoolValue);
+        session.setContextData(contextId, RecordContext.TYPE_AUTH_METHOD_FIELD_1, names);
+        List<String> otherDatas = new ArrayList<>();
+        otherDatas.add(method.projectFilename);
+        String tabIndexString = Integer.toString(method.tabIndex);
+        otherDatas.add(tabIndexString);
+        String targetStepNoString = Integer.toString(method.targetStepNo);
+        otherDatas.add(targetStepNoString);
+        session.setContextData(contextId, RecordContext.TYPE_AUTH_METHOD_FIELD_2, otherDatas);
     }
 
     @Override
@@ -624,13 +698,20 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 instanceof
                 AutoMacroBuilderAuthenticationMethodType.AutoMacroBuilderAuthenticationMethod))
             throw new UnsupportedAuthenticationMethodException(
-                    "Script based authentication type only supports: "
+                    "AutoMacroBuilder authentication type only supports: "
                             + AutoMacroBuilderAuthenticationMethodType
                                     .AutoMacroBuilderAuthenticationMethod.class);
         AutoMacroBuilderAuthenticationMethod method =
                 (AutoMacroBuilderAuthenticationMethod) authenticationMethod;
         String itemNoString = TargetSelectItem.getName(method.itemNo);
-        configuration.setProperty(CONTEXT_CONFIG_AUTH_AUTOMACRO_ITEMNO, itemNoString);
+        configuration.setProperty(CONTEXT_CONFIG_AUTH_AUTOMACRO_ITEMS, itemNoString);
+        String alwaysAuthBoolValue = method.alwaysAuthenticate ? "TRUE" : "FALSE";
+        configuration.addProperty(CONTEXT_CONFIG_AUTH_AUTOMACRO_ITEMS, alwaysAuthBoolValue);
+        configuration.setProperty(CONTEXT_CONFIG_AUTH_AUTOMACRO_OTHERS, method.projectFilename);
+        String tabIndexString = Integer.toString(method.tabIndex);
+        configuration.addProperty(CONTEXT_CONFIG_AUTH_AUTOMACRO_OTHERS, tabIndexString);
+        String targetStepNoString = Integer.toString(method.targetStepNo);
+        configuration.addProperty(CONTEXT_CONFIG_AUTH_AUTOMACRO_OTHERS, targetStepNoString);
     }
 
     @Override
@@ -640,17 +721,46 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 instanceof
                 AutoMacroBuilderAuthenticationMethodType.AutoMacroBuilderAuthenticationMethod))
             throw new UnsupportedAuthenticationMethodException(
-                    "Script based authentication type only supports: "
+                    "AutoMacroBuilder authentication type only supports: "
                             + AutoMacroBuilderAuthenticationMethodType
                                     .AutoMacroBuilderAuthenticationMethod.class);
         AutoMacroBuilderAuthenticationMethod method =
                 (AutoMacroBuilderAuthenticationMethod) authenticationMethod;
         List<String> itemNos =
-                objListToStrList(configuration.getList(CONTEXT_CONFIG_AUTH_AUTOMACRO_ITEMNO));
-        if (itemNos != null && itemNos.size() > 0) {
+                objListToStrList(configuration.getList(CONTEXT_CONFIG_AUTH_AUTOMACRO_ITEMS));
+        if (itemNos != null && itemNos.size() > 1) {
             String name = itemNos.get(0);
             int itemno = TargetSelectItem.getInt(name);
             method.itemNo = itemno;
+            String boolValue = itemNos.get(1);
+            if (boolValue.equals("TRUE")) {
+                method.alwaysAuthenticate = true;
+            } else {
+                method.alwaysAuthenticate = false;
+            }
+        }
+
+        List<String> others =
+                objListToStrList(configuration.getList(CONTEXT_CONFIG_AUTH_AUTOMACRO_OTHERS));
+        if (others != null && others.size() > 2) {
+            String projectFileName = others.get(0);
+            String tabIndexString = others.get(1);
+            String targetStepNoString = others.get(2);
+            if (this.mbUI.loadProjectFromFile(projectFileName)) {
+                method.projectFilename = projectFileName;
+                int tabIndex = Integer.parseInt(tabIndexString);
+                int targetStepNo = Integer.parseInt(targetStepNoString);
+                if (tabIndex < this.mbUI.getMacroRequestTabCount()) {
+                    method.tabIndex = tabIndex;
+                    ParmGenMacroTrace pmt =
+                            this.mbUI.getParmGenMacroTraceAtTabIndex(method.tabIndex);
+                    if (pmt != null) {
+                        if (pmt.getRequestListSize() < targetStepNo) {
+                            method.targetStepNo = targetStepNo;
+                        }
+                    }
+                }
+            }
         }
     }
 

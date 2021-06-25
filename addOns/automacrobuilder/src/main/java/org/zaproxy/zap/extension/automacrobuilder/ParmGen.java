@@ -25,7 +25,6 @@ import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -240,7 +239,7 @@ public class ParmGen {
                 // for(String header : headers){
                 // int i = 0;
 
-                HashMap<String, ParmGenHeader> headers = prequest.getheadersHash();
+                Map<String, ParmGenHeader> headers = prequest.getheadersHash();
 
                 for (Map.Entry<String, ParmGenHeader> ent : headers.entrySet()) {
                     String hKeyUpperV = ent.getKey();
@@ -518,7 +517,7 @@ public class ParmGen {
             switch (av.getResTypeInt()) {
                 case AppValue.V_REQTRACKBODY:
                     return pmt.getFetchResponseVal()
-                            .reqbodymatch(av, pmt.getStepNo(), url, prequest, row, col, true);
+                            .reqbodymatch(pmt, av, url, prequest, row, col, true);
                 default:
                     break;
             }
@@ -553,8 +552,7 @@ public class ParmGen {
                     // for(String header : headers){
                     rflag =
                             pmt.getFetchResponseVal()
-                                    .headermatch(
-                                            pmt.getStepNo(), url, presponse, row, col, true, av);
+                                    .headermatch(pmt, url, presponse, row, col, true, av);
                     break;
                 case AppValue.V_REQTRACKBODY: // request追跡なのでNOP.
                     break;
@@ -567,14 +565,7 @@ public class ParmGen {
                         rflag =
                                 pmt.getFetchResponseVal()
                                         .bodymatch(
-                                                pmt.getStepNo(),
-                                                url,
-                                                presponse,
-                                                row,
-                                                col,
-                                                true,
-                                                autotrack,
-                                                av);
+                                                pmt, url, presponse, row, col, true, autotrack, av);
                     } catch (UnsupportedEncodingException ex) {
                         Logger.getLogger(ParmGen.class.getName()).log(Level.SEVERE, null, ex);
                     }

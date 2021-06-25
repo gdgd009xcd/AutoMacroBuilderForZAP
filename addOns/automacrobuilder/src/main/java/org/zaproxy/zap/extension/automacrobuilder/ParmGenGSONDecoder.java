@@ -24,6 +24,7 @@ import com.google.gson.JsonElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,8 +37,8 @@ public class ParmGenGSONDecoder implements GsonParserListener, DeepClone {
     String jsondata = null;
 
     List<ParmGenToken> tknlist = null;
-    HashMap<String, Integer> samenamehash = null;
-    HashMap<ParmGenTokenKey, ParmGenTokenValue> map = null;
+    Map<String, Integer> samenamehash = null;
+    Map<ParmGenTokenKey, ParmGenTokenValue> map = null;
 
     public ParmGenGSONDecoder(String jsondata) {
         init(jsondata);

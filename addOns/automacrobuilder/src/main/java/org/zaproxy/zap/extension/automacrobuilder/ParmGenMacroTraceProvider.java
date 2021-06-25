@@ -159,6 +159,10 @@ public class ParmGenMacroTraceProvider {
         return null;
     }
 
+    public void addRunningInstance(ParmGenMacroTrace runningInstancePmt) {
+        pmtmap.put(runningInstancePmt.getUUID(), runningInstancePmt);
+    }
+
     public synchronized void removeEndInstance(UUID uuid) {
         pmtmap.remove(uuid);
     }

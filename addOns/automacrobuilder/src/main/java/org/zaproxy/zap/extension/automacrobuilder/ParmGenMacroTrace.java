@@ -97,7 +97,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private Object sender = null;
 
-    private HashMap<Integer, List<AppValue>> cachedAppValues =
+    private Map<Integer, List<AppValue>> cachedAppValues =
             null; // cache of AppValues. cache is valid only when running macros.
 
     public String state_debugprint() {
@@ -191,6 +191,51 @@ public class ParmGenMacroTrace extends ClientDependent {
         nobj.waittimer = pmtProvider.getWaitTimer();
 
         nobj.cachedAppValues = null;
+
+        return nobj;
+    }
+
+    public ParmGenMacroTrace getCopyInstanceForSession() {
+        ParmGenMacroTrace nobj = new ParmGenMacroTrace();
+        nobj.sender = this.sender;
+        nobj.threadid = Thread.currentThread().getId();
+        nobj.postmacro_RequestResponse =
+                this.postmacro_RequestResponse != null
+                        ? this.postmacro_RequestResponse.clone()
+                        : null;
+        nobj.oit = null;
+        nobj.cit = null;
+        // nobj.setUUID(UUIDGenerator.getUUID()); // already set in super.constructor
+        nobj.rlist = this.rlist; // reference
+        nobj.originalrlist = this.originalrlist; // reference
+        nobj.appParmsIniList = this.appParmsIniList; // reference
+        nobj.selected_request = this.selected_request; // specified scan target request
+        nobj.last_stepno = this.last_stepno;
+        nobj.tabIndex = this.tabIndex;
+        nobj.fetchResVal = this.fetchResVal != null ? this.fetchResVal.clone() : null; // deepclone
+        nobj.cookieMan = this.cookieMan != null ? this.cookieMan.clone() : null; // deepclone
+        nobj.savelist = HashMapDeepCopy.hashMapDeepCopySaveList(this.savelist); // deepclone
+        nobj.toolbaseline =
+                this.toolbaseline != null ? this.toolbaseline.clone() : null; // deepclone
+        nobj.CBInheritFromCache = this.CBInheritFromCache;
+
+        // cache
+        nobj.CBFinalResponse = this.CBFinalResponse;
+        nobj.CBResetToOriginal = this.CBResetToOriginal;
+        nobj.CBreplaceCookie = this.CBreplaceCookie;
+        nobj.CBreplaceTrackingParam = this.CBreplaceTrackingParam;
+
+        nobj.state = this.state;
+        nobj.stepno = this.stepno;
+
+        nobj.waittimer = this.waittimer;
+        if (nobj.waittimer > 0) {
+            nobj.TWaiter = new ParmGenTWait(nobj.waittimer);
+        } else {
+            nobj.TWaiter = null;
+        }
+
+        nobj.cachedAppValues = this.cachedAppValues;
 
         return nobj;
     }
@@ -954,7 +999,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     public void initFetchResponseVal() {
         if (fetchResVal == null) {
-            fetchResVal = new FetchResponseVal(this);
+            fetchResVal = new FetchResponseVal();
         }
     }
 

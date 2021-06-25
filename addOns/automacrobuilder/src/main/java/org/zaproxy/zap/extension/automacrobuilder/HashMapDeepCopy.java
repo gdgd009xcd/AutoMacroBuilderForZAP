@@ -22,6 +22,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import static org.zaproxy.zap.extension.automacrobuilder.CastUtils.castToType;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /** @author gdgd009xcd */
@@ -36,8 +37,8 @@ class HashMapDeepCopy {
      * @param dest
      * @return {@code HashMap<K,V>}
      */
-    private static <K extends DeepClone, V extends DeepClone> HashMap<K, V> hashMapDeepCopyKVClone(
-            HashMap<K, V> src, HashMap<K, V> dest) {
+    private static <K extends DeepClone, V extends DeepClone> Map<K, V> hashMapDeepCopyKVClone(
+            Map<K, V> src, Map<K, V> dest) {
 
         if (src != null && dest != null) {
             src.entrySet()
@@ -61,8 +62,8 @@ class HashMapDeepCopy {
      * @param dest copy to
      * @return {@code HashMap<K,V>}
      */
-    private static <K extends DeepClone, V> HashMap<K, V> hashMapDeepCopyKClone(
-            HashMap<K, V> src, HashMap<K, V> dest) {
+    private static <K extends DeepClone, V> Map<K, V> hashMapDeepCopyKClone(
+            Map<K, V> src, Map<K, V> dest) {
         if (src != null && dest != null) {
             src.entrySet()
                     .forEach(
@@ -82,8 +83,8 @@ class HashMapDeepCopy {
      * @param dest copy to
      * @return {@code HashMap<K,V>}
      */
-    private static <K, V extends DeepClone> HashMap<K, V> hashMapDeepCopyVClone(
-            HashMap<K, V> src, HashMap<K, V> dest) {
+    private static <K, V extends DeepClone> Map<K, V> hashMapDeepCopyVClone(
+            Map<K, V> src, Map<K, V> dest) {
         if (src != null && dest != null) {
             src.entrySet()
                     .forEach(
@@ -104,8 +105,7 @@ class HashMapDeepCopy {
      * @param dest copy to
      * @return {@code HashMap<K,V>}
      */
-    private static <K, V> HashMap<K, V> hashMapDeepCopyPrimitive(
-            HashMap<K, V> src, HashMap<K, V> dest) {
+    private static <K, V> Map<K, V> hashMapDeepCopyPrimitive(Map<K, V> src, Map<K, V> dest) {
 
         if (src != null && dest != null) {
             src.entrySet()
@@ -125,8 +125,8 @@ class HashMapDeepCopy {
      * @param dest to which copy src
      * @return {@code HashMap<String,V extends DeepClone>}
      */
-    private static <String, V extends DeepClone> HashMap<String, V> hashMapDeepCopyStrK(
-            HashMap<String, V> src, HashMap<String, V> dest) {
+    private static <String, V extends DeepClone> Map<String, V> hashMapDeepCopyStrK(
+            Map<String, V> src, Map<String, V> dest) {
         return hashMapDeepCopyVClone(src, dest);
     }
 
@@ -138,9 +138,9 @@ class HashMapDeepCopy {
      * @param src copy from
      * @return {@code HashMap<String,String>} dest to which copy src
      */
-    public static HashMap<String, String> hashMapDeepCopyStrKStrV(HashMap<String, String> src) {
+    public static Map<String, String> hashMapDeepCopyStrKStrV(Map<String, String> src) {
         if (src == null) return null;
-        HashMap<String, String> dest = new HashMap<>();
+        Map<String, String> dest = new HashMap<>();
         return hashMapDeepCopyPrimitive(src, dest);
     }
 
@@ -150,10 +150,10 @@ class HashMapDeepCopy {
      * @param src {@code HashMap<String, ParmGenHeader>}
      * @return {@code HashMap<String, ParmGenHeader>}
      */
-    public static HashMap<String, ParmGenHeader> hashMapDeepCopyStrKParmGenHeaderV(
-            HashMap<String, ParmGenHeader> src) {
+    public static Map<String, ParmGenHeader> hashMapDeepCopyStrKParmGenHeaderV(
+            Map<String, ParmGenHeader> src) {
         if (src == null) return null;
-        HashMap<String, ParmGenHeader> dest = new HashMap<String, ParmGenHeader>();
+        Map<String, ParmGenHeader> dest = new HashMap<String, ParmGenHeader>();
         return hashMapDeepCopyStrK(src, dest);
     }
     /**
@@ -163,10 +163,10 @@ class HashMapDeepCopy {
      * @param src {@code HashMap<UUID, ParmGenTrackParam>}
      * @return {@code HashMap<UUID, ParmGenTrackParam>}
      */
-    public static HashMap<UUID, ParmGenTrackingParam> hashMapDeepCopyUuidKParmGenTrackingParamV(
-            HashMap<UUID, ParmGenTrackingParam> src) {
+    public static Map<UUID, ParmGenTrackingParam> hashMapDeepCopyUuidKParmGenTrackingParamV(
+            Map<UUID, ParmGenTrackingParam> src) {
         if (src == null) return null;
-        HashMap<UUID, ParmGenTrackingParam> dest = new HashMap<>();
+        Map<UUID, ParmGenTrackingParam> dest = new HashMap<>();
         return hashMapDeepCopyVClone(src, dest);
     }
 
@@ -177,10 +177,10 @@ class HashMapDeepCopy {
      * @param src
      * @return {@code HashMap<ParmGenTokenKey, Integer>}
      */
-    public static HashMap<ParmGenTokenKey, Integer> hashMapDeepCopyParmGenTokenKeyKIntegerV(
-            HashMap<ParmGenTokenKey, Integer> src) {
+    public static Map<ParmGenTokenKey, Integer> hashMapDeepCopyParmGenTokenKeyKIntegerV(
+            Map<ParmGenTokenKey, Integer> src) {
         if (src == null) return null;
-        HashMap<ParmGenTokenKey, Integer> dest = new HashMap<>();
+        Map<ParmGenTokenKey, Integer> dest = new HashMap<>();
         return hashMapDeepCopyKClone(src, dest);
     }
 
@@ -190,17 +190,37 @@ class HashMapDeepCopy {
      * @param src
      * @return {@code HashMap<ParmGenTokenKey, ParmGenTokenValue>}
      */
-    public static HashMap<ParmGenTokenKey, ParmGenTokenValue> hashMapDeepCopyParmGenHashMapSuper(
-            HashMap<ParmGenTokenKey, ParmGenTokenValue> src) {
+    public static Map<ParmGenTokenKey, ParmGenTokenValue> hashMapDeepCopyParmGenHashMapSuper(
+            Map<ParmGenTokenKey, ParmGenTokenValue> src) {
         if (src == null) return null;
-        HashMap<ParmGenTokenKey, ParmGenTokenValue> dest = new HashMap<>();
+        Map<ParmGenTokenKey, ParmGenTokenValue> dest = new HashMap<>();
         return hashMapDeepCopyKVClone(src, dest);
     }
 
-    public static HashMap<ParmGenTokenKey, ParmGenTokenValue> hashMapDeepElementCloneParmGenHashMap(
-            HashMap<ParmGenTokenKey, ParmGenTokenValue> src,
-            HashMap<ParmGenTokenKey, ParmGenTokenValue> dest) {
+    /**
+     * copy src {@code HashMap<ParmGenTokenKey, ParmGenTokenValue>} to specified dest
+     *
+     * @param src
+     * @param dest
+     * @return
+     */
+    public static Map<ParmGenTokenKey, ParmGenTokenValue> hashMapDeepElementCloneParmGenHashMap(
+            Map<ParmGenTokenKey, ParmGenTokenValue> src,
+            Map<ParmGenTokenKey, ParmGenTokenValue> dest) {
         if (src == null) return dest;
         return hashMapDeepCopyKVClone(src, dest);
+    }
+
+    /**
+     * create new copy from src {@code Map<Integer, PRequestResponse>}
+     *
+     * @param src
+     * @return
+     */
+    public static Map<Integer, PRequestResponse> hashMapDeepCopySaveList(
+            Map<Integer, PRequestResponse> src) {
+        if (src == null) return null;
+        Map<Integer, PRequestResponse> dest = new HashMap<>();
+        return hashMapDeepCopyVClone(src, dest);
     }
 }

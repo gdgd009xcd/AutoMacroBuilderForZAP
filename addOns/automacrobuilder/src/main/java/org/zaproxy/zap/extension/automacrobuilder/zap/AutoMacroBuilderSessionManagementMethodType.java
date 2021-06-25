@@ -15,6 +15,7 @@ import org.zaproxy.zap.session.AbstractSessionManagementMethodOptionsPanel;
 import org.zaproxy.zap.session.SessionManagementMethod;
 import org.zaproxy.zap.session.SessionManagementMethodType;
 import org.zaproxy.zap.session.WebSession;
+import org.zaproxy.zap.users.User;
 
 public class AutoMacroBuilderSessionManagementMethodType extends SessionManagementMethodType {
 
@@ -23,7 +24,7 @@ public class AutoMacroBuilderSessionManagementMethodType extends SessionManageme
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    private static final String METHOD_NAME = "AutoMacorBuilder Session Management";
+    private static final String METHOD_NAME = "AutoMacroBuilder Session Management";
 
     public static class AutoMacroBuilderSessionManagementMethod implements SessionManagementMethod {
 
@@ -83,24 +84,75 @@ public class AutoMacroBuilderSessionManagementMethodType extends SessionManageme
         public void processMessageToMatchSession(HttpMessage message, WebSession session)
                 throws UnsupportedWebSessionException {
             if (message != null && session != null && session instanceof AutoMacroBuilderSession) {
-                StartedActiveScanContainer scon =
-                        ((AutoMacroBuilderSession) session).getStartedActiveScanContainer();
+                AutoMacroBuilderSession ambsession = (AutoMacroBuilderSession) session;
+                StartedActiveScanContainer scon = ambsession.getStartedActiveScanContainer();
                 ParmGenMacroTrace pmt = scon.getRunningInstance();
+                if (pmt == null) {
+                    LOGGER4J.debug("processMessageToMatchSession getRunningInstance returns null");
+                    if (ambsession.isAlwaysAuthenticate()) {
+                        // ambsession is NOT owned by this thread. we should call autheticate
+                        // method.
+                        LOGGER4J.debug(
+                                "processMessageToMatchSession alwaysAthenticate is true, then call authenticate method.");
+                        ambsession.method.authenticate(this, null, ambsession.getUser());
+                    } else {
+                        LOGGER4J.debug(
+                                "processMessageToMatchSession alwaysAuthenticate is false, then copy pmt runningInstance.");
+                        pmt = ambsession.getCopyInstanceForSession();
+                        scon.addRunningInstance(pmt);
+                        scon.addTheadid();
+                    }
+                }
                 ParmGenMacroTrace.clientrequest.startZapCurrentRequest(pmt, message);
+                if (ambsession.isAlwaysAuthenticate()) {
+                    User user = ambsession.getUser();
+                    user.setAuthenticatedSession(null);
+                    LOGGER4J.debug(
+                            "processMessageToMatchSession completed. user["
+                                    + user.getName()
+                                    + "] 's session set to null");
+                }
             }
         }
     }
 
     public static class AutoMacroBuilderSession extends WebSession {
-        StartedActiveScanContainer scon = null;
+        private StartedActiveScanContainer scon = null;
+        private ParmGenMacroTrace runningInstancePmtForSession = null;
+        private User user = null;
+        private AutoMacroBuilderAuthenticationMethodType.AutoMacroBuilderAuthenticationMethod
+                method = null;
 
-        public AutoMacroBuilderSession(StartedActiveScanContainer scon) {
+        public AutoMacroBuilderSession(
+                StartedActiveScanContainer scon,
+                User user,
+                ParmGenMacroTrace pmt,
+                AutoMacroBuilderAuthenticationMethodType.AutoMacroBuilderAuthenticationMethod
+                        method) {
             super("AutoMacroBuilder Session ", new HttpState());
             this.scon = scon;
+            this.runningInstancePmtForSession = pmt;
+            this.user = user;
+            this.method = method;
         }
 
         public StartedActiveScanContainer getStartedActiveScanContainer() {
             return this.scon;
+        }
+
+        public ParmGenMacroTrace getCopyInstanceForSession() {
+            return this.runningInstancePmtForSession.getCopyInstanceForSession();
+        }
+
+        public User getUser() {
+            return this.user;
+        }
+
+        public boolean isAlwaysAuthenticate() {
+            if (this.method != null) {
+                return this.method.isAlwaysAuthenticate();
+            }
+            return false;
         }
     }
 

@@ -2103,14 +2103,25 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             File file = jfc.getSelectedFile();
             String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
 
-            ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
-            if (pmt == null) return false;
-            ParmGen pgen = new ParmGen(pmt);//20200208 なにもしないコンストラクター＞スタティックに置き換える。
-            if(pgen.checkAndLoadFile(name)){//20200208 再読み込み -> 明示的なファイルのロード、チェック、チェックOKのみパラメータ更新する。
-                //load succeeded..
-                updateSelectedTabIndex();
-                return true;
-            }
+            return loadProjectFromFile(name);
+        }
+        return false;
+    }
+
+    /**
+     * load project from specified filename.
+     *
+     * @param filename project file name
+     * @return true - success false - failed
+     */
+    public boolean loadProjectFromFile(String filename) {
+        ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
+        if (pmt == null) return false;
+        ParmGen pgen = new ParmGen(pmt);//20200208 なにもしないコンストラクター＞スタティックに置き換える。
+        if(pgen.checkAndLoadFile(filename)){//20200208 再読み込み -> 明示的なファイルのロード、チェック、チェックOKのみパラメータ更新する。
+            //load succeeded..
+            updateSelectedTabIndex();
+            return true;
         }
         return false;
     }
