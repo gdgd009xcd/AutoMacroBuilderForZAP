@@ -185,12 +185,18 @@ public class PResponse extends ParseHTTPHeaders {
         List<PResponse.ResponseChunk> reschunks = new ArrayList<>();
 
         String displayablecontents = "";
+        String application_json_contents = "";
         if (tcontent_type != null && !tcontent_type.isEmpty()) {
             LOGGER4J.debug("content-type[" + tcontent_type + "]");
             List<String> matches =
                     ParmGenUtil.getRegexMatchGroups("image/(jpeg|png|gif)", tcontent_type);
             if (matches.size() > 0) {
                 displayablecontents = matches.get(0);
+            }
+            List<String> jsonmatches =
+                    ParmGenUtil.getRegexMatchGroups("application/(json)", tcontent_type);
+            if (jsonmatches.size() > 0) {
+                application_json_contents = jsonmatches.get(0);
             }
         }
 
@@ -205,7 +211,9 @@ public class PResponse extends ParseHTTPHeaders {
         PResponse.ResponseChunk.CHUNKTYPE chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTS;
         if (!displayablecontents.isEmpty()) {
             chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTSIMG;
-        } else if (tbodies != null && tbodies.length > 20000) {
+        } else if (tbodies != null
+                && tbodies.length > 20000
+                && application_json_contents.isEmpty()) {
             chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTSBINARY;
         }
 

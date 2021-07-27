@@ -913,7 +913,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         ParmGen.twin.VisibleWhenJSONSaved(this);
         updateSelectedTabIndex();
-            
+
 
     }//GEN-LAST:event_customActionPerformed
 
@@ -1149,25 +1149,22 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 "oauth"
             };
 
-            //token追跡自動設定。。
-            //ArrayList<ParmGenToken> tracktokenlist = new ArrayList<ParmGenToken>();
-            ArrayList<ParmGenResToken> urltokens = new ArrayList<ParmGenResToken>();
+            ArrayList<ParmGenResToken> urltokens = new ArrayList<ParmGenResToken>();// extracted token parameter from Responses.
             Pattern patternw32 = ParmGenUtil.Pattern_compile("\\w{32}");
 
-            List<AppParmsIni> newparms = new ArrayList<AppParmsIni>();//生成するパラメータ
+            List<AppParmsIni> newparms = new ArrayList<AppParmsIni>();// generating parameter for tracking
             PRequestResponse respqrs = null;
             //int row = 0;
             int pos = 0;
 
             for (PRequestResponse pqrs : orglist) {
-                HashMap<ParmGenTrackingToken, String> addedtokens = new HashMap<ParmGenTrackingToken, String>();
+                HashMap<ParmGenTrackingToken, String> addedtokens = new HashMap<ParmGenTrackingToken, String>();// tokens already extracted from urltokens
                 for(ListIterator<ParmGenResToken> it = urltokens.listIterator(urltokens.size());it.hasPrevious();){//urltokens: extracted tokenlist from Response. 
                     //for loop order: fromStepno in descending order(hasPrevious)
                 
-                    //リクエストにtracktokenlistのトークンが含まれる場合のみ
                     ParmGenResToken restoken = it.previous();
                     int fromStepNo = restoken.fromStepNo;
-                    ArrayList<ParmGenTrackingToken> requesttokenlist = new ArrayList<ParmGenTrackingToken>();
+                    ArrayList<ParmGenTrackingToken> requesttokenlist = new ArrayList<ParmGenTrackingToken>();// token that matched request parameter.
                     
                     for(int phase = 0 ; phase<2; phase++){//phase 0: request's token name & value matched,then add to request token list
                         // phase 1: request's token name matched. then add to request token list.
@@ -1181,7 +1178,16 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             ParmGenRequestToken _QToken = null;
                             ParmGenToken _RToken = null;
                             for(ParmGenToken reqtkn : reqjtklist){
-                                if((reqtkn.getTokenKey().getName().equals(token)&& reqtkn.getTokenValue().getValue().equals(value))||(phase==1 && reqtkn.getTokenKey().getName().equals(token))){// same name && value
+                                String requestJsonTokenName = null;
+                                ParmGenTokenKey requestJsonParmGenTokenkey = reqtkn.getTokenKey();
+                                if (requestJsonParmGenTokenkey != null) {
+                                    requestJsonTokenName = requestJsonParmGenTokenkey.getName();
+                                }
+                                if(requestJsonTokenName != null
+                                        && !requestJsonTokenName.isEmpty()
+                                        && ((requestJsonTokenName.equals(token)
+                                        && reqtkn.getTokenValue().getValue().equals(value))
+                                        ||(phase==1 && requestJsonTokenName.equals(token)))){// same name && value
                                     //We found json tracking parameter in request.  
                                     _RToken = tkn;
                                     _QToken = new ParmGenRequestToken(reqtkn);
@@ -1438,32 +1444,35 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     for (ParmGenToken token : tklist) {
                         //PHPSESSID, token, SesID, jsessionid
                         String tokenname = token.getTokenKey().getName();
-                        boolean namematched = false;
-                        for (String tkn : tknames) {//予約語に一致 
-                            if (tokenname.equalsIgnoreCase(tkn)) {//完全一致 tokenname  that matched reserved token name
-                                namematched = true;
-                                break;
-                            }
-                        }
-                        if (!namematched) {//nameはtknamesに一致しない
-                            for (String tkn : tknames) {
-                                if (tokenname.toUpperCase().indexOf(tkn.toUpperCase()) != -1) {//予約語に部分一致 tokenname that partially matched reserved token name
+                        String tokenvalue = token.getTokenValue().getValue();
+                        if (tokenname != null && !tokenname.isEmpty()) { // token must have name.
+                            boolean namematched = false;
+                            for (String tkn : tknames) {//予約語に一致
+                                if (tokenname.equalsIgnoreCase(tkn)) {//完全一致 tokenname  that matched reserved token name
                                     namematched = true;
                                     break;
                                 }
                             }
-                        }
-                        // value値がToken値だとみられる
-                        if (!namematched) {//nameはtknamesに一致しない
-                            String tokenvalue = token.getTokenValue().getValue();
-
-                            if (ParmGenUtil.isTokenValue(tokenvalue)) {// token value that looks like tracking token
-                                namematched = true;
+                            if (!namematched) {//nameはtknamesに一致しない
+                                for (String tkn : tknames) {
+                                    if (tokenname.toUpperCase().indexOf(tkn.toUpperCase()) != -1) {//予約語に部分一致 tokenname that partially matched reserved token name
+                                        namematched = true;
+                                        break;
+                                    }
+                                }
                             }
+                            // value値がToken値だとみられる
+                            if (!namematched) {//nameはtknamesに一致しない
+
+
+                                if (ParmGenUtil.isTokenValue(tokenvalue)) {// token value that looks like tracking token
+                                    namematched = true;
+                                }
+                            }
+                            token.setEnabled(namematched);//namematched==true: token that looks like tracking token
+                            trackurltoken.tracktokenlist.add(token);
+                            trackurltoken.fromStepNo = pos;
                         }
-                        token.setEnabled(namematched);//namematched==true: token that looks like tracking token
-                        trackurltoken.tracktokenlist.add(token);
-                        trackurltoken.fromStepNo = pos;
 
                     }
 

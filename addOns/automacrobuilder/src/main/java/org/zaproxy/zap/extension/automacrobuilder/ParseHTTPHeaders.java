@@ -1355,7 +1355,14 @@ class ParseHTTPHeaders implements DeepClone {
         return setcookieheaders;
     }
 
-    //
+    /**
+     * extract request header patterns which has tkval value<br>
+     * e.g. cookie: name=tkval<br>
+     * Authorization: Bearer tkval
+     *
+     * @param tkval
+     * @return
+     */
     public ArrayList<HeaderPattern> hasHeaderMatchedValue(String tkval) {
         //
         ArrayList<HeaderPattern> alist = new ArrayList<>();
