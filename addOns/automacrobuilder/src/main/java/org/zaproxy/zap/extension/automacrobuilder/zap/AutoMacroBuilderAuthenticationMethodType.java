@@ -214,6 +214,11 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             return new AuthMethodApiResponseRepresentation<>(values);
         }
 
+        @Override
+        public void replaceUserDataInPollRequest(HttpMessage msg, User user) {
+            return;
+        }
+
         protected HttpSender getHttpSender() {
             if (this.httpSender == null) {
                 this.httpSender =

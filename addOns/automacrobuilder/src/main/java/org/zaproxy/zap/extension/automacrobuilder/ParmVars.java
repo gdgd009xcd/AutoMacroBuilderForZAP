@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 
 /** @author gdgd009xcd */
@@ -58,6 +57,7 @@ public class ParmVars {
     // static: Runs only once at startup
     //
     static {
+        /**
         File log4jdir =
                 new File(ClientDependent.LOG4JXML_DIR); // LOG4JXML_DIR: $HOME/.ZAP or .BurpSuite
         String fileName = "log4j2.xml";
@@ -83,6 +83,7 @@ public class ParmVars {
         } else {
             System.out.println("log4j file not found.:" + logFile.getPath());
         }
+         **/
 
         logger4j = org.apache.logging.log4j.LogManager.getLogger();
 

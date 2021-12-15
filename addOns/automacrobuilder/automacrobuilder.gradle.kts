@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "1.0.4"
+version = "1.0.5"
 description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {
@@ -8,7 +8,6 @@ tasks.withType<JavaCompile> {
 }
 
 dependencies {
-    implementation("org.apache.logging.log4j:log4j-core:2.15.0")
     implementation("com.google.code.gson:gson:2.8.6")
     implementation("org.jsoup:jsoup:1.14.2")
 }
@@ -59,7 +58,7 @@ zapAddOn {
     // addOnStatus.set(AddOnStatus.ALPHA|BETA|RELEASE)
     addOnStatus.set(AddOnStatus.BETA)
 
-    zapVersion.set("2.9.0")
+    zapVersion.set("2.11.0")
 
     manifest {
         author.set("gdgd009xcd")

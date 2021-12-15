@@ -2,6 +2,11 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## 6 - 2021-12-15
+### ver1.0.5
+- maintenance: removed the log4j2 library that this add-on contains
+- maintenance: upgraded OWASP ZAP dependency version  to 2.11.0
+
 ## 5 - 2021-12-11
 ### ver1.0.4
 - maintenance: updated log4j to the latest version
