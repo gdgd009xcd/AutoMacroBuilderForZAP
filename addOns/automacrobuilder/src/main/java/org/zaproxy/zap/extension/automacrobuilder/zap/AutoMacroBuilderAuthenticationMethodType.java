@@ -168,7 +168,11 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             BeforeMacroDoActionProvider beforemacroprovider = new BeforeMacroDoActionProvider();
             scon.addTheadid();
             beforemacroprovider.setParameters(
-                    scon, null, HttpSender.MANUAL_REQUEST_INITIATOR, getHttpSender());// msg = null means startZapCurrentRequest is NOT called in BeforeMacroDoAction
+                    scon,
+                    null,
+                    HttpSender.MANUAL_REQUEST_INITIATOR,
+                    getHttpSender()); // msg = null means startZapCurrentRequest is NOT called in
+            // BeforeMacroDoAction
             ThreadManagerProvider.getThreadManager().beginProcess(beforemacroprovider);
             ParmGenMacroTrace runningInstancePmt = scon.getRunningInstance();
 

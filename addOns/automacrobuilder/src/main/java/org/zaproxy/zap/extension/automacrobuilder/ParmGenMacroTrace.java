@@ -159,7 +159,8 @@ public class ParmGenMacroTrace extends ClientDependent {
      */
     public void setAppParmsIniList(List<AppParmsIni> appParmsIniList) {
         this.appParmsIniList = appParmsIniList;
-        nullfetchResValAndCookieMan();// clear session cookies/tokens because appParmIniList is updated.
+        nullfetchResValAndCookieMan(); // clear session cookies/tokens because appParmIniList is
+        // updated.
     }
 
     public ParmGenMacroTrace() {}

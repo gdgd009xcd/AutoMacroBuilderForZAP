@@ -20,15 +20,11 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.LogManager;
-import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 
 /** @author gdgd009xcd */
 public class ParmVars {
@@ -57,34 +53,6 @@ public class ParmVars {
     // static: Runs only once at startup
     //
     static {
-        /**
-        File log4jdir =
-                new File(ClientDependent.LOG4JXML_DIR); // LOG4JXML_DIR: $HOME/.ZAP or .BurpSuite
-        String fileName = "log4j2.xml";
-        File logFile = new File(log4jdir, fileName);
-        if (!logFile.exists()) {
-            try {
-                ParmGenUtil.copyFileToHome(
-                        logFile.toPath(), "xml/" + fileName, "/burp/" + fileName);
-            } catch (IOException ex) {
-                System.out.println("can't copy log4j2.xml");
-            }
-        }
-
-        if (logFile.exists()) {
-            LoggerContext context = (LoggerContext) LogManager.getContext(false);
-            URI logURI = context.getConfigLocation();
-            if (logURI == null) {
-                context.setConfigLocation(logFile.toURI());
-                System.out.println("log4j: set:" + logFile.getPath());
-            } else {
-                System.out.println("log4j: get URI:" + logURI.toString());
-            }
-        } else {
-            System.out.println("log4j file not found.:" + logFile.getPath());
-        }
-         **/
-
         logger4j = org.apache.logging.log4j.LogManager.getLogger();
 
         setExcludeMimeTypes(
