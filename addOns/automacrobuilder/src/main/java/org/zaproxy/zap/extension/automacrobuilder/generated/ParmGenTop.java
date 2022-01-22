@@ -29,7 +29,7 @@ public class ParmGenTop extends javax.swing.JFrame {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
-    public ParmGenJSONSave csv;//CSVファイル
+    public ParmGenJSONSave csv;// file object
     DefaultTableModel model = null;
     int current_row;
     int default_rowheight;
@@ -72,7 +72,7 @@ public class ParmGenTop extends javax.swing.JFrame {
     public ParmGenTop(ParmGenMacroTrace _pmt, ParmGenJSONSave _csv) {
         pmt = _pmt;
         ParmGenNew_Modified = false;
-        csv = _csv;//リファレンスを格納
+        csv = _csv;// set reference of ParmGenJSONSave object
         initComponents();
         //TableColumnModel tcm = ParamTopList.getColumnModel();
         //tcm.getColumn(6).setCellRenderer(new LineWrapRenderer());
@@ -214,7 +214,7 @@ public class ParmGenTop extends javax.swing.JFrame {
                 //code to handle choosed file here.
                 File file = jfc.getSelectedFile();
                 String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
-                if(!pFilter.accept(file)){//拡張子無しの場合は付与
+                if(!pFilter.accept(file)){// add extension string if the file name has no extension string
                     name += ".json";
                 }
                 ParmVars.parmfile = name;
@@ -230,12 +230,12 @@ public class ParmGenTop extends javax.swing.JFrame {
     }
     
 /*
- *  テーブル全削除
+ *  delete all table rows
  */
     private void cleartables(){
         int rcnt = model.getRowCount();
         for(int i = 0; i< rcnt; i++){
-            model.removeRow(0);//0行目を削除。
+            model.removeRow(0);// remove row zero
         }
     }
 
@@ -500,7 +500,7 @@ public class ParmGenTop extends javax.swing.JFrame {
     private void LANGUAGEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LANGUAGEActionPerformed
         // TODO add your handling code here:
         int idx = LANGUAGE.getSelectedIndex();
-        String str = (String)LANGUAGE.getSelectedItem();  //Object型で返された値をString型にｷｬｽﾄ
+        String str = (String)LANGUAGE.getSelectedItem();  // cast Object type to String
         ParmVars.enc = Encode.getEnum(str);
 
     }//GEN-LAST:event_LANGUAGEActionPerformed

@@ -884,6 +884,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }// </editor-fold>//GEN-END:initComponents
 
     private void customActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customActionPerformed
+        /*
+        * Open Custom Parameter Config dialog
+        */
         // TODO add your handling code here:
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
         JList<String> requestJList = getRequestJListAtTabIndex(selectedTabIndex);
@@ -953,7 +956,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             displayInfo.isLoadedMacroCommentContents = true;
         }
     }
-    
+
+    /**
+     * load when tabbed pane content is selected
+     *
+     * @param selectedTabIndexOfRequestList
+     */
     private void paramlogTabbedPaneSelectedContentsLoad(int selectedTabIndexOfRequestList){
         int selIndex = paramlog.getSelectedIndex();//tabbedpanes selectedidx 0start..
         switch(selIndex){
@@ -973,9 +981,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
     
     private void RequestListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_RequestListValueChanged
+        /*
+         * called when MacroRequestList item is selected
+         */
         // TODO add your handling code here:
-        
-        // below magical coding needs ,,,
+        // we need magical coding below,,,
         if (evt.getValueIsAdjusting()) {
             // The user is still manipulating the selection.
             return;
@@ -1003,6 +1013,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }//GEN-LAST:event_RequestListValueChanged
 
     private void CBinheritFromCacheActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CBinheritFromCacheActionPerformed
+        /*
+         * checkbox: at the start of sequence, session cache/Token value ia set from cache
+         */
         // TODO add your handling code here:
         pmtProvider.setCBInheritFromCache(CBinheritFromCache.isSelected());
     }//GEN-LAST:event_CBinheritFromCacheActionPerformed
@@ -1032,6 +1045,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }//GEN-LAST:event_RequestListMousePressed
 
     private void disableRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disableRequestActionPerformed
+        /*
+         * Disable selected request in ParmGenMacroTrace::rlist. this action does not affect ParmGenMacroTrace::originalrlist
+         */
         // TODO add your handling code here:
         int tabIndex = getSelectedTabIndexOfMacroRequestList();
         ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(tabIndex);
@@ -1046,6 +1062,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }//GEN-LAST:event_disableRequestActionPerformed
 
     private void enableRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableRequestActionPerformed
+        /*
+         * Enable selected request in ParmGenMacroTrace::rlist. this action does not affect ParmGenMacroTrace::originalrlist
+         */
         // TODO add your handling code here:
         int tabIndex = getSelectedTabIndexOfMacroRequestList();
 
@@ -1807,6 +1826,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             if (ParmVars.isSaved()) {
                 ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
                 csv.GSONsave();
+            } else if (pmt != null) {
+                pmt.nullfetchResValAndCookieMan();
             }
             
         }
@@ -1865,6 +1886,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }//GEN-LAST:event_MacroResponseMouseReleased
 
     private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
+        /**
+         * update current PRequestResponse(clone PRequestResponse from originalrlist to rlist)
+         */
         // TODO add your handling code here:
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
         ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(selectedTabIndex);
@@ -1874,19 +1898,25 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if (requestJList == null) return;
         int idx = requestJList.getSelectedIndex();
         if (idx > -1 && prequestResponseList != null && idx < prequestResponseList.size()) {
-            PRequestResponse prr = pmt.getOriginalRequest(idx);
+            PRequestResponse prr = pmt.getOriginalRequest(idx);// get original PRequestResponse in originalrlist
             if (prr != null) {
                 PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
-                current.updateRequestResponse(prr.request.clone(), prr.response.clone());
+                current.updateRequestResponse(prr.request.clone(), prr.response.clone());// clone original PRequestResponse to CurrentList(rlist)
                 ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
                 reqdoc.setRequestChunks(prr.request);
                 ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
                 resdoc.setResponseChunks(prr.response);
+                if (pmt != null) {
+                    pmt.nullfetchResValAndCookieMan();
+                }
             }
         }
     }//GEN-LAST:event_restoreActionPerformed
 
     private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
+        /**
+         * update Original PRequestResponse with current selected(displayed) PRequestResponse
+         */
         // TODO add your handling code here:
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
         ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(selectedTabIndex);
@@ -1903,16 +1933,21 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 current.request = newrequest;
 
                 PRequestResponse original = pmt.getOriginalRequest(idx);
-                original.updateRequestResponse(current.request, current.response);
+                original.updateRequestResponse(current.request, current.response);// copy current PRequestResponse to original list(originalrlist)
                 if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
                     ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
                     csv.GSONsave();
+                } else {
+                    pmt.nullfetchResValAndCookieMan();
                 }
             }
         }
     }//GEN-LAST:event_updateActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        /**
+         * scan all requests from current request to FinalResponse or until subsequence scan limit.
+         */
         // TODO add your handling code here:
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
@@ -1953,7 +1988,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     public String getMacroRequest() {
         return MacroRequest.getText();
     }
-    
+
+    /**
+     * update current PRequestResponse with Edited(displayed) PRequestResponse
+     *
+     * @param doc
+     */
     @Override
     public void ParmGenRegexSaveAction(StyledDocumentWithChunk doc) {
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
@@ -1965,11 +2005,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int idx = requestJList.getSelectedIndex();
         if(prequestResponseList != null && idx > -1 &&  idx < prequestResponseList.size()){
             try {
-                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();
+                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();// get edited request
                 if (newrequest != null) {
-                    pmt.updateRequestCurrentList(idx, newrequest);
+                    pmt.updateRequestCurrentList(idx, newrequest);// copy edited request to current request
                     ParmGenTextDoc ndoc = new ParmGenTextDoc(MacroRequest);
                     ndoc.setRequestChunks(newrequest);
+                    pmt.nullfetchResValAndCookieMan();
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);

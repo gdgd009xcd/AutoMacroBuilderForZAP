@@ -106,6 +106,7 @@ public class ClientRequest implements InterfaceClientRequest {
      * @return
      */
     public HttpMessage startZapCurrentRequest(ParmGenMacroTrace pmt, HttpMessage currentmessage) {
+        LOGGER4J.debug("startZapCurrentRequest is Called.");
         pmt.clearComments();
         pmt.setError(false);
         pmt.setState(PMT_CURRENT_BEGIN);

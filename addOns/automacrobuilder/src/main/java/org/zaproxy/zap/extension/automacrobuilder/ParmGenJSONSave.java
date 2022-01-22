@@ -80,6 +80,12 @@ public class ParmGenJSONSave {
         pfile = null;
     }
 
+    /**
+     * set AppParmsIni to pmt, clear session cookies/tokens, and rewindAppParmsIni
+     *
+     * @param _pmt
+     * @param _newparmcsv
+     */
     private void saveParmGenSetUp(ParmGenMacroTrace _pmt, List<AppParmsIni> _newparmcsv) {
         pmt = _pmt;
         List<AppParmsIni> currentparmcsv = pmt.getAppParmsIniList();

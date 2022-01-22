@@ -152,8 +152,14 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
+    /**
+     * Update appParmsIniList and clear session cookies/tokens
+     *
+     * @param appParmsIniList
+     */
     public void setAppParmsIniList(List<AppParmsIni> appParmsIniList) {
         this.appParmsIniList = appParmsIniList;
+        nullfetchResValAndCookieMan();// clear session cookies/tokens because appParmIniList is updated.
     }
 
     public ParmGenMacroTrace() {}
@@ -303,6 +309,9 @@ public class ParmGenMacroTrace extends ClientDependent {
         return isCurrentRequest(stepno);
     }
 
+    /*
+     * Enable selected request in rlist
+     */
     public void EnableRequest(int _idx) {
         if (rlist != null && rlist.size() > _idx) {
             PRequestResponse prr = rlist.get(_idx);
@@ -310,6 +319,9 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
+    /*
+     * Disable selected request in rlist
+     */
     public void DisableRequest(int _idx) {
         if (rlist != null && rlist.size() > _idx) {
             PRequestResponse prr = rlist.get(_idx);
@@ -945,6 +957,11 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
+    /**
+     * save originalrlist to JSON
+     *
+     * @param gsonsaveobj
+     */
     void GSONSave(GSONSaveObject gsonsaveobj) {
         if (gsonsaveobj != null) {
             if (originalrlist != null) {
@@ -1008,6 +1025,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     }
 
     public void nullfetchResValAndCookieMan() {
+        LOGGER4J.debug("nullfetchResValAndCookieMan called. cleared cookies and tokens.");
         fetchResVal = null;
         cookieMan = null;
     }

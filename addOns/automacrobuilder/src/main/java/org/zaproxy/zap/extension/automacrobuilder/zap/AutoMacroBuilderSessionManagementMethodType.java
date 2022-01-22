@@ -87,8 +87,8 @@ public class AutoMacroBuilderSessionManagementMethodType extends SessionManageme
                 AutoMacroBuilderSession ambsession = (AutoMacroBuilderSession) session;
                 StartedActiveScanContainer scon = ambsession.getStartedActiveScanContainer();
                 ParmGenMacroTrace pmt = scon.getRunningInstance();
-                if (pmt == null) {
-                    LOGGER4J.debug("processMessageToMatchSession getRunningInstance returns null");
+                if (pmt == null) { // AutoMacroBuilderSession is existed but authenticate method is NOT called in this Thread.
+                    LOGGER4J.debug("authenticate method is NOT called. processMessageToMatchSession getRunningInstance returns null");
                     if (ambsession.isAlwaysAuthenticate()) {
                         // ambsession is NOT owned by this thread. we should call autheticate
                         // method.
@@ -97,13 +97,16 @@ public class AutoMacroBuilderSessionManagementMethodType extends SessionManageme
                         ambsession.method.authenticate(this, null, ambsession.getUser());
                     } else {
                         LOGGER4J.debug(
-                                "processMessageToMatchSession alwaysAuthenticate is false, then copy pmt runningInstance.");
+                                "processMessageToMatchSession alwaysAuthenticate is false, then copy pmt runningInstance and session data set to current request");
                         pmt = ambsession.getCopyInstanceForSession();
                         scon.addRunningInstance(pmt);
                         scon.addTheadid();
+
                     }
                 }
+
                 ParmGenMacroTrace.clientrequest.startZapCurrentRequest(pmt, message);
+
                 if (ambsession.isAlwaysAuthenticate()) {
                     User user = ambsession.getUser();
                     user.setAuthenticatedSession(null);

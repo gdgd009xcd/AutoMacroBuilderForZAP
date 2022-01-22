@@ -157,7 +157,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 AuthenticationCredentials authenticationCredentials,
                 User user)
                 throws UnsupportedAuthenticationCredentialsException {
-            LOGGER4J.info("authenticate called.");
+            LOGGER4J.info("authenticate method is CALLED.");
             ParmGenMacroTrace pmt = this.mbUI.getParmGenMacroTraceAtTabIndex(this.tabIndex);
             int subSequenceScanLimit = this.mbUI.getSubSequenceScanLimit();
             int lastStepNo = pmt.getLastStepNo(this.targetStepNo, subSequenceScanLimit);
@@ -168,7 +168,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             BeforeMacroDoActionProvider beforemacroprovider = new BeforeMacroDoActionProvider();
             scon.addTheadid();
             beforemacroprovider.setParameters(
-                    scon, null, HttpSender.MANUAL_REQUEST_INITIATOR, getHttpSender());
+                    scon, null, HttpSender.MANUAL_REQUEST_INITIATOR, getHttpSender());// msg = null means startZapCurrentRequest is NOT called in BeforeMacroDoAction
             ThreadManagerProvider.getThreadManager().beginProcess(beforemacroprovider);
             ParmGenMacroTrace runningInstancePmt = scon.getRunningInstance();
 
