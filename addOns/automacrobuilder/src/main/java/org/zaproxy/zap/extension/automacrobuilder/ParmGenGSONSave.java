@@ -33,14 +33,16 @@ import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.AppValue_List;
  * This class Used only when saving parameter settings.
  *
  * @author gdgd009xcd
+ *
  */
+@Deprecated
 public class ParmGenGSONSave {
     private static org.apache.logging.log4j.Logger logger4j =
             org.apache.logging.log4j.LogManager.getLogger();
     ParmGenMacroTrace pmt = null;
     ParmGenWriteFile pfile;
-    public static ArrayList<PRequestResponse> selected_messages;
-    public static ArrayList<PRequestResponse> proxy_messages;
+    private static ArrayList<PRequestResponse> selected_messages;
+    private static ArrayList<PRequestResponse> proxy_messages;
 
     /**
      * Constructor for customActionPerformed method

@@ -74,7 +74,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
     public void update(){
         ReqParsedTableModel = (DefaultTableModel)ReqParsedTable.getModel();
         Select_ReplaceTargetURL.removeAllItems();
-        PRequestResponse selected_message = ParmGenGSONSave.selected_messages.get(0);
+        PRequestResponse selected_message = ParmGenGSONSaveV2.selected_messages.get(0);
         int mpos = selected_message.getMacroPos();
         if(mpos<0){
             mpos = ParmVars.TOSTEPANY;

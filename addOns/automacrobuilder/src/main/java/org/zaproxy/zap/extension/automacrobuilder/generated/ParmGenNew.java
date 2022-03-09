@@ -92,7 +92,7 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
         addJComboBoxToJTable();
 
 
-        PRequestResponse mess = ParmGenGSONSave.proxy_messages.get(0);
+        PRequestResponse mess = ParmGenGSONSaveV2.proxy_messages.get(0);
         String _url = mess.request.getURL();
 
         selected_requestURL.setText(_url);
@@ -272,7 +272,7 @@ private void setAppParmsIni(){
      *  指定されたメッセージで、カレントのボタンのmessageAreaを更新
      */
     public void updateMessageAreaInSelectedModel(int panelno){
-        PRequestResponse rs = ParmGenGSONSave.selected_messages.get(0);
+        PRequestResponse rs = ParmGenGSONSaveV2.selected_messages.get(0);
         if(panelno==-1){
             panelno = current_reqrespanel;
         }
@@ -315,7 +315,7 @@ private void setAppParmsIni(){
 
             _reqplace = "body";
         }else if(reqplace.toLowerCase().equals("json")){
-            PRequestResponse selected_message = ParmGenGSONSave.selected_messages.get(0);
+            PRequestResponse selected_message = ParmGenGSONSaveV2.selected_messages.get(0);
             PRequest request = selected_message.request;
             String regex = "\"" + name + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)\"(.+?)\"(?:[\\t \\]\\r\\n]*)(?:,|})";
             List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, request.getBodyStringWithoutHeader());
@@ -2322,6 +2322,6 @@ private void setAppParmsIni(){
 
     @Override
     public PRequestResponse getOriginalRequestResponse() {
-        return ParmGenGSONSave.selected_messages.get(0);
+        return ParmGenGSONSaveV2.selected_messages.get(0);
     }
 }

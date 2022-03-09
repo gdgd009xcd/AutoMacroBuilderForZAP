@@ -571,14 +571,14 @@ public class ParmGenGSON implements GsonParserListener {
             case 3:
                 switch (ev) {
                     case START_OBJECT:
-                        if (current.toUpperCase().equals("APPVALUE_LIST")) { // v2
+                        if (current.toUpperCase().equals("APPVALUE_LISTS")) { // v2
                             // ParmVars.plog.debuglog(0, "START_OBJECT level2 name:" + current);
                             apv = new AppValue();
                         }
                         break;
                     case END_OBJECT:
                         if (!hasErrors() && current != null) {
-                            if (current.toUpperCase().equals("APPVALUE_LIST")) { // v2
+                            if (current.toUpperCase().equals("APPVALUE_LISTS")) { // v2
                                 if (apv != null && aparms != null) {
                                     aparms.addAppValue(apv);
                                 }

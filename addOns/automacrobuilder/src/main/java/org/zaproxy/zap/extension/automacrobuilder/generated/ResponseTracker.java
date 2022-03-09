@@ -16,6 +16,7 @@ import javax.swing.text.BadLocationException;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSave;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSaveV2;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
@@ -519,8 +520,8 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
     }// </editor-fold>//GEN-END:initComponents
 
     public void update(){
-        if ( ParmGenGSONSave.selected_messages.size()>0){
-            PRequestResponse rs = ParmGenGSONSave.selected_messages.get(0);
+        if ( ParmGenGSONSaveV2.selected_messages.size()>0){
+            PRequestResponse rs = ParmGenGSONSaveV2.selected_messages.get(0);
             currentrequestresponse = rs;
             ResponseURL.setText(rs.request.getURL());
             ParmGenTextDoc rdoc = new ParmGenTextDoc(ResponseArea);
