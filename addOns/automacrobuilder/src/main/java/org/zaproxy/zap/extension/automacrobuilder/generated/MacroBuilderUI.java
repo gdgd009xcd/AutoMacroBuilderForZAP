@@ -6,7 +6,9 @@
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
 import java.awt.event.InputEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -27,6 +29,7 @@ import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
+import com.google.gson.JsonElement;
 import org.zaproxy.zap.extension.automacrobuilder.*;
 
 
@@ -49,6 +52,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     List<JList<String>> requestJLists = null;
     List<DisplayInfoOfRequestListTab> displayInfoTabs = null;
     int MacroRequestListTabsCurrentIndex = 0;
+    int tabIndex = -1;
 
     int EditTarget = -1;
     Encode EditPageEnc = Encode.ISO_8859_1;
@@ -62,7 +66,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      */
     @SuppressWarnings("unchecked")
     public MacroBuilderUI(ParmGenMacroTraceProvider pmtProvider) {
-        int tabIndex = 0;
+        tabIndex = 0;
         this.MacroRequestListTabsCurrentIndex = 0;
         this.pmtProvider = pmtProvider;
         ParmGenMacroTrace pmt = this.pmtProvider.getBaseInstance(tabIndex);
@@ -204,11 +208,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         MacroResponse.setText("");
         MacroComments.setText("");
         this.pmtProvider.clear();
+        tabIndex = -1;
         ParmVars.Saved(false);
     }
 
     @SuppressWarnings("unchecked")
-    public void addNewRequests(List<PRequestResponse> _rlist) {
+    public ParmGenMacroTrace addNewRequests(List<PRequestResponse> _rlist) {
         AppParmsIni pini;
         
         ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(this.MacroRequestListTabsCurrentIndex);
@@ -223,7 +228,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
             JList<String> requestJList = getSelectedRequestJList();
             if (requestJList != null) {
-                DefaultListModel<String> listModel = (DefaultListModel) requestJList.getModel();
+                DefaultListModel<String> listModel = (DefaultListModel<String>) requestJList.getModel();
                 listModel.removeAllElements();
                 while (it.hasNext()) {
 
@@ -236,6 +241,94 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         }
 
+        return pmt;
+    }
+
+    /**
+     * add PRequestResponses to ParmGenMacroTrace and Tabspane which is created if necessary
+     *
+     * @param appParmAndSequence
+     * @return
+     */
+    public ParmGenMacroTrace addNewRequestsToTabsPane(ParmGenGSON.AppParmAndSequence appParmAndSequence) {
+
+        if (appParmAndSequence == null) return null;
+
+        List<PRequestResponse> pRequestResponses = appParmAndSequence.pRequestResponses;
+
+        if (tabIndex < 0) {
+            tabIndex = 0;
+        }
+
+        ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(tabIndex);
+        if (pmt == null) {
+            pmt = pmtProvider.addNewBaseInstance();
+            pmt.setUI(this);
+        }
+
+        if (appParmAndSequence.appParmsIniList != null) {
+            pmt.updateAppParmsIniAndClearCache(appParmAndSequence.appParmsIniList);
+        }
+
+        JList<String> requestJList = getRequestJListAtTabIndex(tabIndex);
+        if(requestJList == null) {
+            requestJList = new javax.swing.JList<>();
+            requestJList.setAutoscrolls(false);
+            requestJList.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mousePressed(java.awt.event.MouseEvent evt) {
+                    RequestListMousePressed(evt);
+                }
+                public void mouseReleased(java.awt.event.MouseEvent evt) {
+                    RequestListMouseReleased(evt);
+                }
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    RequestListMouseClicked(evt);
+                }
+            });
+            requestJList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                    RequestListValueChanged(evt);
+                }
+            });
+            javax.swing.JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setAutoscrolls(true);
+            scrollPane.setViewportView(requestJList);
+
+            String tabIndexString = Integer.toString(tabIndex);
+            MacroRequestListTabs.addTab(tabIndexString, scrollPane);
+
+            displayInfoTabs.add(new DisplayInfoOfRequestListTab(-1, false, false, false));
+        }
+        requestJList.setCellRenderer((ListCellRenderer<Object>)new MacroBuilderUIRequestListRender(pmt));
+        DefaultListModel<String> RequestListModel = new DefaultListModel<>();
+        RequestListModel.clear();
+        requestJList.setModel(RequestListModel);
+
+        if (pRequestResponses != null && pmt != null) {
+
+            if (pmt != null) {
+                pmt.setRecords(pRequestResponses);
+            }
+            Iterator<PRequestResponse> it = pmt.getIteratorOfRlist();
+            int ii = 0;
+
+
+            if (requestJList != null) {
+                DefaultListModel<String> listModel = (DefaultListModel<String>) requestJList.getModel();
+                listModel.removeAllElements();
+                while (it.hasNext()) {
+
+                    //model.addRow(new Object[] {false, pini.url, pini.getIniValDsp(), pini.getLenDsp(), pini.getTypeValDsp(),pini.getAppValuesDsp(),pini.getCurrentValue()});
+                    PRequestResponse pqr = it.next();
+                    String url = pqr.request.getURL();
+                    listModel.addElement((String.format("%03d",ii++) + '|' + url));
+                }
+                requestJList.setModel(listModel);
+            }
+        }
+
+        tabIndex++;
+        return pmt;
     }
 
     /**
@@ -909,7 +1002,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
             
         if(ParmGen.twin==null){
-                ParmGen.twin = new ParmGenTop(pmt, new ParmGenJSONSave(pmt,
+            pmt.updateAppParmsIniAndClearCache(null);
+            ParmGen.twin = new ParmGenTop(pmt, new ParmGenGSONSaveV2(this.getParmGenMacroTraceProvider(),
                     messages)
                     );
         }
@@ -1508,7 +1602,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
             
             logger4j.debug("newparms.size=" + newparms.size());
-            new ParmGenTokenJDialog(null, false, newparms, pmt).setVisible(true);
+            new ParmGenTokenJDialog(pmtProvider, false, newparms, pmt).setVisible(true);
         }
     }//GEN-LAST:event_ParamTrackingActionPerformed
 
@@ -1591,12 +1685,16 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             //    filenamechanged = true;
             // }
             ParmVars.setParmFile(name);
-             //csv.save();
+
+            /**
             ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
             if (pmt != null) {
-                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
                 csv.GSONsave();
             }
+             **/
+            ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
+            gson.GSONsave();
             updateSelectedTabIndex();
         }
     }//GEN-LAST:event_SaveActionPerformed
@@ -1717,9 +1815,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             requestJListModel.set(pos, downelem);
             pmt.exchangeStepNo(pos-1, pos);
 
-            if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
-                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+            if (ParmVars.isSaved()) { // if you have been saved params. then overwrite.
+                /**
+                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
                 csv.GSONsave();
+                 **/
+                ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
+                gson.GSONsave();
             }
 
             requestJList.setSelectedIndex(pos-1);
@@ -1760,9 +1862,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             requestJListModel.set(pos+1, downelem);
             pmt.exchangeStepNo(pos, pos+1);
 
-            if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
-                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+            if (ParmVars.isSaved()) { // if you have been saved params. then overwrite.
+                /**
+                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
                 csv.GSONsave();
+                 **/
+                ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
+                gson.GSONsave();
             }
 
             requestJList.setSelectedIndex(pos+1);
@@ -1824,8 +1930,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 }
             });
             if (ParmVars.isSaved()) {
-                ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+                /**
+                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
                 csv.GSONsave();
+                 **/
+                ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
+                gson.GSONsave();
             } else if (pmt != null) {
                 pmt.nullfetchResValAndCookieMan();
             }
@@ -1934,9 +2044,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
                 PRequestResponse original = pmt.getOriginalRequest(idx);
                 original.updateRequestResponse(current.request, current.response);// copy current PRequestResponse to original list(originalrlist)
-                if (ParmVars.isSaved()) { // if you have been saved params. then overwrite. 
-                    ParmGenJSONSave csv = new ParmGenJSONSave(null, pmt);
+                if (ParmVars.isSaved()) { // if you have been saved params. then overwrite.
+                    /**
+                    ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
                     csv.GSONsave();
+                     **/
+                    ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
+                    gson.GSONsave();
                 } else {
                     pmt.nullfetchResValAndCookieMan();
                 }
@@ -2165,15 +2279,106 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      * @return true - success false - failed
      */
     public boolean loadProjectFromFile(String filename) {
-        ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
-        if (pmt == null) return false;
-        ParmGen pgen = new ParmGen(pmt);//20200208 なにもしないコンストラクター＞スタティックに置き換える。
-        if(pgen.checkAndLoadFile(filename)){//20200208 再読み込み -> 明示的なファイルのロード、チェック、チェックOKのみパラメータ更新する。
+        if(checkAndLoadFile(filename)){
             //load succeeded..
             updateSelectedTabIndex();
             return true;
         }
         return false;
+    }
+
+    private boolean checkAndLoadFile(String filename) {
+        //
+        boolean noerror = false;
+        List<Exception> exlist = new ArrayList<>(); // Exception list
+        logger4j.info("checkAndLoadFile called.");
+
+        ArrayList<AppParmsIni> rlist = null;
+        String pfile = filename;
+
+        try {
+
+            String rdata;
+            String jsondata = new String("");
+            FileReader fr = new FileReader(pfile);
+            try {
+
+                BufferedReader br = new BufferedReader(fr);
+                while ((rdata = br.readLine()) != null) {
+                    jsondata += rdata;
+                } // end of while((rdata = br.readLine()) != null)
+                fr.close();
+                fr = null;
+            } catch (Exception e) {
+                logger4j.error("File Open/RW error", e);
+                exlist.add(e);
+            } finally {
+                if (fr != null) {
+                    try {
+                        fr.close();
+                        fr = null;
+                    } catch (Exception e) {
+                        fr = null;
+                        logger4j.error("File Close error", e);
+                        exlist.add(e);
+                    }
+                }
+            }
+
+            if (exlist.size() > 0) return noerror;
+
+            GsonParser parser = new GsonParser();
+
+            ParmGenGSON gjson = new ParmGenGSON();
+            JsonElement element = com.google.gson.JsonParser.parseString(jsondata);
+
+            if (parser.elementLoopParser(element, gjson)) {
+                rlist = gjson.Getrlist();
+                List<PRequestResponse> requestList = gjson.GetMacroRequests();
+                List<ParmGenGSON.AppParmAndSequence> appParmAndSequenceList = gjson.getAppParmAndSequenceList();
+                if (appParmAndSequenceList != null
+                    && appParmAndSequenceList.size() > 0) {
+                    clear();
+                    ParmVars.parmfile = filename;
+                    ParmVars.Version = gjson.getVersion();
+                    ParmVars.enc = gjson.getEncode();
+                    ParmVars.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
+                    appParmAndSequenceList.forEach(
+                            pRequestResponseSequence -> {
+                                addNewRequestsToTabsPane(pRequestResponseSequence);
+                            }
+                    );
+                    noerror = true;
+                    Redraw();
+                    ParmVars.Saved(true);
+                } else if (requestList != null && requestList.size() > 0) {
+                    clear();
+                    ParmGenMacroTrace pmt = addNewRequests(requestList);
+                    if (pmt != null) {
+                        int creq = gjson.getCurrentRequest();
+                        pmt.setCurrentRequest(creq);
+                        ParmVars.parmfile = filename;
+                        ParmVars.Version = gjson.getVersion();
+                        ParmVars.enc = gjson.getEncode();
+                        ParmVars.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
+                        pmt.updateAppParmsIniAndClearCache(rlist);
+                        noerror = true;
+                        Redraw();
+                        ParmVars.Saved(true);
+                    } else {
+                        logger4j.error("pmt is null");
+                    }
+                } else {
+                    logger4j.error("requestList size is zero");
+                }
+            }
+        } catch (Exception e) { // JSON file load failed.
+            logger4j.error("Parse error", e);
+            exlist.add(e);
+        }
+
+        logger4j.info("--------- JSON load END ----------");
+        return noerror;
     }
 
     static class DisplayInfoOfRequestListTab {

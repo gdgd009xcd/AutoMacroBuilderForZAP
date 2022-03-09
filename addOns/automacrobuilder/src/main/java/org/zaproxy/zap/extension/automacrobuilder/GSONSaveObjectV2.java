@@ -19,8 +19,6 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import org.zaproxy.zap.extension.tab.Tab;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -29,23 +27,30 @@ import java.util.Collection;
  *
  * @author gdgd009xcd
  * */
-public class GSONSaveObject {
-    public String VERSION = "1.99"; // configuration file version
+public class GSONSaveObjectV2 {
+    public String VERSION = "2.00"; // configuration file version;
     public String LANG;
     public boolean ProxyInScope;
     public boolean IntruderInScope;
     public boolean RepeaterInScope;
     public boolean ScannerInScope;
     public Collection<String> ExcludeMimeTypes;
-    public Collection<AppParmsIni_List> AppParmsIni_List;
+    public Collection<AppParmAndSequence> AppParmAndSequences;
 
-    GSONSaveObject() {
-        CurrentRequest = -1;
-        TabIndex = -1;
+    GSONSaveObjectV2() {
         ExcludeMimeTypes = new ArrayList<>();
-        AppParmsIni_List = new ArrayList<>();
-        PRequestResponses = new ArrayList<>();
-        PRequestResponseSequences = new ArrayList<>();
+        AppParmAndSequences = new ArrayList<>();
+    }
+
+    static class AppParmAndSequence {
+        public int MyPageIndex; // position index of MyPage in PRequestResponse list
+        public int CurrentRequest; // position index of current selected request in PRequestResponse list
+        public Collection<GsonPRequestResponse> PRequestResponses; // RequestResponse sequence list
+        public Collection<AppParmsIni_List> AppParmsIni_Lists;
+        public AppParmAndSequence() {
+            AppParmsIni_Lists = new ArrayList<>();
+            PRequestResponses = new ArrayList<>();
+        }
     }
 
     // innner static classes
@@ -60,10 +65,10 @@ public class GSONSaveObject {
         public int TrackFromStep;
         public int SetToStep;
         public String relativecntfilename;
-        public Collection<AppValue_List> AppValue_List;
+        public Collection<AppValue_List> AppValue_Lists;
 
         AppParmsIni_List() {
-            AppValue_List = new ArrayList<>();
+            AppValue_Lists = new ArrayList<>();
         }
     }
 
@@ -88,9 +93,6 @@ public class GSONSaveObject {
         public boolean replaceZeroSize;
     }
 
-    public int CurrentRequest;
-    public Collection<GsonPRequestResponse> PRequestResponses;
-
     static class GsonPRequestResponse {
         public String PRequest64;
         public String PResponse64;
@@ -114,25 +116,6 @@ public class GSONSaveObject {
             Comments = "";
             Disabled = false;
             Error = false;
-        }
-    }
-
-    public int TabIndex;
-    public Collection<GsonPRequestResponseSequence> PRequestResponseSequences;
-
-    static class GsonPRequestResponseSequence {
-        public int MyPageIndex; // position index of MyPage in PRequestResponse list
-        public int CurrentRequest; // position index of current selected request in PRequestResponse list
-        public Collection<GsonPRequestResponse> PRequestResponses; // RequestResponse sequence list
-        GsonPRequestResponseSequence() {
-            PRequestResponses = new ArrayList<>();
-            init();
-        }
-
-        public void init() {
-            MyPageIndex = -1;
-            CurrentRequest = -1;
-            PRequestResponses.clear();
         }
     }
 }

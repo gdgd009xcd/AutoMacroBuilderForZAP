@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -29,7 +30,7 @@ public class ParmGenTop extends javax.swing.JFrame {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
-    public ParmGenJSONSave csv;// file object
+    public ParmGenGSONSaveV2 gson;// json file object
     DefaultTableModel model = null;
     int current_row;
     int default_rowheight;
@@ -39,10 +40,11 @@ public class ParmGenTop extends javax.swing.JFrame {
 
     private void renderTable(){
         AppParmsIni pini;
-        csv.rewindAppParmsIni();
+        Iterator<AppParmsIni> it = pmt.getIteratorOfAppParmsIni();;
         int ri = 0;
         String FromTo = "";
-        while((pini=csv.getNextAppParmsIni())!=null){
+        while(it.hasNext()){
+            pini = it.next();
             int FromStep = pini.getTrackFromStep();
             int ToStep = pini.getSetToStep();
             FromTo = (FromStep>-1?Integer.toString(FromStep):"*") + "->" + (ToStep!=ParmVars.TOSTEPANY?Integer.toString(ToStep):"*");
@@ -66,13 +68,13 @@ public class ParmGenTop extends javax.swing.JFrame {
         ScannerScope.setVisible(false);
     }
 
-    /**
+       /**
      * Creates new form ParmGenTop
      */
-    public ParmGenTop(ParmGenMacroTrace _pmt, ParmGenJSONSave _csv) {
+    public ParmGenTop(ParmGenMacroTrace _pmt, ParmGenGSONSaveV2 gson) {
         pmt = _pmt;
         ParmGenNew_Modified = false;
-        csv = _csv;// set reference of ParmGenJSONSave object
+        this.gson = gson;// set reference of ParmGenJSONSaveV2 object
         initComponents();
         //TableColumnModel tcm = ParamTopList.getColumnModel();
         //tcm.getColumn(6).setCellRenderer(new LineWrapRenderer());
@@ -117,36 +119,35 @@ public class ParmGenTop extends javax.swing.JFrame {
         }
         ParamTopList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 1) {
-                JTable target = (JTable)e.getSource();
-                int row = target.getSelectedRow();
-                int column = target.getSelectedColumn();
-                // do some action if appropriate column
-                Object cell =  target.getValueAt(row, column);
-                String v = "";
-                if ( cell instanceof String){
-                    v = Integer.toString(row) + Integer.toString(column) + (String)cell;
-                }else if(cell instanceof Boolean){
-                    v = Integer.toString(row) + Integer.toString(column) + Boolean.toString((boolean)cell);
-                    // column == 0 は、pauseボタン。
-                    if ( column == 0){
-                        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
-                        if (appParmsIniList != null) {
-                            AppParmsIni pini = appParmsIniList.get(row);
-                            if (pini != null) {
-                                pini.updatePause((boolean) cell);
+                if (e.getClickCount() == 1) {
+                    JTable target = (JTable)e.getSource();
+                    int row = target.getSelectedRow();
+                    int column = target.getSelectedColumn();
+                    // do some action if appropriate column
+                    Object cell =  target.getValueAt(row, column);
+                    String v = "";
+                    if ( cell instanceof String){
+                        v = Integer.toString(row) + Integer.toString(column) + (String)cell;
+                    }else if(cell instanceof Boolean){
+                        v = Integer.toString(row) + Integer.toString(column) + Boolean.toString((boolean)cell);
+                        // column == 0 は、pauseボタン。
+                        if ( column == 0){
+                            List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
+                            if (appParmsIniList != null) {
+                                AppParmsIni pini = appParmsIniList.get(row);
+                                if (pini != null) {
+                                    pini.updatePause((boolean) cell);
+                                }
                             }
                         }
                     }
                 }
-              }
             }
-          });
+        });
     }
 
     public void refreshRowDisp(boolean reload){
         if(reload){
-            //csv.reloadParmGen(pmt, null);
             if(ParmGen.ProxyInScope){
                 ProxyScope.setSelected(true);
             }else{
@@ -184,11 +185,9 @@ public class ParmGenTop extends javax.swing.JFrame {
                 appParmsIniList = new ArrayList<>();
             }
             appParmsIniList.add(pini);
-            // ParmGen pgen = new ParmGen(pmt, csv.getrecords());//update
         }
         //overwirte
-        //ParmGenCSV csv = new ParmGenCSV(null, pmt);
-        csv.GSONsave();
+        gson.GSONsave();
         
         //token cache, cookie clear
         pmt.nullfetchResValAndCookieMan();
@@ -218,9 +217,7 @@ public class ParmGenTop extends javax.swing.JFrame {
                     name += ".json";
                 }
                 ParmVars.parmfile = name;
-                 //csv.save();
-                 //ParmGenCSV csv = new ParmGenCSV(null, pmt);
-                 csv.GSONsave();
+                gson.GSONsave();
 
             }
         }
@@ -480,7 +477,6 @@ public class ParmGenTop extends javax.swing.JFrame {
         if ( rowsSelected.length> 0){
             current_row = rowsSelected[0];
             rec = pmt.getAppParmsIni(current_row);
-            // rec = csv.getAppParmsIni(current_row);
         }
         new ParmGenNew(this, rec).setVisible(true);
     }//GEN-LAST:event_ModActionPerformed
@@ -512,14 +508,11 @@ public class ParmGenTop extends javax.swing.JFrame {
         if ( rowsSelected.length> 0){
             current_row = rowsSelected[0];
             pmt.removeAppParmsIni(current_row);
-            //csv.del(current_row);
             model.removeRow(current_row);
             if(current_row>0){
                 current_row--;
             }
-            //ParmGenCSV csv = new ParmGenCSV(null, pmt);
-            csv.GSONsave();
-
+            gson.GSONsave();
         }
     }//GEN-LAST:event_DelActionPerformed
 

@@ -22,15 +22,20 @@ import org.zaproxy.zap.extension.automacrobuilder.*;
 @SuppressWarnings("serial")
 public class ParmGenTokenJDialog extends javax.swing.JDialog {
 
+    private static org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
+
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
     List<AppParmsIni> newparms = null;
     ParmGenMacroTrace pmt = null;
+    ParmGenMacroTraceProvider pmtProvider = null;
     
     /**
      * Creates new form ParmGenTokenJDialog
      */
-    public ParmGenTokenJDialog(java.awt.Frame parent, boolean modal, List<AppParmsIni> _newparms, ParmGenMacroTrace _pmt) {
-        super(parent, modal);
+    public ParmGenTokenJDialog(ParmGenMacroTraceProvider pmtProvider, boolean modal, List<AppParmsIni> _newparms, ParmGenMacroTrace _pmt) {
+        super((java.awt.Frame)null, modal);
+        this.pmtProvider = pmtProvider;
         initComponents();
         newparms = _newparms;
         pmt = _pmt;
@@ -256,8 +261,13 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
             resultlist = newparms;
         }
 
-        ParmGenJSONSave csv = new ParmGenJSONSave(resultlist, pmt);
+        pmt.updateAppParmsIniAndClearCache(resultlist);
+        /**
+        ParmGenGSONSave csv = new ParmGenGSONSave(resultlist, pmt);
         csv.GSONsave();
+         **/
+        ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
+        gson.GSONsave();
         dispose();
 
     }//GEN-LAST:event_OKActionPerformed

@@ -22,7 +22,6 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.net.HttpCookie;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.PRequestResponses;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientRequest;
@@ -89,6 +88,10 @@ public class ParmGenMacroTrace extends ClientDependent {
     private int last_stepno = -1; // postmacro request performs until this step no.
 
     private int tabIndex = -1; // index of Macro Request List tab in MacroBuilderUI
+
+    private int myPageIndex = -1; // mypage: Request index that holds session attributes(cookies/tokens etc..)
+
+    private String myPageResponseCache = null; // response String in mypage request
 
     private ParmGenTWait TWaiter = null;
     private int waittimer = 0; // wait timer (msec)
@@ -199,6 +202,10 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.cachedAppValues = null;
 
+        nobj.myPageIndex = this.myPageIndex;
+
+        nobj.myPageResponseCache = this.myPageResponseCache;
+
         return nobj;
     }
 
@@ -243,6 +250,10 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
 
         nobj.cachedAppValues = this.cachedAppValues;
+
+        nobj.myPageIndex = this.myPageIndex;
+
+        nobj.myPageResponseCache = this.myPageResponseCache;
 
         return nobj;
     }
@@ -694,6 +705,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         return selected_request;
     }
 
+    public int getMyPageIndex() { return myPageIndex; }
+
     boolean isRunning() {
         if (rlist != null && rlist.size() > 0) return state < PMT_POSTMACRO_END ? true : false;
         return false;
@@ -961,6 +974,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     /**
      * save originalrlist to JSON
      *
+     * @Deprecated
      * @param gsonsaveobj
      */
     void GSONSave(GSONSaveObject gsonsaveobj) {
@@ -969,7 +983,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                 gsonsaveobj.CurrentRequest = getCurrentRequestPos();
 
                 for (PRequestResponse pqr : originalrlist) {
-                    PRequestResponses preqresobj = new PRequestResponses();
+                    GSONSaveObject.GsonPRequestResponse preqresobj = new GSONSaveObject.GsonPRequestResponse();
                     byte[] qbin = pqr.request.getByteMessage();
                     byte[] rbin = pqr.response.getByteMessage();
                     // byte[] encodedBytes = Base64.encodeBase64(qbin);
@@ -993,8 +1007,8 @@ public class ParmGenMacroTrace extends ClientDependent {
                         Logger.getLogger(ParmGenMacroTrace.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     */
-                    preqresobj.PRequest = qbase64;
-                    preqresobj.PResponse = rbase64;
+                    preqresobj.PRequest64 = qbase64;
+                    preqresobj.PResponse64 = rbase64;
 
                     String host = pqr.request.getHost();
                     int port = pqr.request.getPort();
@@ -1009,7 +1023,65 @@ public class ParmGenMacroTrace extends ClientDependent {
                     preqresobj.Disabled = isdisabled;
                     preqresobj.Error = iserror;
 
-                    gsonsaveobj.PRequestResponse.add(preqresobj);
+                    gsonsaveobj.PRequestResponses.add(preqresobj);
+                }
+            }
+        }
+    }
+
+    /**
+     * save originalrlist to JSON
+     *
+     * @param appParmAndSequence
+     */
+    void GSONSaveV2(GSONSaveObjectV2.AppParmAndSequence appParmAndSequence) {
+        if (appParmAndSequence != null) {
+            if (originalrlist != null) {
+                appParmAndSequence.MyPageIndex = getMyPageIndex();
+                appParmAndSequence.CurrentRequest = getCurrentRequestPos();
+
+                for (PRequestResponse pqr : originalrlist) {
+                    GSONSaveObjectV2.GsonPRequestResponse preqresobj = new GSONSaveObjectV2.GsonPRequestResponse();
+                    byte[] qbin = pqr.request.getByteMessage();
+                    byte[] rbin = pqr.response.getByteMessage();
+                    // byte[] encodedBytes = Base64.encodeBase64(qbin);
+                    String qbase64 =
+                            Base64.getEncoder()
+                                    .encodeToString(qbin); // same as new String(encode(src),
+                    // StandardCharsets.ISO_8859_1)
+                    /*
+                    try {
+                        qbase64 = new String(encodedBytes,"ISO-8859-1");
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(ParmGenMacroTrace.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    */
+                    // encodedBytes = Base64.encodeBase64(rbin);
+                    String rbase64 = Base64.getEncoder().encodeToString(rbin);
+                    /*
+                    try {
+                        rbase64 = new String(encodedBytes, "ISO-8859-1");
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(ParmGenMacroTrace.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    */
+                    preqresobj.PRequest64 = qbase64;
+                    preqresobj.PResponse64 = rbase64;
+
+                    String host = pqr.request.getHost();
+                    int port = pqr.request.getPort();
+                    boolean ssl = pqr.request.isSSL();
+                    String comments = pqr.getComments();
+                    boolean isdisabled = pqr.isDisabled();
+                    boolean iserror = pqr.isError();
+                    preqresobj.Host = host;
+                    preqresobj.Port = port;
+                    preqresobj.SSL = ssl;
+                    preqresobj.Comments = comments == null ? "" : comments;
+                    preqresobj.Disabled = isdisabled;
+                    preqresobj.Error = iserror;
+
+                    appParmAndSequence.PRequestResponses.add(preqresobj);
                 }
             }
         }
@@ -1029,6 +1101,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         LOGGER4J.debug("nullfetchResValAndCookieMan called. cleared cookies and tokens.");
         fetchResVal = null;
         cookieMan = null;
+        myPageResponseCache = null;
     }
 
     public void initCookieManager() {
@@ -1151,5 +1224,22 @@ public class ParmGenMacroTrace extends ClientDependent {
                             });
         }
         return hasnolist;
+    }
+
+    /**
+     * update AppParmsIni and clear cookie/token caches
+     * if newAppParmsIniList == null and getAppParmsIniList() != null
+     * then nothing to do(current ParmIniList remains)
+     *
+     * @param newAppParmsIniList
+     */
+    public void updateAppParmsIniAndClearCache(List<AppParmsIni> newAppParmsIniList) {
+        List<AppParmsIni> appParmsIniList = getAppParmsIniList();
+        if (appParmsIniList == null || newAppParmsIniList != null) {
+            if (newAppParmsIniList == null) {
+                newAppParmsIniList = new ArrayList<>(); // avoid set null to newAppParmsIniList
+            }
+            setAppParmsIniList(newAppParmsIniList);
+        }
     }
 }

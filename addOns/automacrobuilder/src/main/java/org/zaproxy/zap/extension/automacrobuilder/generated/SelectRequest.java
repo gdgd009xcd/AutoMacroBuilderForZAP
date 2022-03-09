@@ -4,23 +4,16 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenNew;
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
+
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.PResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenJSONSave;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSave;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
@@ -47,7 +40,7 @@ public class SelectRequest extends javax.swing.JDialog {
         pgenwin = _pgenwin;
         panelno = _panelno;
         nextwin = _nextwin;
-        setRequest(ParmGenJSONSave.proxy_messages);
+        setRequest(ParmGenGSONSave.proxy_messages);
         initComponents();
         setTitle(title);
         TableColumn col ;
@@ -230,8 +223,8 @@ public class SelectRequest extends javax.swing.JDialog {
     private void MessageSelectedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MessageSelectedActionPerformed
         // TODO add your handling code here:
         // 選択メッセージを更新する。
-        ParmGenJSONSave.selected_messages.clear();
-        ParmGenJSONSave.selected_messages.add(ParmGenJSONSave.proxy_messages.get(selected_message_idx));
+        ParmGenGSONSave.selected_messages.clear();
+        ParmGenGSONSave.selected_messages.add(ParmGenGSONSave.proxy_messages.get(selected_message_idx));
         pgenwin.updateMessageAreaInSelectedModel(panelno);
         dispose();
         if(nextwin!=null){

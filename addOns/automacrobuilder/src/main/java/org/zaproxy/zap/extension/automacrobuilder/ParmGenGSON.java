@@ -48,17 +48,44 @@ public class ParmGenGSON implements GsonParserListener {
     private int row = 0;
     ParmGenStack<String> astack = null;
 
-    // PRequestResponse params
-    private String PRequest64;
-    private String PResponse64;
-    private String Host;
-    private int Port;
-    private boolean SSL;
-    private String Comments;
-    private boolean Disabled;
-    private boolean Error;
+    // PRequestResponse gsonObject v1
+    // @deprecated
+    private GSONSaveObject.GsonPRequestResponse gsonObjectPRequestResponse = null;
+    // PRequestResponse gsonObject v2
+    private GSONSaveObjectV2.GsonPRequestResponse gsonPRequestResponse = null;
 
-    ParmGenGSON() {
+    // current TabIndex
+    private int tabIndex;
+    // AppParmAndSequence for loading Gson and converting pmt
+    public static class AppParmAndSequence {
+        public int myPageIndex; // position index of MyPage in PRequestResponse list
+        public int currentRequest; // position index of current selected request in PRequestResponse list
+        public List<PRequestResponse> pRequestResponses = null; // RequestResponse sequence list
+        public List<AppParmsIni> appParmsIniList = null; // tracking parameter list
+        AppParmAndSequence() {
+            init();
+        }
+
+        public void init() {
+            myPageIndex = -1;
+            currentRequest = -1;
+            if (pRequestResponses == null) {
+                pRequestResponses = new ArrayList<>();
+            } else {
+                pRequestResponses.clear();
+            }
+            if (appParmsIniList == null) {
+                appParmsIniList = new ArrayList<>();
+            } else {
+                appParmsIniList.clear();
+            }
+        }
+    }
+
+    AppParmAndSequence appParmAndSequence = null;
+    List<AppParmAndSequence> appParmAndSequenceList = null;
+
+    public ParmGenGSON() {
         astack = new ParmGenStack<String>();
         ProxyInScope = false;
         IntruderInScope = false;
@@ -75,7 +102,9 @@ public class ParmGenGSON implements GsonParserListener {
         row = 0;
         JSONSyntaxErrors = new ArrayList<>();
         ExceptionErrors = new ArrayList<>();
-        initReqRes();
+        tabIndex = -1;
+        initGsonReqRes();
+        initAppParmAndSequcenceList();
     }
 
     public String getVersion() {
@@ -93,26 +122,60 @@ public class ParmGenGSON implements GsonParserListener {
         return false;
     }
 
-    private void initReqRes() {
-        PRequest64 = null;
-        PResponse64 = null;
-        Host = null;
-        Port = 0;
-        SSL = false;
-        Comments = "";
-        Disabled = false;
-        Error = false;
+    /**
+     * initialize gsonObjectPrequestResponse for v1
+     *
+     * @deprecated this function is obsolete because new JSON format will be used GSONSaveObjectV2
+     */
+    @Deprecated
+    private void initGsonReqRes() {
+        if (gsonObjectPRequestResponse == null) {
+            gsonObjectPRequestResponse = new GSONSaveObject.GsonPRequestResponse();
+        } else {
+            gsonObjectPRequestResponse.init();
+        }
     }
 
-    ArrayList<AppParmsIni> Getrlist() {
+    /**
+     * initialize gsonPRequestResponse
+     *
+     */
+    private void initGsonReqResV2() {
+        if (gsonPRequestResponse == null) {
+            gsonPRequestResponse = new GSONSaveObjectV2.GsonPRequestResponse();
+        } else {
+            gsonPRequestResponse.init();
+        }
+    }
+
+    private void initAppParmAndSequcence() {
+        if (appParmAndSequence == null){
+            appParmAndSequence = new AppParmAndSequence();
+        } else {
+            appParmAndSequence.init();
+        }
+    }
+    private void initAppParmAndSequcenceList() {
+        if (appParmAndSequenceList == null) {
+            appParmAndSequenceList = new ArrayList<>();
+        } else {
+            appParmAndSequenceList.clear();
+        }
+    }
+
+    public List<AppParmAndSequence> getAppParmAndSequenceList() {
+        return appParmAndSequenceList;
+    }
+
+    public ArrayList<AppParmsIni> Getrlist() {
         return rlist;
     }
 
-    ArrayList<PRequestResponse> GetMacroRequests() {
+    public ArrayList<PRequestResponse> GetMacroRequests() {
         return ReqResList;
     }
 
-    int getCurrentRequest() {
+    public int getCurrentRequest() {
         return currentrequest;
     }
 
@@ -179,19 +242,24 @@ public class ParmGenGSON implements GsonParserListener {
             case 1:
                 switch (ev) {
                     case START_OBJECT:
-                        if (current != null && current.toUpperCase().equals("APPPARMSINI_LIST")) {
-                            // ParmVars.plog.debuglog(0, "START_OBJECT level1 name:" + current);
-                            aparms = new AppParmsIni(); // add new record
-                            // aparms.parmlist = new ArrayList<AppValue>();
-                        } else if (current != null
-                                && current.toUpperCase().equals("PREQUESTRESPONSE")) {
-                            initReqRes();
+                        if (current != null) {
+                            if (current.toUpperCase().equals("APPPARMSINI_LIST")) { // V1
+                                // ParmVars.plog.debuglog(0, "START_OBJECT level1 name:" + current);
+                                aparms = new AppParmsIni(); // add new record
+                                // aparms.parmlist = new ArrayList<AppValue>();
+                            } else if ((current.toUpperCase().equals("PREQUESTRESPONSE")
+                                    || current.toUpperCase().equals("PREQUESTRESPONSES"))
+                            ) { // V1
+                                initGsonReqRes();
+                            } else if(current.toUpperCase().equals("APPPARMANDSEQUENCES")) { // V2
+                                initAppParmAndSequcence();
+                                logger4j.debug("astack:1 START_OBJECT " + current.toUpperCase());
+                            }
                         }
                         break;
                     case END_OBJECT:
-                        if (!hasErrors()) {
-                            if (current != null
-                                    && current.toUpperCase().equals("APPPARMSINI_LIST")) {
+                        if (!hasErrors() && current != null) {
+                            if (current.toUpperCase().equals("APPPARMSINI_LIST")) { // V1
                                 if (aparms != null && rlist != null) {
                                     if (aparms.getTypeVal() == AppParmsIni.T_CSV) {
                                         String decodedname = "";
@@ -212,34 +280,41 @@ public class ParmGenGSON implements GsonParserListener {
                                     rlist.add(aparms);
                                 }
                                 aparms = null;
-                            } else if (current != null
-                                    && current.toUpperCase().equals("PREQUESTRESPONSE")) {
-                                if (PRequest64 != null) {
+                            } else if ( gsonObjectPRequestResponse!= null
+                                    && (current.toUpperCase().equals("PREQUESTRESPONSE")
+                                    || current.toUpperCase().equals("PREQUESTRESPONSES"))
+                            ) { // V1
+                                if (gsonObjectPRequestResponse.PRequest64 != null) {
                                     byte[] binreq =
-                                            Base64.getDecoder().decode(PRequest64); // same as
+                                            Base64.getDecoder().decode(gsonObjectPRequestResponse.PRequest64); // same as
                                     // decode(src.getBytes(StandardCharsets.ISO_8859_1))
-                                    byte[] binres = Base64.getDecoder().decode(PResponse64);
+                                    byte[] binres = Base64.getDecoder().decode(gsonObjectPRequestResponse.PResponse64);
 
                                     PRequestResponse pqr =
                                             new PRequestResponse(
-                                                    Host, Port, SSL, binreq, binres, enc);
-                                    if (Disabled) {
+                                                    gsonObjectPRequestResponse.Host, gsonObjectPRequestResponse.Port, gsonObjectPRequestResponse.SSL, binreq, binres, enc);
+                                    if (gsonObjectPRequestResponse.Disabled) {
                                         pqr.Disable();
                                     }
-                                    pqr.setComments(Comments);
-                                    pqr.setError(Error);
+                                    pqr.setComments(gsonObjectPRequestResponse.Comments);
+                                    pqr.setError(gsonObjectPRequestResponse.Error);
                                     ReqResList.add(pqr);
-                                    initReqRes();
+                                    initGsonReqRes();
                                 }
+                            } else if(current.toUpperCase().equals("APPPARMANDSEQUENCES")) { // V2
+                                if (appParmAndSequenceList != null
+                                && appParmAndSequence != null) {
+                                    appParmAndSequenceList.add(appParmAndSequence);
+                                }
+                                logger4j.debug("astack:1 END_OBJECT " + current.toUpperCase());
                             }
                         }
-
                         break;
                     case START_ARRAY:
                     case END_ARRAY:
                         break;
                     default:
-                        if (aparms != null) {
+                        if (aparms != null) { // V1
                             if (name.toUpperCase().equals("URL")) {
                                 aparms.setUrl(GetString(ev, value, ""));
                             } else if (name.toUpperCase().equals("LEN")) {
@@ -267,50 +342,108 @@ public class ParmGenGSON implements GsonParserListener {
                             } else if (name.toUpperCase().equals("RELATIVECNTFILENAME")) {
                                 aparms.setRelativeCntFileName(GetString(ev, value, ""));
                             }
-                        } else if (current != null
-                                && current.toUpperCase().equals("PREQUESTRESPONSE")) {
-                            if (name.toUpperCase().equals("PREQUEST")) {
-                                PRequest64 = GetString(ev, value, "");
-                            } else if (name.toUpperCase().equals("PRESPONSE")) {
-                                PResponse64 = GetString(ev, value, "");
-                            } else if (name.toUpperCase().equals("HOST")) {
-                                Host = GetString(ev, value, "");
-                            } else if (name.toUpperCase().equals("PORT")) {
-                                Port = GetNumber(ev, value, 0);
-                            } else if (name.toUpperCase().equals("SSL")) {
-                                SSL = Getboolean(ev, value, false);
-                            } else if (name.toUpperCase().equals("COMMENTS")) {
-                                Comments = GetString(ev, value, "");
-                            } else if (name.toUpperCase().equals("DISABLED")) {
-                                Disabled = Getboolean(ev, value, false);
-                            } else if (name.toUpperCase().equals("ERROR")) {
-                                Error = Getboolean(ev, value, false);
-                            }
-                        } else if (current != null
-                                && current.toUpperCase().equals("EXCLUDEMIMETYPES")) {
-                            if (!Version.isEmpty()) {
-                                String exmime = GetString(ev, value, "");
-                                if (exmime != null && exmime.length() > 0) {
-                                    addExcludeMimeType(exmime);
+                        } else if (current != null) {
+                            if (current.toUpperCase().equals("PREQUESTRESPONSE")
+                                    || current.toUpperCase().equals("PREQUESTRESPONSES")) { // V1
+                                if (gsonObjectPRequestResponse != null) {
+                                    if (name.toUpperCase().equals("PREQUEST") || name.toUpperCase().equals("PREQUEST64")) {
+                                        gsonObjectPRequestResponse.PRequest64 = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("PRESPONSE") || name.toUpperCase().equals("PRESPONSE64")) {
+                                        gsonObjectPRequestResponse.PResponse64 = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("HOST")) {
+                                        gsonObjectPRequestResponse.Host = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("PORT")) {
+                                        gsonObjectPRequestResponse.Port = GetNumber(ev, value, 0);
+                                    } else if (name.toUpperCase().equals("SSL")) {
+                                        gsonObjectPRequestResponse.SSL = Getboolean(ev, value, false);
+                                    } else if (name.toUpperCase().equals("COMMENTS")) {
+                                        gsonObjectPRequestResponse.Comments = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("DISABLED")) {
+                                        gsonObjectPRequestResponse.Disabled = Getboolean(ev, value, false);
+                                    } else if (name.toUpperCase().equals("ERROR")) {
+                                        gsonObjectPRequestResponse.Error = Getboolean(ev, value, false);
+                                    }
+                                }
+                            } else if (current.toUpperCase().equals("EXCLUDEMIMETYPES")) {
+                                if (!Version.isEmpty()) {
+                                    String exmime = GetString(ev, value, "");
+                                    if (exmime != null && exmime.length() > 0) {
+                                        addExcludeMimeType(exmime);
+                                    }
+                                }
+                            } else if (current.toUpperCase().equals("APPPARMANDSEQUENCES")) { // V2
+                                if (appParmAndSequence != null) {
+                                    if (name.toUpperCase().equals("MYPAGEINDEX")) {
+                                        appParmAndSequence.myPageIndex = GetNumber(ev, value, -1);
+                                    } else if (name.toUpperCase().equals("CURRENTREQUEST")) {
+                                        appParmAndSequence.currentRequest = GetNumber(ev, value, -1);
+                                    }
                                 }
                             }
                         }
                         break;
                 }
-
                 break;
             case 2:
                 switch (ev) {
                     case START_OBJECT:
-                        if (current != null && current.toUpperCase().equals("APPVALUE_LIST")) {
-                            // ParmVars.plog.debuglog(0, "START_OBJECT level2 name:" + current);
-                            apv = new AppValue();
+                        if (current != null) {
+                            if (current.toUpperCase().equals("APPPARMSINI_LISTS")) { // V2
+                                // ParmVars.plog.debuglog(0, "START_OBJECT level1 name:" + current);
+                                aparms = new AppParmsIni(); // add new record
+                                // aparms.parmlist = new ArrayList<AppValue>();
+                            } else if (current.toUpperCase().equals("APPVALUE_LIST")) { // v1
+                                // ParmVars.plog.debuglog(0, "START_OBJECT level2 name:" + current);
+                                apv = new AppValue();
+                            } else if(current.toUpperCase().equals("PREQUESTRESPONSES")) { // v2
+                                initGsonReqResV2();
+                            }
                         }
                         break;
                     case END_OBJECT:
-                        if (!hasErrors()) {
-                            if (apv != null && aparms != null) {
-                                aparms.addAppValue(apv);
+                        if (!hasErrors() && current != null) {
+                            if (current.toUpperCase().equals("APPVALUE_LIST")) { // v1
+                                if (apv != null && aparms != null) {
+                                    aparms.addAppValue(apv);
+                                }
+                            } else if (current.toUpperCase().equals("APPPARMSINI_LISTS")) { // V2
+                                if (appParmAndSequence != null && aparms != null) {
+                                    if (aparms.getTypeVal() == AppParmsIni.T_CSV) {
+                                        String decodedname = "";
+                                        try {
+                                            decodedname =
+                                                    URLDecoder.decode(aparms.getCsvName(), "UTF-8");
+                                            aparms.crtFrl(decodedname, true);
+                                        } catch (Exception e) {
+                                            logger4j.error(
+                                                    "decode failed:[" + aparms.getCsvName() + "]",
+                                                    e);
+                                            ExceptionErrors.add(e);
+                                        }
+                                    }
+                                    appParmAndSequence.appParmsIniList.add(aparms);
+                                }
+                                aparms = null;
+                            } else if(current.toUpperCase().equals("PREQUESTRESPONSES")) { // v2
+                                if (appParmAndSequence != null
+                                    && gsonPRequestResponse != null
+                                    && gsonPRequestResponse.PRequest64 != null) {
+                                    byte[] binreq =
+                                            Base64.getDecoder().decode(gsonPRequestResponse.PRequest64); // same as
+                                    // decode(src.getBytes(StandardCharsets.ISO_8859_1))
+                                    byte[] binres = Base64.getDecoder().decode(gsonPRequestResponse.PResponse64);
+
+                                    PRequestResponse pqr =
+                                            new PRequestResponse(
+                                                    gsonPRequestResponse.Host, gsonPRequestResponse.Port, gsonPRequestResponse.SSL, binreq, binres, enc);
+                                    if (gsonPRequestResponse.Disabled) {
+                                        pqr.Disable();
+                                    }
+                                    pqr.setComments(gsonPRequestResponse.Comments);
+                                    pqr.setError(gsonPRequestResponse.Error);
+                                    appParmAndSequence.pRequestResponses.add(pqr);
+                                    initGsonReqResV2();
+                                }
                             }
                         }
                         apv = null;
@@ -319,7 +452,141 @@ public class ParmGenGSON implements GsonParserListener {
                     case END_ARRAY:
                         break;
                     default:
-                        if (apv != null) {
+                        if (apv != null) { // v1
+                            if (name.toUpperCase().equals("VALPART")) {
+                                if (!apv.setValPart(GetString(ev, value, ""))) {
+                                    JSONSyntaxErrors.add("VALPART has no value:[" + value + "]");
+                                }
+                            } else if (name.toUpperCase().equals("ISMODIFY")) {
+                                if (Getboolean(ev, value, true) == false) {
+                                    apv.setEnabled(false);
+                                }
+                            } else if (name.toUpperCase().equals("ISENABLED")) {
+                                if (Getboolean(ev, value, true) == false) {
+                                    apv.setEnabled(false);
+                                }
+                            } else if (name.toUpperCase().equals("ISNOCOUNT")) {
+                                if (Getboolean(ev, value, true) == true) {
+                                    apv.setNoCount();
+                                } else {
+                                    apv.clearNoCount();
+                                }
+                            } else if (name.toUpperCase().equals("CSVPOS")) {
+                                apv.setCsvpos(GetNumber(ev, value, 0));
+                            } else if (name.toUpperCase().equals("VALUE")) {
+                                if (!apv.setURLencodedVal(GetString(ev, value, ""))) {
+                                    JSONSyntaxErrors.add("Invalid VALUE :[" + value + "]");
+                                }
+                            } else if (name.toUpperCase().equals("RESURL")) {
+                                apv.setresURL(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("RESREGEX")) {
+                                apv.setresRegexURLencoded(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("RESVALPART")) {
+                                apv.setresPartType(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("RESREGEXPOS")) {
+                                apv.setResRegexPos(GetNumber(ev, value, 0));
+                            } else if (name.toUpperCase().equals("TOKEN")) {
+                                apv.setToken(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("URLENCODE")) {
+                                apv.setUrlEncode(Getboolean(ev, value, false));
+                            } else if (name.toUpperCase().equals("FROMSTEPNO")) {
+                                apv.setFromStepNo(GetNumber(ev, value, -1));
+                            } else if (name.toUpperCase().equals("TOSTEPNO")) {
+                                int stepno = GetNumber(ev, value, ParmVars.TOSTEPANY);
+                                if (Version.isEmpty()) {
+                                    if (stepno <= 0) {
+                                        stepno = ParmVars.TOSTEPANY;
+                                    }
+                                }
+                                apv.setToStepNo(stepno);
+                            } else if (name.toUpperCase().equals("TOKENTYPE")) {
+                                apv.setTokenTypeName(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("RESENCODETYPE")) {
+                                apv.setResEncodeTypeFromString(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("CONDTARGETNO")) {
+                                apv.setCondTargetNo(GetNumber(ev, value, 0));
+                            } else if (name.toUpperCase().equals("CONDREGEX")) {
+                                apv.setCondRegexURLencoded(GetString(ev, value, ""));
+                            } else if (name.toUpperCase().equals("CONDREGEXTARGETISREQUEST")) {
+                                apv.setRequestIsCondTegexTarget(Getboolean(ev, value, false));
+                            } else if (name.toUpperCase().equals("REPLACEZEROSIZE")) {
+                                apv.setReplaceZeroSize(Getboolean(ev, value, false));
+                            }
+                        } else if(current != null) {
+                            if (current.toUpperCase().equals("PREQUESTRESPONSES")) { //v2
+                                if (gsonPRequestResponse != null) {
+                                    if (name.toUpperCase().equals("PREQUEST") || name.toUpperCase().equals("PREQUEST64")) {
+                                        gsonPRequestResponse.PRequest64 = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("PRESPONSE") || name.toUpperCase().equals("PRESPONSE64")) {
+                                        gsonPRequestResponse.PResponse64 = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("HOST")) {
+                                        gsonPRequestResponse.Host = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("PORT")) {
+                                        gsonPRequestResponse.Port = GetNumber(ev, value, 0);
+                                    } else if (name.toUpperCase().equals("SSL")) {
+                                        gsonPRequestResponse.SSL = Getboolean(ev, value, false);
+                                    } else if (name.toUpperCase().equals("COMMENTS")) {
+                                        gsonPRequestResponse.Comments = GetString(ev, value, "");
+                                    } else if (name.toUpperCase().equals("DISABLED")) {
+                                        gsonPRequestResponse.Disabled = Getboolean(ev, value, false);
+                                    } else if (name.toUpperCase().equals("ERROR")) {
+                                        gsonPRequestResponse.Error = Getboolean(ev, value, false);
+                                    }
+                                }
+                            } else if (current.toUpperCase().equals("APPPARMSINI_LISTS")) { // v2
+                                if (aparms != null) {
+                                    if (name.toUpperCase().equals("URL")) {
+                                        aparms.setUrl(GetString(ev, value, ""));
+                                    } else if (name.toUpperCase().equals("LEN")) {
+                                        aparms.setLen(GetNumber(ev, value, 0));
+                                    } else if (name.toUpperCase().equals("TYPEVAL")) {
+                                        aparms.setTypeVal(GetNumber(ev, value, 0));
+                                    } else if (name.toUpperCase().equals("INIVAL")) {
+                                        aparms.setIniVal(GetNumber(ev, value, 0));
+                                    } else if (name.toUpperCase().equals("MAXVAL")) {
+                                        aparms.setMaxVal(GetNumber(ev, value, 0));
+                                    } else if (name.toUpperCase().equals("CSVNAME")) {
+                                        aparms.setCsvName(GetString(ev, value, ""));
+                                    } else if (name.toUpperCase().equals("PAUSE")) {
+                                        aparms.initPause(Getboolean(ev, value, false));
+                                    } else if (name.toUpperCase().equals("TRACKFROMSTEP")) {
+                                        aparms.setTrackFromStep(GetNumber(ev, value, 0));
+                                    } else if (name.toUpperCase().equals("SETTOSTEP")) {
+                                        int stepno = GetNumber(ev, value, ParmVars.TOSTEPANY);
+                                        if (Version.isEmpty()) {
+                                            if (stepno <= 0) {
+                                                stepno = ParmVars.TOSTEPANY;
+                                            }
+                                        }
+                                        aparms.setSetToStep(stepno);
+                                    } else if (name.toUpperCase().equals("RELATIVECNTFILENAME")) {
+                                        aparms.setRelativeCntFileName(GetString(ev, value, ""));
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                }
+                break;
+            case 3:
+                switch (ev) {
+                    case START_OBJECT:
+                        if (current.toUpperCase().equals("APPVALUE_LIST")) { // v2
+                            // ParmVars.plog.debuglog(0, "START_OBJECT level2 name:" + current);
+                            apv = new AppValue();
+                        }
+                        break;
+                    case END_OBJECT:
+                        if (!hasErrors() && current != null) {
+                            if (current.toUpperCase().equals("APPVALUE_LIST")) { // v2
+                                if (apv != null && aparms != null) {
+                                    aparms.addAppValue(apv);
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        if (apv != null) { // v2
                             if (name.toUpperCase().equals("VALPART")) {
                                 if (!apv.setValPart(GetString(ev, value, ""))) {
                                     JSONSyntaxErrors.add("VALPART has no value:[" + value + "]");

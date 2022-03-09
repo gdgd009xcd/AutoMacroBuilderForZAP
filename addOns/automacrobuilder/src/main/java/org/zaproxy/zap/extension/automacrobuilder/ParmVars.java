@@ -43,7 +43,7 @@ public class ParmVars {
     static int displaylength = 10000; // JTextArea/JTextPaneç­swingã®è¡¨ç¤ºãã¤ãæ°
     private static boolean issaved = false;
     static String fileSep = "/"; // maybe unix filesystem.
-    static String Version = ""; // loaded JSON format version
+    public static String Version = ""; // loaded JSON format version
     public static final int TOSTEPANY = 2147483647; // StepTo number means any value
     static List<String> ExcludeMimeTypes = null;
     private static List<Pattern> ExcludeMimeTypesPatterns = null;

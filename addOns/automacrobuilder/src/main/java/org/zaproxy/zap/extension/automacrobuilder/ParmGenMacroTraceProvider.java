@@ -20,6 +20,7 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,8 +35,8 @@ public class ParmGenMacroTraceProvider {
 
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
-    private Map<UUID, ParmGenMacroTrace> pmtmap;
-    private List<ParmGenMacroTrace> pmtList;
+    private Map<UUID, ParmGenMacroTrace> pmtmap; // current Running Instance of pmt
+    private List<ParmGenMacroTrace> pmtList; // original pmt list
 
     // The following parameters belong to the application scope.
     // so these parameters keep value until ending application.
@@ -134,6 +135,27 @@ public class ParmGenMacroTraceProvider {
 
         }
         return null;
+    }
+
+    /**
+     * add new ParmGenMacroTrace base instance
+     *
+     * @return added ParmGenMacroTrace
+     *
+     */
+    public ParmGenMacroTrace addNewBaseInstance() {
+        ParmGenMacroTrace pmt_originalbase = new ParmGenMacroTrace();
+        pmtList.add(pmt_originalbase);
+        return pmt_originalbase;
+    }
+
+    /**
+     * get Iterator of base instances(ParmGenMacroTrace)
+     *
+     * @return
+     */
+    public Iterator<ParmGenMacroTrace> getBaseInstanceIterator() {
+        return pmtList.iterator();
     }
 
     /**

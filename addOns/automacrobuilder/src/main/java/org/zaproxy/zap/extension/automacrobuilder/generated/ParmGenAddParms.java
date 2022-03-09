@@ -30,7 +30,6 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
 
     //起動元ウィンドウ
     ParmGenNew parentwin;
-    ParmGenJSONSave csv;
     PRequest selected_request;
     DefaultTableModel ReqParsedTableModel;
     boolean wholeval;// == true 全体を置き換える == false 数値のみ置き換える
@@ -74,9 +73,8 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
 
     public void update(){
         ReqParsedTableModel = (DefaultTableModel)ReqParsedTable.getModel();
-        csv = parentwin.getCSV();
         Select_ReplaceTargetURL.removeAllItems();
-        PRequestResponse selected_message = ParmGenJSONSave.selected_messages.get(0);
+        PRequestResponse selected_message = ParmGenGSONSave.selected_messages.get(0);
         int mpos = selected_message.getMacroPos();
         if(mpos<0){
             mpos = ParmVars.TOSTEPANY;

@@ -60,82 +60,6 @@ public class ParmGen {
         twin = null;
     }
 
-    /**
-     * load JSON file
-     *
-     * @param filename
-     * @return
-     */
-    private ArrayList<AppParmsIni> loadGSON(String filename) {
-        //
-        List<Exception> exlist = new ArrayList<>(); // Exception list
-        LOGGER4J.info("loadGSON called.");
-
-        ArrayList<AppParmsIni> rlist = null;
-        String pfile = filename;
-
-        try {
-
-            String rdata;
-            String jsondata = new String("");
-            FileReader fr = new FileReader(pfile);
-            try {
-
-                BufferedReader br = new BufferedReader(fr);
-                while ((rdata = br.readLine()) != null) {
-                    jsondata += rdata;
-                } // end of while((rdata = br.readLine()) != null)
-                fr.close();
-                fr = null;
-            } catch (Exception e) {
-                LOGGER4J.error("File Open/RW error", e);
-                exlist.add(e);
-            } finally {
-                if (fr != null) {
-                    try {
-                        fr.close();
-                        fr = null;
-                    } catch (Exception e) {
-                        fr = null;
-                        LOGGER4J.error("File Close error", e);
-                        exlist.add(e);
-                    }
-                }
-            }
-
-            if (exlist.size() > 0) return null;
-
-            GsonParser parser = new GsonParser();
-
-            ParmGenGSON gjson = new ParmGenGSON();
-            JsonElement element = com.google.gson.JsonParser.parseString(jsondata);
-
-            if (parser.elementLoopParser(element, gjson)) {
-                rlist = gjson.Getrlist();
-                pmt.ui.clear();
-                pmt.ui.addNewRequests(gjson.GetMacroRequests());
-                int creq = gjson.getCurrentRequest();
-                pmt.setCurrentRequest(creq);
-                ParmVars.parmfile = filename;
-                ParmVars.Version = gjson.getVersion();
-                ParmVars.enc = gjson.getEncode();
-                ParmVars.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
-
-                pmt.ui.Redraw();
-                ParmVars.Saved(true);
-            } else { // JSON parse failed by something wrong syntax/value..
-                rlist = null;
-            }
-        } catch (Exception e) { // JSON file load failed.
-            LOGGER4J.error("Parse error", e);
-            exlist.add(e);
-            rlist = null;
-        }
-
-        LOGGER4J.info("---------AppPermGen JSON load END ----------");
-        return rlist;
-    }
-
     PRequest ParseRequest(
             PRequest prequest,
             PRequest org_request,
@@ -602,45 +526,12 @@ public class ParmGen {
     // constructor for setting new parmcsv
     public ParmGen(ParmGenMacroTrace _pmt, List<AppParmsIni> _parmcsv) {
         pmt = _pmt;
-        if (_parmcsv != null) nullset();
-        initMain(_parmcsv);
-    }
-
-    private void initMain(List<AppParmsIni> newAppParmsIniList) {
-        // main start.
-        // csv load
-        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
-        if (appParmsIniList == null || newAppParmsIniList != null) {
-
-            pmt.setAppParmsIniList(newAppParmsIniList);
-
-            pmt.nullfetchResValAndCookieMan();
-        }
-    }
-
-    private void nullset() {
-        if (pmt != null) {
-            pmt.setAppParmsIniList(null);
-        }
+        pmt.updateAppParmsIniAndClearCache(_parmcsv);
     }
 
     public static void clearTwin() {
         LOGGER4J.debug("clearTwin.");
         twin = null;
-    }
-
-    public boolean checkAndLoadFile(String fname) { // 20200206 this is executed when json load
-        // at MacruBuilderUI 1304 , ParmGenTop 614
-        // I must implement JSON file check and then ok load function...
-        boolean noerror = false;
-        List<AppParmsIni> newparmcsv = loadGSON(fname);
-        if (newparmcsv != null) {
-            nullset();
-            initMain(newparmcsv);
-            noerror = true;
-        }
-
-        return noerror;
     }
 
     /**

@@ -4,9 +4,6 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenRegex;
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenNew;
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenAddParms;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -18,7 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenJSONSave;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSave;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
@@ -522,8 +519,8 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
     }// </editor-fold>//GEN-END:initComponents
 
     public void update(){
-        if ( ParmGenJSONSave.selected_messages.size()>0){
-            PRequestResponse rs = ParmGenJSONSave.selected_messages.get(0);
+        if ( ParmGenGSONSave.selected_messages.size()>0){
+            PRequestResponse rs = ParmGenGSONSave.selected_messages.get(0);
             currentrequestresponse = rs;
             ResponseURL.setText(rs.request.getURL());
             ParmGenTextDoc rdoc = new ParmGenTextDoc(ResponseArea);
