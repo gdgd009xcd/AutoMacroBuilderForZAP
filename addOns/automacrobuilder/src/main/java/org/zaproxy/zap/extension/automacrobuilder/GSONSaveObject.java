@@ -19,8 +19,6 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import org.zaproxy.zap.extension.tab.Tab;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -28,7 +26,7 @@ import java.util.Collection;
  * GSON output class for save configration to file
  *
  * @author gdgd009xcd
- * */
+ */
 public class GSONSaveObject {
     public String VERSION = "1.99"; // configuration file version
     public String LANG;
@@ -122,8 +120,10 @@ public class GSONSaveObject {
 
     static class GsonPRequestResponseSequence {
         public int MyPageIndex; // position index of MyPage in PRequestResponse list
-        public int CurrentRequest; // position index of current selected request in PRequestResponse list
+        public int CurrentRequest; // position index of current selected request in PRequestResponse
+        // list
         public Collection<GsonPRequestResponse> PRequestResponses; // RequestResponse sequence list
+
         GsonPRequestResponseSequence() {
             PRequestResponses = new ArrayList<>();
             init();

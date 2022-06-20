@@ -295,16 +295,20 @@ public class ThreadManager {
             OneThreadProcessor p, InterfaceDoAction action, boolean doendaction) {
         OneThreadProcessor endp = null;
         boolean aborted = false;
+        InterfaceEndAction endaction = null;
+        if (action != null) {
+            endaction =
+                    action.endAction(
+                            this, p); // Whether to run endAction or not, always get endaction
+            // because endAction stored in ThreadLocal, so it must be removed from ThreadLocal
+        }
 
         try {
             thcount--;
             if (!p.wasInterrupted()
                     && action != null
                     && !p.isAborted()) { // interrupt or abnormal then endaction omit.
-                InterfaceEndAction endaction =
-                        action.endAction(
-                                this, p); // Whether to run endAction or not, always get endaction
-                // because if endAction stored ThreadLocal, then must be remove it.
+
                 if (doendaction) {
                     if (endaction != null) {
                         actionlist.add(endaction);
@@ -327,7 +331,7 @@ public class ThreadManager {
 
             LOGGER4J.debug("thcount:" + thcount);
 
-            if (thcount == 0) {
+            if (thcount == 0 && endaction != null) {
                 LOGGER4J.debug(
                         "endProcess action begin id:"
                                 + p.getid()

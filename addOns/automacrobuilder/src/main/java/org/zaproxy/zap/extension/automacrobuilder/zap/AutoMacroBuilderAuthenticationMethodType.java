@@ -32,7 +32,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
-import org.zaproxy.zap.extension.automacrobuilder.view.RequestListJDialog;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.RequestListJDialog;
 import org.zaproxy.zap.extension.sessions.ContextSessionManagementPanel;
 import org.zaproxy.zap.extension.sessions.ExtensionSessionManagement;
 import org.zaproxy.zap.extension.users.ExtensionUserManagement;

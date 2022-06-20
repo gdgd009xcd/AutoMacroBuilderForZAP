@@ -89,7 +89,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private int tabIndex = -1; // index of Macro Request List tab in MacroBuilderUI
 
-    private int myPageIndex = -1; // mypage: Request index that holds session attributes(cookies/tokens etc..)
+    private int myPageIndex =
+            -1; // mypage: Request index that holds session attributes(cookies/tokens etc..)
 
     private String myPageResponseCache = null; // response String in mypage request
 
@@ -102,6 +103,11 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private Map<Integer, List<AppValue>> cachedAppValues =
             null; // cache of AppValues. cache is valid only when running macros.
+
+    private final Encode defaultEncode = Encode.UTF_8; // default page encoding
+    private Encode sequenceEncode = defaultEncode;; // sequence encoding
+
+    private Encode lastResponseEncode = null; // last executed response encoding
 
     public String state_debugprint() {
         String msg = "PMT_UNKNOWN";
@@ -206,6 +212,10 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.myPageResponseCache = this.myPageResponseCache;
 
+        nobj.sequenceEncode = this.sequenceEncode;
+
+        nobj.lastResponseEncode = this.lastResponseEncode;
+
         return nobj;
     }
 
@@ -255,6 +265,10 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.myPageResponseCache = this.myPageResponseCache;
 
+        nobj.sequenceEncode = this.sequenceEncode;
+
+        nobj.lastResponseEncode = this.lastResponseEncode;
+
         return nobj;
     }
 
@@ -274,6 +288,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         oit = null;
         cit = null;
         postmacro_RequestResponse = null;
+        sequenceEncode = defaultEncode;
+        lastResponseEncode = null;
         nullfetchResValAndCookieMan();
     }
 
@@ -450,6 +466,8 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void startBeforePreMacro(OneThreadProcessor otp) {
         macroStarted();
 
+        lastResponseEncode = null;
+
         this.savelist.clear();
 
         if (waittimer > 0) {
@@ -525,7 +543,10 @@ public class ParmGenMacroTrace extends ClientDependent {
                     // ppr.request.setUUID2CustomHeader(this.getUUID());
                     setUUID2CustomHeader(ppr.request);
                     // PRequestResponse pqrs = clientHttpRequest(ppr.request);
+
                     PRequestResponse pqrs = clientrequest.clientRequest(this, ppr.request);
+
+                    lastResponseEncode = pqrs.response.getPageEnc();
 
                     if (pqrs != null) {
                         // cit.set(pqrs); // 更新
@@ -659,6 +680,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                         // PRequestResponse pqrs = clientHttpRequest(ppr.request);
                         PRequestResponse pqrs = clientrequest.clientRequest(this, ppr.request);
                         if (pqrs != null) {
+                            lastResponseEncode = pqrs.response.getPageEnc();
                             postmacro_RequestResponse = pqrs;
                             // cit.set(pqrs); // 更新
                             this.savelist.put(stepno, pqrs);
@@ -705,7 +727,9 @@ public class ParmGenMacroTrace extends ClientDependent {
         return selected_request;
     }
 
-    public int getMyPageIndex() { return myPageIndex; }
+    public int getMyPageIndex() {
+        return myPageIndex;
+    }
 
     boolean isRunning() {
         if (rlist != null && rlist.size() > 0) return state < PMT_POSTMACRO_END ? true : false;
@@ -793,6 +817,9 @@ public class ParmGenMacroTrace extends ClientDependent {
             // update selected_request maybe if runningInstance is Not made from this.
             setCurrentRequest(runningInstance.selected_request);
             LOGGER4J.debug("result update succeeded. size:" + ssiz);
+        }
+        if (ui != null) {
+            ui.clearDisplayInfoViewFlags();
         }
     }
 
@@ -974,16 +1001,17 @@ public class ParmGenMacroTrace extends ClientDependent {
     /**
      * save originalrlist to JSON
      *
-     * @Deprecated
      * @param gsonsaveobj
      */
+    @Deprecated
     void GSONSave(GSONSaveObject gsonsaveobj) {
         if (gsonsaveobj != null) {
             if (originalrlist != null) {
                 gsonsaveobj.CurrentRequest = getCurrentRequestPos();
 
                 for (PRequestResponse pqr : originalrlist) {
-                    GSONSaveObject.GsonPRequestResponse preqresobj = new GSONSaveObject.GsonPRequestResponse();
+                    GSONSaveObject.GsonPRequestResponse preqresobj =
+                            new GSONSaveObject.GsonPRequestResponse();
                     byte[] qbin = pqr.request.getByteMessage();
                     byte[] rbin = pqr.response.getByteMessage();
                     // byte[] encodedBytes = Base64.encodeBase64(qbin);
@@ -1030,7 +1058,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     }
 
     /**
-     * save originalrlist to JSON
+     * save sequence of PRequestResponse and it's tracking parameters to JSON
      *
      * @param appParmAndSequence
      */
@@ -1039,9 +1067,11 @@ public class ParmGenMacroTrace extends ClientDependent {
             if (originalrlist != null) {
                 appParmAndSequence.MyPageIndex = getMyPageIndex();
                 appParmAndSequence.CurrentRequest = getCurrentRequestPos();
+                appParmAndSequence.sequenceCharsetName = sequenceEncode.getIANACharsetName();
 
                 for (PRequestResponse pqr : originalrlist) {
-                    GSONSaveObjectV2.GsonPRequestResponse preqresobj = new GSONSaveObjectV2.GsonPRequestResponse();
+                    GSONSaveObjectV2.GsonPRequestResponse preqresobj =
+                            new GSONSaveObjectV2.GsonPRequestResponse();
                     byte[] qbin = pqr.request.getByteMessage();
                     byte[] rbin = pqr.response.getByteMessage();
                     // byte[] encodedBytes = Base64.encodeBase64(qbin);
@@ -1080,6 +1110,8 @@ public class ParmGenMacroTrace extends ClientDependent {
                     preqresobj.Comments = comments == null ? "" : comments;
                     preqresobj.Disabled = isdisabled;
                     preqresobj.Error = iserror;
+                    preqresobj.RequestCharsetName = pqr.request.getPageEnc().getIANACharsetName();
+                    preqresobj.ResponseCharsetName = pqr.response.getPageEnc().getIANACharsetName();
 
                     appParmAndSequence.PRequestResponses.add(preqresobj);
                 }
@@ -1227,9 +1259,8 @@ public class ParmGenMacroTrace extends ClientDependent {
     }
 
     /**
-     * update AppParmsIni and clear cookie/token caches
-     * if newAppParmsIniList == null and getAppParmsIniList() != null
-     * then nothing to do(current ParmIniList remains)
+     * update AppParmsIni and clear cookie/token caches if newAppParmsIniList == null and
+     * getAppParmsIniList() != null then nothing to do(current ParmIniList remains)
      *
      * @param newAppParmsIniList
      */
@@ -1241,5 +1272,30 @@ public class ParmGenMacroTrace extends ClientDependent {
             }
             setAppParmsIniList(newAppParmsIniList);
         }
+    }
+
+    /**
+     * set sequence encoding
+     *
+     * @param encode
+     */
+    public void setSequenceEncode(Encode encode) {
+        this.sequenceEncode = encode;
+    }
+
+    /**
+     * get sequence encoding
+     *
+     * @return Encode
+     */
+    public Encode getSequenceEncode() {
+        return sequenceEncode;
+    }
+
+    public Encode getLastResponseEncode() {
+        if (lastResponseEncode == null) {
+            return sequenceEncode;
+        }
+        return lastResponseEncode;
     }
 }

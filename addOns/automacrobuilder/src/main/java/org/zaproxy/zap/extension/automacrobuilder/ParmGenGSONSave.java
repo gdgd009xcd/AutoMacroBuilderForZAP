@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
+
 import com.google.gson.GsonBuilder;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -33,7 +35,6 @@ import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.AppValue_List;
  * This class Used only when saving parameter settings.
  *
  * @author gdgd009xcd
- *
  */
 @Deprecated
 public class ParmGenGSONSave {
@@ -73,7 +74,8 @@ public class ParmGenGSONSave {
                             false,
                             requeststr.getBytes(),
                             responsestr.getBytes(),
-                            ParmVars.enc);
+                            Encode.UTF_8,
+                            Encode.UTF_8);
             proxy_messages = proxy_messages == null ? new ArrayList<>() : proxy_messages;
             proxy_messages.add(dummy);
         }
@@ -115,7 +117,7 @@ public class ParmGenGSONSave {
         String encoded = _d;
         try {
             if (code == null) {
-                code = ParmVars.enc.getIANACharsetName();
+                code = JSONFileIANACharsetName;
             }
             if (_dd != null) {
                 encoded = URLEncoder.encode(_dd, code);
@@ -131,6 +133,8 @@ public class ParmGenGSONSave {
         return "\"" + (val == null ? "" : val) + "\"" + (comma ? "," : "");
     }
 
+    /** obsolete no longer used. */
+    @Deprecated
     public void GSONsave() {
         // ファイル初期化
         try {
@@ -145,7 +149,7 @@ public class ParmGenGSONSave {
 
         GSONSaveObject gsobject = new GSONSaveObject();
 
-        gsobject.LANG = ParmVars.enc.getIANACharsetName();
+        // gsobject.LANG = ParmVars.enc.getIANACharsetName();
         gsobject.ProxyInScope = ParmGen.ProxyInScope;
         gsobject.IntruderInScope = ParmGen.IntruderInScope;
         gsobject.RepeaterInScope = ParmGen.RepeaterInScope;

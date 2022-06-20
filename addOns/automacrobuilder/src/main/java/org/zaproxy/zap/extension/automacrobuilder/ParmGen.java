@@ -19,11 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import com.google.gson.JsonElement;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -69,16 +65,7 @@ public class ParmGen {
             AppValue av,
             ParmGenHashMap errorhash) {
 
-        //	String[] headers=request.getHeaderNames();
-        //	boolean noauth = false;
-        //	for(String header : headers){
-        //		if ( header.indexOf("Authorization")==-1){
-        //			noauth = true;
-        //		}
-        //		//printlog(header+" : " + request.getHeader(header), true);
-        //	}
-
-        // if(av.toStepNo>0&&av.toStepNo!=pmt.getStepNo())return null;
+        Encode requestBodyEncode = prequest.getPageEnc();
         if (av.getToStepNo() != ParmVars.TOSTEPANY) {
             if (av.getToStepNo() != pmt.getStepNo()) return null;
         }
@@ -227,7 +214,7 @@ public class ParmGen {
                             content =
                                     new String(
                                             _contarray.getBytes(),
-                                            ParmVars.enc.getIANACharsetName());
+                                            requestBodyEncode.getIANACharsetName());
                         } catch (UnsupportedEncodingException e) {
                             content = null;
                         }
@@ -248,7 +235,8 @@ public class ParmGen {
                                 LOGGER4J.trace(" Modified body[" + n_content + "]");
                                 try {
                                     _contarray.initParmGenBinUtil(
-                                            n_content.getBytes(ParmVars.enc.getIANACharsetName()));
+                                            n_content.getBytes(
+                                                    requestBodyEncode.getIANACharsetName()));
                                 } catch (UnsupportedEncodingException ex) {
                                     Logger.getLogger(ParmGen.class.getName())
                                             .log(Level.SEVERE, null, ex);
@@ -267,7 +255,7 @@ public class ParmGen {
                                         int port = org_request.getPort();
                                         boolean ssl = org_request.isSSL();
                                         org_request.construct(
-                                                host, port, ssl, bmessage, ParmVars.enc);
+                                                host, port, ssl, bmessage, requestBodyEncode);
                                     } catch (UnsupportedEncodingException ex) {
                                         Logger.getLogger(ParmGen.class.getName())
                                                 .log(Level.SEVERE, null, ex);
@@ -294,7 +282,7 @@ public class ParmGen {
                         while ((npos = _contarray.indexOf(boundaryarray.getBytes(), cpos)) != -1) {
                             if (cpos != 0) { // cpos->npos == partdata
                                 partdata = _contarray.subBytes(cpos, npos);
-                                partenc = ParmVars.enc.getIANACharsetName();
+                                partenc = requestBodyEncode.getIANACharsetName();
                                 // Determine partenc: multi-part content encoding from Content-Type
                                 // header in multipart.
                                 int hend = _contarray.indexOf(headerseparator, cpos);
@@ -414,7 +402,7 @@ public class ParmGen {
                                         int port = org_request.getPort();
                                         boolean ssl = org_request.isSSL();
                                         org_request.construct(
-                                                host, port, ssl, bmessage, ParmVars.enc);
+                                                host, port, ssl, bmessage, requestBodyEncode);
                                     } catch (UnsupportedEncodingException ex) {
                                         Logger.getLogger(ParmGen.class.getName())
                                                 .log(Level.SEVERE, null, ex);
@@ -552,7 +540,8 @@ public class ParmGen {
         if (appParmsIniList == null || appParmsIniList.size() <= 0) {
             // NOP
             if (pmt.isRunning()) {
-                PRequest prequest = new PRequest(_h, port, isSSL, requestbytes, ParmVars.enc);
+                PRequest prequest =
+                        new PRequest(_h, port, isSSL, requestbytes, pmt.getLastResponseEncode());
                 PRequest cookierequest = pmt.configureRequest(prequest);
                 if (cookierequest != null) {
                     return cookierequest.getByteMessage();
@@ -563,7 +552,8 @@ public class ParmGen {
             ParmGenHashMap errorhash = new ParmGenHashMap();
 
             // Request request = connection.getRequest();
-            PRequest prequest = new PRequest(_h, port, isSSL, requestbytes, ParmVars.enc);
+            PRequest prequest =
+                    new PRequest(_h, port, isSSL, requestbytes, pmt.getLastResponseEncode());
 
             // check if we have parameters
             // Construct a new HttpUrl object, since they are immutable
@@ -740,7 +730,7 @@ public class ParmGen {
     }
 
     /**
-     * Set tracked cookie and token in request argument This function for Zap-extension
+     * By this function, Set tracked cookie and token in request argument for Zap-extension
      *
      * @param prequest
      * @return

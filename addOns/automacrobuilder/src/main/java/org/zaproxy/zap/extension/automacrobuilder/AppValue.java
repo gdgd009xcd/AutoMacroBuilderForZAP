@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ResourceBundle;
@@ -152,7 +154,7 @@ public class AppValue {
         "append", "insert", "replace", "regex", null
     };
 
-    private boolean enabled = true; // 有効
+    private boolean enabled = true; // enable/disable flag
 
     private void initctype() {
         Pattern_condRegex = null;
@@ -464,20 +466,6 @@ public class AppValue {
         return "";
     }
 
-    String URLdecode(String _encoded) {
-        String exerr = null;
-        String _raw = "";
-        if (_encoded == null) _encoded = "";
-        try {
-            _raw = URLDecoder.decode(_encoded, ParmVars.enc.getIANACharsetName());
-        } catch (UnsupportedEncodingException e) {
-            exerr = e.toString();
-            _raw = "";
-        }
-
-        return _raw;
-    }
-
     public void setresURL(String _url) {
         if (_url == null) _url = "";
         resURL = _url.trim();
@@ -516,7 +504,7 @@ public class AppValue {
 
     public void setresRegexURLencoded(String _regex) {
         if (_regex == null) _regex = "";
-        setresRegex(URLdecode(_regex));
+        setresRegex(ParmGenUtil.URLdecode(_regex, JSONFileIANACharsetName));
     }
 
     public void setresRegex(String _regex) {
@@ -552,7 +540,7 @@ public class AppValue {
 
     public void setCondRegexURLencoded(String _regex) {
         if (_regex == null) _regex = "";
-        setCondRegex(URLdecode(_regex));
+        setCondRegex(ParmGenUtil.URLdecode(_regex, JSONFileIANACharsetName));
     }
 
     /**
@@ -786,7 +774,7 @@ public class AppValue {
         boolean noerror = false;
         valueregex = null;
         try {
-            value = URLDecoder.decode(_value, ParmVars.enc.getIANACharsetName());
+            value = URLDecoder.decode(_value, JSONFileIANACharsetName);
             valueregex = ParmGenUtil.Pattern_compile(value);
             noerror = true;
         } catch (UnsupportedEncodingException e) {

@@ -19,16 +19,15 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import com.google.gson.GsonBuilder;
-import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.AppParmsIni_List;
-import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.AppValue_List;
+import static org.zaproxy.zap.extension.automacrobuilder.Encode.UTF_8;
+import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
 
+import com.google.gson.GsonBuilder;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * This class Used only when saving parameter settings.
@@ -48,7 +47,8 @@ public class ParmGenGSONSaveV2 {
      *
      * @param _selected_messages
      */
-    public ParmGenGSONSaveV2(ParmGenMacroTraceProvider pmtProvider, ArrayList<PRequestResponse> _selected_messages) {
+    public ParmGenGSONSaveV2(
+            ParmGenMacroTraceProvider pmtProvider, ArrayList<PRequestResponse> _selected_messages) {
         this.pmtProvider = pmtProvider;
         selected_messages = new ArrayList<PRequestResponse>();
         proxy_messages = _selected_messages;
@@ -71,7 +71,8 @@ public class ParmGenGSONSaveV2 {
                             false,
                             requeststr.getBytes(),
                             responsestr.getBytes(),
-                            ParmVars.enc);
+                            UTF_8,
+                            UTF_8);
             proxy_messages = proxy_messages == null ? new ArrayList<>() : proxy_messages;
             proxy_messages.add(dummy);
         }
@@ -84,17 +85,20 @@ public class ParmGenGSONSaveV2 {
         pfile = null;
     }
 
-    private String escapeDelimiters(String _d, String code) {
+    /**
+     * convert String to URLencode (code is UTF-8)
+     *
+     * @param _d
+     * @return URLencoded with UTF-8
+     */
+    private String URLencodeToJSON(String _d) {
         // String _dd = _d.replaceAll("\\\\", "\\\\");
         String _dd = _d;
         // String _ddd = _dd.replaceAll("\"", "\"\"");
         String encoded = _d;
         try {
-            if (code == null) {
-                code = ParmVars.enc.getIANACharsetName();
-            }
             if (_dd != null) {
-                encoded = URLEncoder.encode(_dd, code);
+                encoded = URLEncoder.encode(_dd, JSONFileIANACharsetName);
             }
         } catch (UnsupportedEncodingException e) {
             ParmVars.plog.printException(e);
@@ -121,7 +125,6 @@ public class ParmGenGSONSaveV2 {
 
         GSONSaveObjectV2 gsobject = new GSONSaveObjectV2();
 
-        gsobject.LANG = ParmVars.enc.getIANACharsetName();
         gsobject.ProxyInScope = ParmGen.ProxyInScope;
         gsobject.IntruderInScope = ParmGen.IntruderInScope;
         gsobject.RepeaterInScope = ParmGen.RepeaterInScope;
@@ -138,15 +141,21 @@ public class ParmGenGSONSaveV2 {
                 });
 
         Iterator<ParmGenMacroTrace> pit = pmtProvider.getBaseInstanceIterator();
-        while(pit.hasNext()) {
+        while (pit.hasNext()) {
             ParmGenMacroTrace pmt = pit.next();
+            if (pmt.getAppParmsIniList() == null) {
+                pmt.updateAppParmsIniAndClearCache(null);
+            }
             Iterator<AppParmsIni> it = pmt.getIteratorOfAppParmsIni();
-            GSONSaveObjectV2.AppParmAndSequence appParmAndSequence = new GSONSaveObjectV2.AppParmAndSequence();
+            GSONSaveObjectV2.AppParmAndSequence appParmAndSequence =
+                    new GSONSaveObjectV2.AppParmAndSequence();
             while (it.hasNext()) {
                 AppParmsIni prec = it.next();
-                // String URL, String initval, String valtype, String incval, ArrayList<ParmGenParam>
+                // String URL, String initval, String valtype, String incval,
+                // ArrayList<ParmGenParam>
                 // parms
-                GSONSaveObjectV2.AppParmsIni_List AppParmsIni_ListObj = new GSONSaveObjectV2.AppParmsIni_List();
+                GSONSaveObjectV2.AppParmsIni_List AppParmsIni_ListObj =
+                        new GSONSaveObjectV2.AppParmsIni_List();
                 AppParmsIni_ListObj.URL = prec.getUrl();
                 AppParmsIni_ListObj.len = prec.getLen();
                 AppParmsIni_ListObj.typeval = prec.getTypeVal();
@@ -154,7 +163,7 @@ public class ParmGenGSONSaveV2 {
                 AppParmsIni_ListObj.maxval = prec.getMaxVal();
                 AppParmsIni_ListObj.csvname =
                         (prec.getTypeVal() == AppParmsIni.T_CSV
-                                ? escapeDelimiters(prec.getFrlFileName(), "UTF-8")
+                                ? URLencodeToJSON(prec.getFrlFileName())
                                 : "");
                 AppParmsIni_ListObj.pause = prec.isPaused();
                 AppParmsIni_ListObj.TrackFromStep = prec.getTrackFromStep();
@@ -165,17 +174,18 @@ public class ParmGenGSONSaveV2 {
 
                 while (pt.hasNext()) {
                     AppValue param = pt.next();
-                    GSONSaveObjectV2.AppValue_List AppValue_ListObj = new GSONSaveObjectV2.AppValue_List();
+                    GSONSaveObjectV2.AppValue_List AppValue_ListObj =
+                            new GSONSaveObjectV2.AppValue_List();
                     AppValue_ListObj.valpart = param.getValPart();
                     AppValue_ListObj.isEnabled = param.isEnabled();
                     AppValue_ListObj.isNoCount = param.isNoCount();
                     AppValue_ListObj.csvpos = param.getCsvpos();
-                    AppValue_ListObj.value = escapeDelimiters(param.getVal(), null);
+                    AppValue_ListObj.value = URLencodeToJSON(param.getVal());
                     AppValue_ListObj.resURL = param.getresURL() == null ? "" : param.getresURL();
                     AppValue_ListObj.resRegex =
-                            (escapeDelimiters(param.getresRegex(), null) == null
+                            (URLencodeToJSON(param.getresRegex()) == null
                                     ? ""
-                                    : escapeDelimiters(param.getresRegex(), null));
+                                    : URLencodeToJSON(param.getresRegex()));
                     AppValue_ListObj.resValpart = param.getResValPart();
                     AppValue_ListObj.resRegexPos = param.getResRegexPos();
                     AppValue_ListObj.token = param.getToken() == null ? "" : param.getToken();
@@ -185,9 +195,9 @@ public class ParmGenGSONSaveV2 {
                     AppValue_ListObj.TokenType = param.getTokenType().name();
                     AppValue_ListObj.condTargetNo = param.getCondTargetNo();
                     AppValue_ListObj.condRegex =
-                            (escapeDelimiters(param.getCondRegex(), null) == null
+                            (URLencodeToJSON(param.getCondRegex()) == null
                                     ? ""
-                                    : escapeDelimiters(param.getCondRegex(), null));
+                                    : URLencodeToJSON(param.getCondRegex()));
                     AppValue_ListObj.condRegexTargetIsRequest = param.requestIsCondRegexTarget();
 
                     AppParmsIni_ListObj.AppValue_Lists.add(AppValue_ListObj);

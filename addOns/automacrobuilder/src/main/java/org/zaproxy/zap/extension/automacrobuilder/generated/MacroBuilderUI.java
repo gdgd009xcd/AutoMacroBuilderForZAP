@@ -5,6 +5,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,16 +23,17 @@ import java.util.ListIterator;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import java.util.regex.Pattern;
-
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-
 import com.google.gson.JsonElement;
 import org.zaproxy.zap.extension.automacrobuilder.*;
+import org.zaproxy.zap.extension.automacrobuilder.view.CloseXbtnTabPanel;
+import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
 
+import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
+import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.ZAP_ICONS;
 
 /**
  *
@@ -45,19 +47,26 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
+    private static final ImageIcon PLUS_BUTTON_ICON = MyFontUtils.getScaledIcon(
+            new ImageIcon(MacroBuilderUI.class.getResource(ZAP_ICONS + "/plus.png")));
+    private static final ImageIcon QUESTION_BUTTON_ICON = MyFontUtils.getScaledIcon(
+            new ImageIcon(MacroBuilderUI.class.getResource(ZAP_ICONS + "/question.png")));
+
     // List<PRequestResponse> rlist = null;
     // ParmGenMacroTrace pmt = null;
     
     ParmGenMacroTraceProvider pmtProvider = null;
     List<JList<String>> requestJLists = null;
-    List<DisplayInfoOfRequestListTab> displayInfoTabs = null;
+    DisplayInfoOfRequestListTab displayInfo = null;
     int MacroRequestListTabsCurrentIndex = 0;
-    int tabIndex = -1;
+    int maxTabIndex = 0;// maximum index number of added tab to RequestList tab
 
     int EditTarget = -1;
     Encode EditPageEnc = Encode.ISO_8859_1;
     static final int REQUEST_DISPMAXSIZ = 500000;//1MB
     static final int RESPONSE_DISPMAXSIZ = 1000000;//1MB
+
+    JPanel plusBtnPanel = null;
 
 
 
@@ -66,27 +75,38 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      */
     @SuppressWarnings("unchecked")
     public MacroBuilderUI(ParmGenMacroTraceProvider pmtProvider) {
-        tabIndex = 0;
+        maxTabIndex = 0;
         this.MacroRequestListTabsCurrentIndex = 0;
         this.pmtProvider = pmtProvider;
-        ParmGenMacroTrace pmt = this.pmtProvider.getBaseInstance(tabIndex);
-        displayInfoTabs = new ArrayList<>();
+        ParmGenMacroTrace pmt = this.pmtProvider.getBaseInstance(maxTabIndex);
+        displayInfo = new DisplayInfoOfRequestListTab();
         requestJLists = new ArrayList<>();
         initComponents();
+        jButton1.setIcon(QUESTION_BUTTON_ICON);
+        MacroComments.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                MacroCommentsMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                MacroCommentsMouseReleased(evt);
+            }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                MacroCommentsMouseClicked(evt);
+            }
+        });
+        jLabel3.putClientProperty("html.disable", Boolean.FALSE);
         logger4j.debug("MacroBuilderUI after initComponents");
         RequestList.setCellRenderer((ListCellRenderer<Object>)new MacroBuilderUIRequestListRender(pmt));
         DefaultListModel<String> RequestListModel = new DefaultListModel<>();
         RequestListModel.clear();
         RequestList.setModel(RequestListModel);
-        
-        
+
         requestJLists.add(RequestList);
-        
-        
-        displayInfoTabs.add(new DisplayInfoOfRequestListTab(-1, false, false, false));
+
+        // Button for adding new Tab to JtabbedPane.
+        addPlusTabButtonToRequestList();
 
         pmt.setUI(this);
-
 
         pmtProvider.setCBreplaceCookie(true);
         pmtProvider.setCBInheritFromCache(CBinheritFromCache.isSelected());
@@ -185,8 +205,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     @SuppressWarnings("unchecked")
     public void clear() {
         this.MacroRequestListTabsCurrentIndex = 0;
-        displayInfoTabs = new ArrayList<>();
-        displayInfoTabs.add(new DisplayInfoOfRequestListTab(-1, false, false, false));
+        displayInfo = new DisplayInfoOfRequestListTab();
         //JListをクリアするには、modelのremove & jListへModelセットが必須。
         // RequestListModel.removeAllElements();
         // RequestList.setModel(RequestListModel);
@@ -204,11 +223,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             int lastTabIndex = MacroRequestListTabs.getTabCount() - 1;
             MacroRequestListTabs.remove(lastTabIndex);
         }
+        // Button for adding new Tab to JtabbedPane.
+        addPlusTabButtonToRequestList();
+
         MacroRequest.setText("");
         MacroResponse.setText("");
         MacroComments.setText("");
         this.pmtProvider.clear();
-        tabIndex = -1;
+        this.maxTabIndex = 0;
         ParmVars.Saved(false);
     }
 
@@ -244,33 +266,41 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         return pmt;
     }
 
+
     /**
-     * add PRequestResponses to ParmGenMacroTrace and Tabspane which is created if necessary
+     * add PRequestResponses to ParmGenMacroTrace and add new tab which is created if necessary
      *
      * @param appParmAndSequence
+     * @param maxTabIndex
      * @return
      */
-    public ParmGenMacroTrace addNewRequestsToTabsPane(ParmGenGSON.AppParmAndSequence appParmAndSequence) {
+    public ParmGenMacroTrace addNewRequestsToTabsPaneAtMaxTabIndex(ParmGenGSON.AppParmAndSequence appParmAndSequence, int maxTabIndex) {
 
-        if (appParmAndSequence == null) return null;
-
-        List<PRequestResponse> pRequestResponses = appParmAndSequence.pRequestResponses;
-
-        if (tabIndex < 0) {
-            tabIndex = 0;
+        List<PRequestResponse> pRequestResponses= null;
+        if (appParmAndSequence != null) {
+            pRequestResponses = appParmAndSequence.pRequestResponses;
         }
 
-        ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(tabIndex);
+        if (maxTabIndex < 0) {
+            maxTabIndex = 0;
+        }
+
+        ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(maxTabIndex);
         if (pmt == null) {
             pmt = pmtProvider.addNewBaseInstance();
             pmt.setUI(this);
         }
 
-        if (appParmAndSequence.appParmsIniList != null) {
+        if (appParmAndSequence != null && appParmAndSequence.appParmsIniList != null) {
             pmt.updateAppParmsIniAndClearCache(appParmAndSequence.appParmsIniList);
         }
 
-        JList<String> requestJList = getRequestJListAtTabIndex(tabIndex);
+        JList<String> requestJList = null;
+        try {
+            requestJList = getRequestJListAtTabIndex(maxTabIndex);
+        } catch (Exception e) {
+            // nothing to do with occuring exceptions.
+        }
         if(requestJList == null) {
             requestJList = new javax.swing.JList<>();
             requestJList.setAutoscrolls(false);
@@ -294,10 +324,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             scrollPane.setAutoscrolls(true);
             scrollPane.setViewportView(requestJList);
 
-            String tabIndexString = Integer.toString(tabIndex);
-            MacroRequestListTabs.addTab(tabIndexString, scrollPane);
+            String tabIndexString = Integer.toString(maxTabIndex);
 
-            displayInfoTabs.add(new DisplayInfoOfRequestListTab(-1, false, false, false));
+            MacroRequestListTabs.insertTab(tabIndexString, null, scrollPane, "", maxTabIndex);
+            // setting close button on tab
+            createCloseXbtnForTabbedPane(tabIndexString, maxTabIndex);
+
+            requestJLists.add(requestJList);
         }
         requestJList.setCellRenderer((ListCellRenderer<Object>)new MacroBuilderUIRequestListRender(pmt));
         DefaultListModel<String> RequestListModel = new DefaultListModel<>();
@@ -327,7 +360,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         }
 
-        tabIndex++;
+        displayInfo.clear();
+
         return pmt;
     }
 
@@ -341,12 +375,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             int cpos = requestJList.getSelectedIndex();
             if (cpos != -1) { // current cpos request is displayed in MacroRequest.
                 int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
-                DisplayInfoOfRequestListTab displayInfo = getSelectedDisplayInfoTab();
+                displayInfo.clear();
                 displayInfo.selected_request_idx = cpos;
-                displayInfo.isLoadedMacroCommentContents = false;
-                displayInfo.isLoadedMacroRequestContents = false;
-                displayInfo.isLoadedMacroResponseContents = false;
-
                 paramlogTabbedPaneSelectedContentsLoad(selectedTabIndex);
             }
         }
@@ -1015,7 +1045,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }//GEN-LAST:event_customActionPerformed
 
     private void MacroRequestLoadContents(int selectedTabIndexOfRequestList){
-        DisplayInfoOfRequestListTab displayInfo = getDisplayInfoTabAtTabIndex(selectedTabIndexOfRequestList);
         if (displayInfo != null && displayInfo.selected_request_idx!=-1&&!displayInfo.isLoadedMacroRequestContents) {
             
             List<PRequestResponse> prequestResponseList = getPRequestResponseListAtTabIndex(selectedTabIndexOfRequestList);
@@ -1030,7 +1059,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
     
     private void MacroResponseLoadContents(int selectedTabIndexOfRequestList){
-        DisplayInfoOfRequestListTab displayInfo = getDisplayInfoTabAtTabIndex(selectedTabIndexOfRequestList);
         if (displayInfo != null && displayInfo.selected_request_idx!=-1&&!displayInfo.isLoadedMacroResponseContents) {
             List<PRequestResponse> prequestResponseList = getPRequestResponseListAtTabIndex(selectedTabIndexOfRequestList);
             PRequestResponse pqr = prequestResponseList.get(displayInfo.selected_request_idx);
@@ -1042,7 +1070,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
     
     private void MacroCommentLoadContents(int selectedTabIndexOfRequestList){
-        DisplayInfoOfRequestListTab displayInfo = getDisplayInfoTabAtTabIndex(selectedTabIndexOfRequestList);
         if (displayInfo != null && displayInfo.selected_request_idx!=-1&&!displayInfo.isLoadedMacroCommentContents) {
             List<PRequestResponse> prequestResponseList = getPRequestResponseListAtTabIndex(selectedTabIndexOfRequestList);
             PRequestResponse pqr = prequestResponseList.get(displayInfo.selected_request_idx);
@@ -1091,15 +1118,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int pos = requestJList.getSelectedIndex();
         if (pos != -1) {
             logger4j.debug("RequestListValueChanged selected pos:" + pos);
-                //
-                int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
-                DisplayInfoOfRequestListTab displayInfo = getSelectedDisplayInfoTab();
-                displayInfo.selected_request_idx = pos;
-                displayInfo.isLoadedMacroCommentContents = false;
-                displayInfo.isLoadedMacroRequestContents = false;
-                displayInfo.isLoadedMacroResponseContents = false;
-
-                paramlogTabbedPaneSelectedContentsLoad(selectedTabIndex);
+            //
+            int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
+            displayInfo.clear();
+            displayInfo.selected_request_idx = pos;
+            paramlogTabbedPaneSelectedContentsLoad(selectedTabIndex);
         } else {
             logger4j.debug("RequestListValueChanged noselect pos:" + pos);
         }
@@ -1180,7 +1203,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PopupMenuForRequestList.show(evt.getComponent(), evt.getX(), evt.getY());
         }
         if ((evt.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0) { // left button clicked
-            DisplayInfoOfRequestListTab displayInfo = getSelectedDisplayInfoTab();
             JList<String> requestJList = getSelectedRequestJList();
             if (requestJList == null) return;
             int sidx = requestJList.locationToIndex(evt.getPoint());
@@ -1274,7 +1296,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 HashMap<ParmGenTrackingToken, String> addedtokens = new HashMap<ParmGenTrackingToken, String>();// tokens already extracted from urltokens
                 for(ListIterator<ParmGenResToken> it = urltokens.listIterator(urltokens.size());it.hasPrevious();){//urltokens: extracted tokenlist from Response. 
                     //for loop order: fromStepno in descending order(hasPrevious)
-                
+
                     ParmGenResToken restoken = it.previous();
                     int fromStepNo = restoken.fromStepNo;
                     ArrayList<ParmGenTrackingToken> requesttokenlist = new ArrayList<ParmGenTrackingToken>();// token that matched request parameter.
@@ -1488,7 +1510,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             
                             String encodedregex = regex;
                             try {
-                                encodedregex = URLEncoder.encode(regex, ParmVars.enc.getIANACharsetName());
+                                encodedregex = URLEncoder.encode(regex, JSONFileIANACharsetName);
                             } catch (UnsupportedEncodingException ex) {
                                 Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
                                
@@ -1954,6 +1976,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private void MacroRequestMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMousePressed
         // TODO add your handling code here:
         logger4j.debug("MacroRequestMousePressed...start");
+        paramlogTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // must content load before RequestEdit.show
         if (evt.isPopupTrigger()) {
             logger4j.debug("MacroRequestMousePressed PopupTriggered.");
             RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
@@ -1971,15 +1994,18 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     private void MacroResponseMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMouseClicked
         // TODO add your handling code here:
-        if (evt.isPopupTrigger()) {// popup menu trigger occured. 
+        logger4j.debug("MacroResponseMouseClicked start");
+        if (evt.isPopupTrigger()) {// popup menu trigger occured.
             logger4j.debug("MacroResponseMouseClicked PoupupTriggered.");
             ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
         }
+        logger4j.debug("MacroResponseMouseClicked end");
     }//GEN-LAST:event_MacroResponseMouseClicked
 
     private void MacroResponseMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMousePressed
         // TODO add your handling code here:
         logger4j.debug( "MacroResponseMousePressed...start");
+        paramlogTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // must content load before ResponseShow.show
         if (evt.isPopupTrigger()) {
             logger4j.debug("MacroResponseMousePressed PopupTriggered.");
             ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
@@ -2071,7 +2097,32 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     private void MacroRequestListTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_MacroRequestListTabsStateChanged
         // TODO add your handling code here:
+        logger4j.debug("Enter stateChanged");
         updateSelectedTabIndex();
+        setCloseButtonStates();
+        int indexOfPlusBtnPanel = MacroRequestListTabs.indexOfComponent(plusBtnPanel);
+        logger4j.debug("indexOfPlusBtnPanel=" + indexOfPlusBtnPanel);
+        if (MacroRequestListTabsCurrentIndex != -1 && indexOfPlusBtnPanel != -1) {
+            if (MacroRequestListTabsCurrentIndex == indexOfPlusBtnPanel) {
+                logger4j.debug("Enter setSelectedIndex(" + (indexOfPlusBtnPanel - 1) + ")");
+                MacroRequestListTabs.setSelectedIndex(indexOfPlusBtnPanel - 1);
+                logger4j.debug("Leave setSelectedIndex(" + (indexOfPlusBtnPanel - 1) + ")");
+                if (this.maxTabIndex < indexOfPlusBtnPanel) {
+                    // start the event of clicked plusBtnPanel icon
+                    logger4j.debug("plusBtnPanel icon clicked. create new tab.");
+                    this.maxTabIndex++;
+                    addNewRequestsToTabsPaneAtMaxTabIndex(null, this.maxTabIndex);
+                    // end the event of clicked plusBtnPanel icon
+                }
+            } else {
+                logger4j.debug("MacroRequestListTabsCurrentIndex["
+                        + MacroRequestListTabsCurrentIndex
+                        + "] " + (MacroRequestListTabsCurrentIndex==indexOfPlusBtnPanel?"==":"!=") + " indexOfPlusBtnPanel[" + indexOfPlusBtnPanel + "]");
+                logger4j.debug("maxTabIndex[" + this.maxTabIndex + "] " + (this.maxTabIndex<indexOfPlusBtnPanel?"<":">=") + " indexOfPlusBtnPanel[" + indexOfPlusBtnPanel + "]");
+                updateCurrentSelectedRequestListDisplayContents();
+            }
+        }
+        logger4j.debug("Leave stateChanged");
     }//GEN-LAST:event_MacroRequestListTabsStateChanged
 
 
@@ -2080,7 +2131,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
         JList<String> requestJList = getRequestJListAtTabIndex(selectedTabIndex);
         if (requestJList != null) {
-            DisplayInfoOfRequestListTab displayInfo = getDisplayInfoTabAtTabIndex(selectedTabIndex);
             int pos = requestJList.getSelectedIndex();
             if (displayInfo == null || pos < 0 || pos != displayInfo.selected_request_idx) {
                 logger4j.error(
@@ -2192,25 +2242,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      */
     public int getSelectedTabIndexOfMacroRequestList() {
         return MacroRequestListTabs.getSelectedIndex();
-    }
-
-    /**
-     * get DisplayInfo of selected Request List Tab
-     *
-     * @return 
-     */
-    private DisplayInfoOfRequestListTab getSelectedDisplayInfoTab() {
-        int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
-        return getDisplayInfoTabAtTabIndex(selectedTabIndex);
-    }
-
-    private DisplayInfoOfRequestListTab getDisplayInfoTabAtTabIndex(int tabIndex) {
-        try {
-            DisplayInfoOfRequestListTab displayInfo = displayInfoTabs.get(tabIndex);
-            return displayInfo;
-        } catch (IndexOutOfBoundsException e) {
-        }
-        return null;
     }
 
     /**
@@ -2337,21 +2368,24 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 List<PRequestResponse> requestList = gjson.GetMacroRequests();
                 List<ParmGenGSON.AppParmAndSequence> appParmAndSequenceList = gjson.getAppParmAndSequenceList();
                 if (appParmAndSequenceList != null
-                    && appParmAndSequenceList.size() > 0) {
+                    && appParmAndSequenceList.size() > 0) { // v2 format JSON file
                     clear();
                     ParmVars.parmfile = filename;
                     ParmVars.Version = gjson.getVersion();
-                    ParmVars.enc = gjson.getEncode();
                     ParmVars.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
                     appParmAndSequenceList.forEach(
                             pRequestResponseSequence -> {
-                                addNewRequestsToTabsPane(pRequestResponseSequence);
+                                addNewRequestsToTabsPaneAtMaxTabIndex(pRequestResponseSequence, this.maxTabIndex);
+                                this.maxTabIndex++;
                             }
                     );
+                    if (this.maxTabIndex > 0) {
+                        this.maxTabIndex--;
+                    }
                     noerror = true;
                     Redraw();
                     ParmVars.Saved(true);
-                } else if (requestList != null && requestList.size() > 0) {
+                } else if (requestList != null && requestList.size() > 0) { // v1 format JSON file
                     clear();
                     ParmGenMacroTrace pmt = addNewRequests(requestList);
                     if (pmt != null) {
@@ -2359,7 +2393,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         pmt.setCurrentRequest(creq);
                         ParmVars.parmfile = filename;
                         ParmVars.Version = gjson.getVersion();
-                        ParmVars.enc = gjson.getEncode();
+                        Encode firstRequestEncode = requestList.get(0).request.getPageEnc();
+                        pmt.setSequenceEncode(firstRequestEncode);
                         ParmVars.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
                         pmt.updateAppParmsIniAndClearCache(rlist);
                         noerror = true;
@@ -2387,15 +2422,19 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         public boolean isLoadedMacroRequestContents = false;
         public boolean isLoadedMacroResponseContents = false;
         
-        DisplayInfoOfRequestListTab(
-                int selected_request_idx,
-                boolean isLoadedMacroCommentContents,
-                boolean isLoadedMacroRequestContents,
-                boolean isLoadedMacroResponseContents) {
-            this.selected_request_idx = selected_request_idx;
-            this.isLoadedMacroCommentContents = isLoadedMacroCommentContents;
-            this.isLoadedMacroRequestContents = isLoadedMacroRequestContents;
-            this.isLoadedMacroResponseContents = isLoadedMacroResponseContents;
+        DisplayInfoOfRequestListTab() {
+            clear();
+        }
+
+        public void clear() {
+            selected_request_idx = -1;
+            clearViewFlags();
+        }
+
+        public void clearViewFlags() {
+            isLoadedMacroCommentContents = false;
+            isLoadedMacroRequestContents = false;
+            isLoadedMacroResponseContents = false;
         }
     }
 
@@ -2408,8 +2447,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         return MacroRequestListTabs.getTitleAt(tabIndex);
     }
 
+    /**
+     * get MacroRequest's tab count except "+"(addNewTab) button tab.
+     * @return int
+     */
     public int getMacroRequestTabCount() {
-        return MacroRequestListTabs.getTabCount();
+        return MacroRequestListTabs.getTabCount() - 1;
     }
 
     public ParmGenMacroTraceProvider getParmGenMacroTraceProvider() {
@@ -2417,11 +2460,100 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
 
     private void updateSelectedTabIndex() {
-        int selectedindex = MacroRequestListTabs.getSelectedIndex();
-        if (selectedindex != -1) MacroRequestListTabsCurrentIndex = selectedindex;
-        logger4j.debug("selectedindex:" + selectedindex + " MacroRequestListTabsCurrentIndex:" + MacroRequestListTabsCurrentIndex);
+        int selectedTabIndex = MacroRequestListTabs.getSelectedIndex();
+        if (selectedTabIndex != -1) MacroRequestListTabsCurrentIndex = selectedTabIndex;
+
+        logger4j.debug("selectedindex:" + selectedTabIndex + " MacroRequestListTabsCurrentIndex:" + MacroRequestListTabsCurrentIndex);
     }
 
+    /**
+     * Button for adding new Tab to RequestList(jTabbedPane).
+     */
+    private void addPlusTabButtonToRequestList() {
+        // Button for adding new Tab to JTabbedPane.
+        plusBtnPanel = new JPanel();
+        MacroRequestListTabs.addTab("", PLUS_BUTTON_ICON, plusBtnPanel, ParmVars.getZapResourceString("MacroBuilderUI.addNewTabToolTip.text"));
+        // MacroRequestListTabs.addTab("", PLUS_BUTTON_ICON, plusBtnPanel);
+    }
+
+    /**
+     * create Close "X" button for Tab in TabbedPane
+     * @param tabTitle
+     * @param maxTabIndex
+     * @return
+     */
+    private JPanel createCloseXbtnForTabbedPane(String tabTitle, int maxTabIndex) {
+        CloseXbtnTabPanel tabPanel = new CloseXbtnTabPanel(tabTitle,
+                new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        logger4j.debug("Enter closeXbtnActionPerfomed");
+                        closeXbtnActionPerfomed();
+                        logger4j.debug("Leave closeXbtnActionPerfomed");
+                    }
+                });
+        MacroRequestListTabs.setTabComponentAt(maxTabIndex, tabPanel);
+        return tabPanel;
+    }
+
+    private void closeXbtnActionPerfomed() {
+        int currentSelectedTabIndex = MacroRequestListTabs.getSelectedIndex();
+        if (currentSelectedTabIndex > 0 && currentSelectedTabIndex <= maxTabIndex) {
+            pmtProvider.removeBaseInstance(currentSelectedTabIndex);
+            requestJLists.remove(currentSelectedTabIndex);
+            logger4j.debug("Begin MacroRequestListTabs.remove");
+            MacroRequestListTabs.remove(currentSelectedTabIndex);
+            logger4j.debug("End MacroRequestListTabs.remove");
+            maxTabIndex--;
+            logger4j.debug("currentIndex deleted: " + currentSelectedTabIndex + " maxTabIndex: " + maxTabIndex);
+        }
+    }
+
+    private void setCloseButtonStates() {
+        // Hide all 'close' buttons except for the selected tab
+        for (int i = 0; i < MacroRequestListTabs.getTabCount(); i++) {
+            Component tabCom = MacroRequestListTabs.getTabComponentAt(i);
+            if (tabCom != null && tabCom instanceof CloseXbtnTabPanel) {
+                CloseXbtnTabPanel jp = (CloseXbtnTabPanel) tabCom;
+                jp.setEnableCloseButton(i == MacroRequestListTabs.getSelectedIndex());
+                logger4j.debug("setCloseButtonState i:" + i + (i== MacroRequestListTabs.getSelectedIndex() ? " Enable" : " Disable"));
+            }
+        }
+    }
+
+    private void MacroCommentsMouseClicked(java.awt.event.MouseEvent evt) {
+        // TODO add your handling code here:
+        if (evt.isPopupTrigger()) {
+
+        }
+        if ((evt.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0) { // left button clicked
+
+        }
+    }
+
+    private void MacroCommentsMousePressed(java.awt.event.MouseEvent evt) {
+        // TODO add your handling code here:
+        paramlogTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // at this point, must load contents because first called MousePressed Event than any other mouse events
+        if (evt.isPopupTrigger()) {
+
+        }
+        if ((evt.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0) { // left button clicked
+
+        }
+    }
+
+    private void MacroCommentsMouseReleased(java.awt.event.MouseEvent evt) {
+        // TODO add your handling code here:
+        if (evt.isPopupTrigger()) {
+
+        }
+        if ((evt.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0) { // left button clicked
+
+        }
+    }
+
+    public void clearDisplayInfoViewFlags() {
+        displayInfo.clearViewFlags();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox CBinheritFromCache;

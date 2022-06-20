@@ -128,8 +128,7 @@ public class LangSelectDialog extends javax.swing.JDialog {
 
     private void OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OkActionPerformed
         // TODO add your handling code here:
-        ParmVars.enc = selected_lang;
-        LangOKNG.LangOK();
+        LangOKNG.LangOK(selected_lang);
         dispose();
     }//GEN-LAST:event_OkActionPerformed
 

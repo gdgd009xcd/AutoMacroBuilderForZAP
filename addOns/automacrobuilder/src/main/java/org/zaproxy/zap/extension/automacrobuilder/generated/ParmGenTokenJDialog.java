@@ -29,7 +29,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
     List<AppParmsIni> newparms = null;
     ParmGenMacroTrace pmt = null;
     ParmGenMacroTraceProvider pmtProvider = null;
-    
+
     /**
      * Creates new form ParmGenTokenJDialog
      */

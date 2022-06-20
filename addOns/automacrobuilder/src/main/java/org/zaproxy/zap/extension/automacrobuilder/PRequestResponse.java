@@ -55,9 +55,15 @@ public class PRequestResponse implements DeepClone {
     }
 
     public PRequestResponse(
-            String h, int p, boolean ssl, byte[] binrequest, byte[] binresponse, Encode pageenc) {
+            String h,
+            int p,
+            boolean ssl,
+            byte[] binrequest,
+            byte[] binresponse,
+            Encode requestEncode,
+            Encode responseEncode) {
         cdmc = null;
-        init(h, p, ssl, binrequest, binresponse, pageenc, pageenc);
+        init(h, p, ssl, binrequest, binresponse, requestEncode, responseEncode);
     }
 
     public PRequestResponse(ClientDependMessageContainer cdmc, Encode defaultenc) {

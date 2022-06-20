@@ -19,7 +19,7 @@ public abstract class GridBagJDialog extends JDialog {
      *  |________________________________________________|
      * </pre>
      */
-    GridBagJDialog(Window owner, String title, ModalityType modalityType) {
+    public GridBagJDialog(Window owner, String title, ModalityType modalityType) {
         super(owner, title, modalityType);
         init();
     }

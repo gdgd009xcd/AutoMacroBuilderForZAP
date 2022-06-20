@@ -30,7 +30,8 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
      */
     public ParmGenAutoTrack(ParmGenNew _pwin) {
         parentwin = _pwin;//親ウィンドウ
-        initComponents();
+        // initComponents();
+        customInitComponents();
 
 
     }
@@ -213,7 +214,126 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
         update();
     }//GEN-LAST:event_valuefilterActionPerformed
 
-   
+    private void customInitComponents() {
+
+        jLabel1 = new javax.swing.JLabel();
+        jLabel1.putClientProperty("html.disable", Boolean.FALSE);
+        TokenTablePane = new javax.swing.JScrollPane();
+        TokenTable = new javax.swing.JTable();
+        jSeparator1 = new javax.swing.JSeparator();
+        NextBtn = new javax.swing.JButton();
+        CancelBtn = new javax.swing.JButton();
+        RegexBtn = new javax.swing.JButton();
+        valuefilter = new javax.swing.JCheckBox();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle(bundle.getString("ParmGenAutoTrack.title.text")); // NOI18N
+
+        jLabel1.setText(bundle.getString("ParmGenAutoTrack.jLabel1.text")); // NOI18N
+
+        TokenTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+
+                },
+                new String [] {
+                        "種類", "tokentype", "出現順序", "name", "value"
+                }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                    false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        TokenTable.getTableHeader().setReorderingAllowed(false);
+        TokenTablePane.setViewportView(TokenTable);
+        if (TokenTable.getColumnModel().getColumnCount() > 0) {
+            TokenTable.getColumnModel().getColumn(0).setHeaderValue(bundle.getString("ParmGenAutoTrack.title0.part.text")); // NOI18N
+            TokenTable.getColumnModel().getColumn(2).setHeaderValue(bundle.getString("ParmGenAutoTrack.title2.order.text")); // NOI18N
+        }
+
+        NextBtn.setText(bundle.getString("ParmGenAutoTrack.NextBtn.text")); // NOI18N
+        NextBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NextBtnActionPerformed(evt);
+            }
+        });
+
+        CancelBtn.setText(bundle.getString("ParmGenAutoTrack.CancelBtn.text")); // NOI18N
+        CancelBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CancelBtnActionPerformed(evt);
+            }
+        });
+
+        RegexBtn.setText(bundle.getString("ParmGenAutoTrack.RegexBtn.text")); // NOI18N
+        RegexBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RegexBtnActionPerformed(evt);
+            }
+        });
+
+        valuefilter.setText(bundle.getString("ParmGenAutoTrack.valuefilter.text")); // NOI18N
+        valuefilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                valuefilterActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGap(12, 12, 12)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jSeparator1)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(NextBtn)
+                                                                .addGap(50, 50, 50)
+                                                                .addComponent(RegexBtn)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                .addComponent(CancelBtn))))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addContainerGap()
+                                                .addComponent(TokenTablePane))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGap(31, 31, 31)
+                                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(valuefilter)))
+                                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addContainerGap()
+                                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, Short.MAX_VALUE)
+                                                .addGap(18, 18, 18))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGap(32, 32, 32)
+                                                .addComponent(valuefilter)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(TokenTablePane, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(NextBtn)
+                                        .addComponent(RegexBtn)
+                                        .addComponent(CancelBtn))
+                                .addGap(23, 23, 23))
+        );
+
+        pack();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton CancelBtn;
     private javax.swing.JButton NextBtn;

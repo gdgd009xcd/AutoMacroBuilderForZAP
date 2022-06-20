@@ -48,8 +48,6 @@ class FetchResponseVal implements DeepClone {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    Encode _enc = null;
-
     // ====================== copy per thread members begin ===============
     // Key: String token  int toStepNo Val: distance = responseStepNo - currentStepNo
     private Map<ParmGenTokenKey, Integer> distances;
@@ -71,10 +69,6 @@ class FetchResponseVal implements DeepClone {
         // pattern = "<AuthUpload>(?:.|\r|\n|\t)*?<password>([a-zA-Z0-9]+)</password>";
         allocLocVal();
 
-        _enc = ParmVars.enc;
-        if (_enc == null) {
-            _enc = Encode.UTF_8;
-        }
         initLocVal();
     }
 
@@ -417,7 +411,8 @@ class FetchResponseVal implements DeepClone {
                             try {
                                 venc =
                                         URLEncoder.encode(
-                                                matchval, ParmVars.enc.getIANACharsetName());
+                                                matchval,
+                                                presponse.getPageEnc().getIANACharsetName());
                             } catch (UnsupportedEncodingException e) {
                                 // NOP
                             }
@@ -460,8 +455,6 @@ class FetchResponseVal implements DeepClone {
                     }
                 }
             } else { // extract parameter from parse response
-                String body = presponse.getBodyStringWithoutHeader();
-
                 if (autotrack) {
                     // ParmGenParser parser = new ParmGenParser(body);
                     // ParmGenToken tkn = parser.fetchNameValue(name, fcnt,
@@ -478,7 +471,10 @@ class FetchResponseVal implements DeepClone {
                                     try {
                                         venc =
                                                 URLEncoder.encode(
-                                                        v, ParmVars.enc.getIANACharsetName());
+                                                        v,
+                                                        presponse
+                                                                .getPageEnc()
+                                                                .getIANACharsetName());
                                     } catch (UnsupportedEncodingException e) {
                                         // NOP
                                     }
@@ -606,7 +602,6 @@ class FetchResponseVal implements DeepClone {
         FetchResponseVal nobj = null;
         try {
             nobj = (FetchResponseVal) super.clone();
-            nobj._enc = this._enc;
             nobj.distances =
                     HashMapDeepCopy.hashMapDeepCopyParmGenTokenKeyKIntegerV(this.distances);
             nobj.trackkeys = this.trackkeys.clone();

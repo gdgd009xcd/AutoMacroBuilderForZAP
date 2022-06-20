@@ -26,10 +26,9 @@ import java.util.Collection;
  * GSON output class for save configration to file
  *
  * @author gdgd009xcd
- * */
+ */
 public class GSONSaveObjectV2 {
     public String VERSION = "2.00"; // configuration file version;
-    public String LANG;
     public boolean ProxyInScope;
     public boolean IntruderInScope;
     public boolean RepeaterInScope;
@@ -44,10 +43,14 @@ public class GSONSaveObjectV2 {
 
     static class AppParmAndSequence {
         public int MyPageIndex; // position index of MyPage in PRequestResponse list
-        public int CurrentRequest; // position index of current selected request in PRequestResponse list
+        public int CurrentRequest; // position index of current selected request in PRequestResponse
+        public String sequenceCharsetName; // CharSetName of entire PRequestResponses sequence
+        // list
         public Collection<GsonPRequestResponse> PRequestResponses; // RequestResponse sequence list
         public Collection<AppParmsIni_List> AppParmsIni_Lists;
+
         public AppParmAndSequence() {
+            sequenceCharsetName = Encode.UTF_8.getIANACharsetName();
             AppParmsIni_Lists = new ArrayList<>();
             PRequestResponses = new ArrayList<>();
         }
@@ -102,6 +105,8 @@ public class GSONSaveObjectV2 {
         public String Comments;
         public boolean Disabled;
         public boolean Error;
+        public String RequestCharsetName;
+        public String ResponseCharsetName;
 
         GsonPRequestResponse() {
             init();
@@ -116,6 +121,8 @@ public class GSONSaveObjectV2 {
             Comments = "";
             Disabled = false;
             Error = false;
+            RequestCharsetName = null;
+            ResponseCharsetName = null;
         }
     }
 }

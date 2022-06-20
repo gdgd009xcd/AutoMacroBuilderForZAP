@@ -36,6 +36,8 @@ public class BeforeMacroDoAction implements InterfaceDoAction {
         UUID uuid = pmt.getUUID();
         // Add uuid to StartedActiveScanContainer to get ParmGenMacroTrace later
         acon.addUUID(uuid);
+        LOGGER4J.debug(
+                "addUUID:" + uuid.toString() + " currentThread:" + Thread.currentThread().getId());
 
         List<InterfaceAction> actions = new CopyOnWriteArrayList<>();
 

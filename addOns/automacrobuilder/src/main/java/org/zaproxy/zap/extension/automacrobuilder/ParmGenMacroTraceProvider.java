@@ -141,7 +141,6 @@ public class ParmGenMacroTraceProvider {
      * add new ParmGenMacroTrace base instance
      *
      * @return added ParmGenMacroTrace
-     *
      */
     public ParmGenMacroTrace addNewBaseInstance() {
         ParmGenMacroTrace pmt_originalbase = new ParmGenMacroTrace();
@@ -156,6 +155,17 @@ public class ParmGenMacroTraceProvider {
      */
     public Iterator<ParmGenMacroTrace> getBaseInstanceIterator() {
         return pmtList.iterator();
+    }
+
+    /**
+     * remove base instance of the specified index
+     *
+     * @param index
+     */
+    public void removeBaseInstance(int index) {
+        if (index > 0 && index < pmtList.size()) {
+            pmtList.remove(index);
+        }
     }
 
     /**
@@ -186,6 +196,14 @@ public class ParmGenMacroTraceProvider {
     }
 
     public synchronized void removeEndInstance(UUID uuid) {
-        pmtmap.remove(uuid);
+        try {
+            pmtmap.remove(uuid);
+        } catch (Exception e) {
+            LOGGER4J.error(
+                    "removeEndInstance failed by exception:"
+                            + e.getMessage()
+                            + " thread:"
+                            + Thread.currentThread().getId());
+        }
     }
 }
