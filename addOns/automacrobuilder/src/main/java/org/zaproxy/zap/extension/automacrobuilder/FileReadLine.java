@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.DefaultCSVFileIANACharsetName;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -40,6 +42,9 @@ public class FileReadLine {
     int current_line;
     boolean saveseekp;
     ArrayList<String> columns;
+
+    private String csvFileIANACharsetName =
+            DefaultCSVFileIANACharsetName; // CSV file Input/Output encoding
 
     public FileReadLine(String _filepath, boolean _saveseekp) {
         csvfile = _filepath;
@@ -72,8 +77,7 @@ public class FileReadLine {
     }
 
     /**
-     * <code>RandomAccessFile.read</code>で読み込んだバイト配列を _encエンコードした<code>String</code>で返します。
-     * EOFに達するとnullを返します。
+     * convert byte array which is readed from <code>RandomAccessFile</code> to encoded String.
      *
      * @param f
      * @return
@@ -108,7 +112,7 @@ public class FileReadLine {
             return null;
         }
 
-        return new String(barray.getBytes(), ParmVars.enc.getIANACharset());
+        return new String(barray.getBytes(), csvFileIANACharsetName);
     }
 
     public synchronized ArrayList<String> readColumns() {

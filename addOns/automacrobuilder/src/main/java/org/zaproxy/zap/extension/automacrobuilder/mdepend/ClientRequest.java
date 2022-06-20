@@ -16,7 +16,7 @@ import org.zaproxy.zap.extension.automacrobuilder.PResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGen;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.ParseHttpContentType;
 import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
 import org.zaproxy.zap.network.HttpRequestBody;
 import org.zaproxy.zap.network.HttpResponseBody;
@@ -35,6 +35,9 @@ public class ClientRequest implements InterfaceClientRequest {
         PRequestResponse pqrs = null;
         if (request != null) {
             ParmGen pgen = new ParmGen(pmt);
+            pmt.clearComments();
+            pmt.setError(false);
+
             // set cookies & tokens in request
             PRequest updatedrequest = pgen.RunPRequest(request);
             if (updatedrequest != null) {
@@ -44,13 +47,10 @@ public class ClientRequest implements InterfaceClientRequest {
             Encode enc_iso8859_1 = Encode.ISO_8859_1;
             Charset charset_iso8859_1 = enc_iso8859_1.getIANACharset();
             String noresponse = "";
-            byte[] byterequest = request.getByteMessage();
             String host = request.getHost();
             int port = request.getPort();
             boolean isSSL = request.isSSL();
-            Encode _pageenc = request.getPageEnc();
-            pmt.clearComments();
-            pmt.setError(false);
+
             HttpMessage htmess = ZapUtil.getHttpMessage(request);
 
             try {
@@ -58,12 +58,22 @@ public class ClientRequest implements InterfaceClientRequest {
                 pmt.send(pmt.getSender(), htmess);
                 HttpRequestHeader requestheader = htmess.getRequestHeader();
                 HttpRequestBody requestbody = htmess.getRequestBody();
+
                 ParmGenBinUtil requestbin = new ParmGenBinUtil(requestheader.toString().getBytes());
                 requestbin.concat(requestbody.getBytes());
                 HttpResponseHeader responseheader = htmess.getResponseHeader();
                 HttpResponseBody responsebody = htmess.getResponseBody();
-                ParmGenBinUtil responsebin =
-                        new ParmGenBinUtil(responseheader.toString().getBytes());
+                String responseHeaderString =
+                        responseheader
+                                .toString(); // response header1<CR><LF>...headerN<CR><LF><CR><LF>
+                Encode responseEncode = pmt.getSequenceEncode();
+                ParseHttpContentType responseHttpContentType =
+                        new ParseHttpContentType(responseHeaderString);
+                if (responseHttpContentType.isResponse()
+                        && responseHttpContentType.hasContentTypeHeader()) {
+                    responseEncode = Encode.getEnum(responseHttpContentType.getCharSetName());
+                }
+                ParmGenBinUtil responsebin = new ParmGenBinUtil(responseHeaderString.getBytes());
                 responsebin.concat(responsebody.getBytes());
                 if (responsebin.length() < 1) {
                     responsebin.clear();
@@ -78,7 +88,8 @@ public class ClientRequest implements InterfaceClientRequest {
                                 isSSL,
                                 requestbin.getBytes(),
                                 responsebin.getBytes(),
-                                _pageenc);
+                                request.getPageEnc(),
+                                responseEncode);
                 String url = pqrs.request.getURL();
                 // parse response then extract tracking tokens
                 int updtcnt = pgen.ResponseRun(url, pqrs);
@@ -96,6 +107,7 @@ public class ClientRequest implements InterfaceClientRequest {
                 LOGGER4J.error("", e);
             }
         }
+
         return pqrs;
     }
 
@@ -106,12 +118,13 @@ public class ClientRequest implements InterfaceClientRequest {
      * @return
      */
     public HttpMessage startZapCurrentRequest(ParmGenMacroTrace pmt, HttpMessage currentmessage) {
+        LOGGER4J.debug("startZapCurrentRequest is Called.");
         pmt.clearComments();
         pmt.setError(false);
         pmt.setState(PMT_CURRENT_BEGIN);
         ParmGen pgen = new ParmGen(pmt);
 
-        PRequest prequest = ZapUtil.getPRequest(currentmessage, ParmVars.enc);
+        PRequest prequest = ZapUtil.getPRequest(currentmessage, pmt.getLastResponseEncode());
 
         PRequest retval = pgen.RunPRequest(prequest);
 
@@ -134,7 +147,7 @@ public class ClientRequest implements InterfaceClientRequest {
      * @param currentmessage
      */
     public void postZapCurrentResponse(ParmGenMacroTrace pmt, HttpMessage currentmessage) {
-        PRequestResponse prs = ZapUtil.getPRequestResponse(currentmessage, ParmVars.enc);
+        PRequestResponse prs = ZapUtil.getPRequestResponse(currentmessage, pmt.getSequenceEncode());
 
         String url = prs.request.getURL();
         LOGGER4J.debug("=====ResponseRun start====== status:" + prs.response.getStatus());

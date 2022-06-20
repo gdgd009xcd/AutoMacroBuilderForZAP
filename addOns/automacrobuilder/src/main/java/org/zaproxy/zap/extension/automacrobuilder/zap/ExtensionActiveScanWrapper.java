@@ -26,6 +26,7 @@ import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
 import org.zaproxy.zap.extension.ascan.PolicyManager;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
+import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.model.Target;
 import org.zaproxy.zap.users.User;
 
@@ -39,9 +40,9 @@ public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
     private StartedActiveScanContainer startedascan = null;
     private ParmGenMacroTraceParams targetStepNo = null;
 
-    ExtensionActiveScanWrapper(ParmGenMacroTraceProvider pmtProvider) {
+    ExtensionActiveScanWrapper(ParmGenMacroTraceProvider pmtProvider, MacroBuilderUI mbui) {
         this.pmtProvider = pmtProvider;
-        startedascan = new StartedActiveScanContainer(this.pmtProvider);
+        startedascan = new StartedActiveScanContainer(this.pmtProvider, mbui);
     }
 
     protected StartedActiveScanContainer getStartedActiveScanContainer() {

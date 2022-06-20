@@ -62,8 +62,10 @@ public class MyFirstSenderListener implements HttpSenderListener {
                 // forceUser set to null for disabling authentication
                 arg0.setRequestingUser(null);
                 // run preMacro
+                LOGGER4J.debug("beforemacro started threadid:" + Thread.currentThread().getId());
                 beforemacroprovider.setParameters(this.startedcon, arg0, arg1, arg2);
                 ThreadManagerProvider.getThreadManager().beginProcess(beforemacroprovider);
+                LOGGER4J.debug("beforemacro end threadid:" + Thread.currentThread().getId());
                 LOGGER4J.debug("Sender is originated from StartedActiveScan. senderid:" + arg2);
             } else {
                 LOGGER4J.debug("sender is not created by ExtensionActiveScanWrapper");
@@ -86,8 +88,10 @@ public class MyFirstSenderListener implements HttpSenderListener {
                 // only call following methods when Scanner.start(Target) is called by
                 // ExtensionActiveScanWrapper
                 // run postMacro
+                LOGGER4J.debug("postmacro started threadid:" + Thread.currentThread().getId());
                 postmacroprovider.setParameters(this.startedcon, arg0, arg1, arg2);
                 ThreadManagerProvider.getThreadManager().beginProcess(postmacroprovider);
+                LOGGER4J.debug("postmacro end threadid:" + Thread.currentThread().getId());
                 LOGGER4J.debug(
                         "onHttpRequestReceive Sender is originated from StartedActiveScan. scanid:"
                                 + arg2);

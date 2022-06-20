@@ -81,11 +81,8 @@ public class ZapUtil {
             HttpRequestHeader httpReqHeader = new HttpRequestHeader(reqhstr, isSSL);
             HttpRequestBody mReqBody = new HttpRequestBody();
             mReqBody.setBody(preq.getBodyBytes());
-            // getCharset return may be null. this function simply get request's content-type
-            // header's value.
-            // setCharset function may be set null value. this function also simply set parameter as
-            // is.
-            mReqBody.setCharset(httpReqHeader.getCharset());
+            // set PRequest Encoding Charset to request Body Charset
+            mReqBody.setCharset(preq.getPageEnc().getIANACharsetName());
             htmess = new HttpMessage(httpReqHeader, mReqBody);
         } catch (HttpMalformedHeaderException e) {
             LOGGER4J.error("reqhstr:" + reqhstr, e);
@@ -124,16 +121,24 @@ public class ZapUtil {
      * Get PRequstResponse from HttpMessage
      *
      * @param htmess
-     * @param pageenc
+     * @param sequenceEncode
      * @return
      */
-    public static PRequestResponse getPRequestResponse(HttpMessage htmess, Encode pageenc) {
+    public static PRequestResponse getPRequestResponse(HttpMessage htmess, Encode sequenceEncode) {
         HttpRequestHeader requestheader = htmess.getRequestHeader();
         HttpRequestBody requestbody = htmess.getRequestBody();
+        Encode requestBodyEncode = Encode.getEnum(requestbody.getCharset());
+        if (requestBodyEncode == null) {
+            requestBodyEncode = sequenceEncode;
+        }
         ParmGenBinUtil requestbin = new ParmGenBinUtil(requestheader.toString().getBytes());
         requestbin.concat(requestbody.getBytes());
         HttpResponseHeader responseheader = htmess.getResponseHeader();
         HttpResponseBody responsebody = htmess.getResponseBody();
+        Encode responseBodyEncode = Encode.getEnum(responsebody.getCharset());
+        if (responseBodyEncode == null) {
+            responseBodyEncode = sequenceEncode;
+        }
         ParmGenBinUtil responsebin = new ParmGenBinUtil(responseheader.toString().getBytes());
         responsebin.concat(responsebody.getBytes());
         if (responsebin.length() < 1) {
@@ -147,25 +152,38 @@ public class ZapUtil {
         int port = requestheader.getHostPort();
         boolean isSSL = requestheader.isSecure();
         return new PRequestResponse(
-                host, port, isSSL, requestbin.getBytes(), responsebin.getBytes(), pageenc);
+                host,
+                port,
+                isSSL,
+                requestbin.getBytes(),
+                responsebin.getBytes(),
+                requestBodyEncode,
+                responseBodyEncode);
     }
 
     /**
      * Get PRequest from HttpMessage
      *
      * @param htmess
-     * @param pageenc
      * @return
      */
-    public static PRequest getPRequest(HttpMessage htmess, Encode pageenc) {
+    public static PRequest getPRequest(HttpMessage htmess, Encode lastResponseEncode) {
         HttpRequestHeader requestheader = htmess.getRequestHeader();
         HttpRequestBody requestbody = htmess.getRequestBody();
+        Encode requestBodyEncode = lastResponseEncode;
+
+        LOGGER4J.debug(
+                "HttpMessage Charset["
+                        + requestbody.getCharset()
+                        + "] lastResponseEncode["
+                        + lastResponseEncode.getIANACharsetName()
+                        + "]");
         ParmGenBinUtil requestbin = new ParmGenBinUtil(requestheader.toString().getBytes());
         requestbin.concat(requestbody.getBytes());
         String host = requestheader.getHostName();
         int port = requestheader.getHostPort();
         boolean isSSL = requestheader.isSecure();
-        return new PRequest(host, port, isSSL, requestbin.getBytes(), pageenc);
+        return new PRequest(host, port, isSSL, requestbin.getBytes(), requestBodyEncode);
     }
 
     /**

@@ -49,9 +49,9 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
     private List<HistoryReference> hrefs = null;
 
     /** @param label */
-    public PopupMenuAdd2MacroBuilder(MacroBuilderUI mbui, ParmGenMacroTrace pmt, String label) {
+    public PopupMenuAdd2MacroBuilder(MacroBuilderUI mbui, String label) {
         super(label, true);
-        this.pmt = pmt;
+        this.pmt = null;
         this.mbui = mbui;
         langdialog = new LangSelectDialog(null, this, Encode.ISO_8859_1, true);
     }
@@ -140,6 +140,7 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
     @Override
     protected void performHistoryReferenceActions(List<HistoryReference> srchrefs) {
         LOGGER4J.debug("performHistoryReferenceActions called.");
+        this.pmt = this.mbui.getCurrentParmGenMacroTrace();
         Invoker invoker = getInvoker();
         String invokername = invoker == null ? "null" : invoker.name();
         LOGGER4J.debug("invoker:" + invokername);
@@ -178,20 +179,26 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
             langdialog.setLang(lang);
             langdialog.setVisible(true);
         } else {
-            LangOK();
+            LangOK(null);
         }
     }
 
     @Override
-    public void LangOK() {
+    public void LangOK(Encode sequenceEncode) {
         // selected encode applied to PRequestResponses.
+        if (sequenceEncode == null) {
+            sequenceEncode = pmt.getSequenceEncode();
+        } else {
+            pmt.setSequenceEncode(sequenceEncode);
+        }
+        final Encode determinedEncode = sequenceEncode;
         this.listprr =
                 this.hrefs.stream()
                         .map(
                                 href ->
                                         new PRequestResponse(
                                                 new ClientDependMessageContainer(href),
-                                                ParmVars.enc))
+                                                determinedEncode))
                         .collect(Collectors.toList());
         mbui.addNewRequests(this.listprr);
         langdialog.setVisible(false);

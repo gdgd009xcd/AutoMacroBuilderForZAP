@@ -23,6 +23,7 @@ import static org.zaproxy.zap.extension.automacrobuilder.HashMapDeepCopy.hashMap
 
 import java.net.HttpCookie;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +37,7 @@ import java.util.regex.Pattern;
 class ParseHTTPHeaders implements DeepClone {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
+    private static int MAXLENOFHTTPHEADER = 10000;
     Pattern valueregex;
     // Pattern formdataregex;
     String formdataheader;
@@ -242,6 +244,25 @@ class ParseHTTPHeaders implements DeepClone {
 
     public void construct(String _h, int _p, boolean _isssl, byte[] _binmessage, Encode _penc) {
         init();
+        int separatorPos =
+                ParmGenUtil.indexOf(
+                        _binmessage,
+                        "\r\n\r\n".getBytes(StandardCharsets.ISO_8859_1),
+                        0,
+                        MAXLENOFHTTPHEADER);
+        if (separatorPos > 0) {
+            byte[] headerBytes = new byte[separatorPos];
+            System.arraycopy(_binmessage, 0, headerBytes, 0, separatorPos);
+            String headerString = new String(headerBytes, StandardCharsets.ISO_8859_1) + "\r\n\r\n";
+            ParseHttpContentType pContType = new ParseHttpContentType(headerString);
+            if (pContType.hasContentTypeHeader()) {
+                String charsetName = pContType.getCharSetName();
+                if (charsetName != null && !charsetName.isEmpty()) {
+                    _penc = Encode.getEnum(charsetName);
+                }
+            }
+        }
+
         String httpmessage = httpMessageString(_binmessage, _penc);
 
         if (httpmessage != null) {

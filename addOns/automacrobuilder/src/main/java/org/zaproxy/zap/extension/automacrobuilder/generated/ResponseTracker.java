@@ -4,9 +4,6 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenRegex;
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenNew;
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenAddParms;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -18,7 +15,8 @@ import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenJSONSave;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSave;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSaveV2;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
@@ -64,7 +62,8 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
      */
     public ResponseTracker(ParmGenNew _pwin) {
         parentwin = _pwin;
-        initComponents();
+        // initComponents();
+        customInitComponents();
         matchpos = -1;
         regexpattern = null;
         respart = "responsebody";
@@ -522,8 +521,8 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
     }// </editor-fold>//GEN-END:initComponents
 
     public void update(){
-        if ( ParmGenJSONSave.selected_messages.size()>0){
-            PRequestResponse rs = ParmGenJSONSave.selected_messages.get(0);
+        if ( ParmGenGSONSaveV2.selected_messages.size()>0){
+            PRequestResponse rs = ParmGenGSONSaveV2.selected_messages.get(0);
             currentrequestresponse = rs;
             ResponseURL.setText(rs.request.getURL());
             ParmGenTextDoc rdoc = new ParmGenTextDoc(ResponseArea);
@@ -674,7 +673,142 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
         }
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    
+    private void customInitComponents() {
+
+        RegexTextBtn = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel1.putClientProperty("html.disable", Boolean.FALSE);
+        ResponseURL = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        RegexPattern = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        FixedValue = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        ResponseArea = new javax.swing.JTextPane();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle(bundle.getString("ResponseTracker.レスポンス追跡.text")); // NOI18N
+
+        RegexTextBtn.setText(bundle.getString("ResponseTracker.2)正規表現テスト.text")); // NOI18N
+        RegexTextBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RegexTextBtnActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText(bundle.getString("ResponseTracker.<HTML> 1)表示されたレスポンスの追跡する値をマウスで選択し、値選択ボタンを押す。<BR> 2)正規表現テストボタンで、値が選択されることを確認する。<BR> 3)次へボタンで、リクエスト設定画面へ。.text")); // NOI18N
+        jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        ResponseURL.setText("jTextField1");
+
+        jLabel2.setText(bundle.getString("ResponseTracker.ＵＲＬ.text")); // NOI18N
+
+        jButton2.setText(bundle.getString("ResponseTracker.1)値選択.text")); // NOI18N
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText(bundle.getString("ResponseTracker.3)次へ.text")); // NOI18N
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText(bundle.getString("ResponseTracker.キャンセル.text")); // NOI18N
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText(bundle.getString("ResponseTracker.レスポンス.text")); // NOI18N
+
+        FixedValue.setText(bundle.getString("ResponseTracker.固定長.text")); // NOI18N
+
+        jScrollPane1.setViewportView(ResponseArea);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jLabel2)
+                                                .addGap(58, 58, 58)
+                                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                                .addContainerGap())
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jSeparator1)
+                                                .addContainerGap())
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(jButton3)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                .addComponent(jButton4))
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addGroup(layout.createSequentialGroup()
+                                                                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                .addGap(18, 18, 18)
+                                                                                .addComponent(FixedValue))
+                                                                        .addGroup(layout.createSequentialGroup()
+                                                                                .addComponent(RegexPattern, javax.swing.GroupLayout.PREFERRED_SIZE, 488, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                .addGap(18, 18, 18)
+                                                                                .addComponent(RegexTextBtn)))
+                                                                .addGap(0, 345, Short.MAX_VALUE)))
+                                                .addGap(12, 12, 12))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jLabel3)
+                                                .addContainerGap(931, Short.MAX_VALUE))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                        .addComponent(jScrollPane1)
+                                                        .addComponent(ResponseURL))
+                                                .addContainerGap())))
+        );
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(jLabel2)
+                                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addComponent(ResponseURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(14, 14, 14)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jButton2)
+                                        .addComponent(FixedValue))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(RegexPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(RegexTextBtn))
+                                .addGap(18, 18, 18)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jButton3)
+                                        .addComponent(jButton4))
+                                .addGap(22, 22, 22))
+        );
+
+        pack();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox FixedValue;
     private javax.swing.JTextField RegexPattern;

@@ -20,23 +20,36 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.LogManager;
-import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 
 /** @author gdgd009xcd */
 public class ParmVars {
     // constants , environment params.
+
+    /**
+     * Relative path (from add-on package) to load add-on resources.
+     *
+     * @see Class#getResource(String)
+     */
+    private static final String ZAP_RESOURCES =
+            "org/zaproxy/zap/extension/automacrobuilder/zap/resources";
+
+    private static final String ZAP_RESOURCE_ABSPATH = "/" + ZAP_RESOURCES;
+
+    public static final String ZAP_ICONS = ZAP_RESOURCE_ABSPATH + "/icon";
+
+    private static final String ZAP_MESSAGES = ZAP_RESOURCES + "/Messages";
+
+    private static final ResourceBundle bundle_zap = ResourceBundle.getBundle(ZAP_MESSAGES);
+
     public static String projectdir;
     public static String parmfile = "";
     public static PLog plog;
-    public static Encode enc;
     static String
             formdataenc; // iso8859-1 encoding is fully  mapped binaries for form-data binaries.
     // Proxy Authentication
@@ -44,47 +57,24 @@ public class ParmVars {
     // String ProxyAuth = "Basic Z2RnZDAwOXhjZDpzb3JyeSxwYXNzd29yZCBoYXMgY2hhbmdlZC4=";
     static String ProxyAuth;
     public static ParmGenSession session;
-    static int displaylength = 10000; // JTextArea/JTextPaneç­swingã®è¡¨ç¤ºãã¤ãæ°
+    static int displaylength = 10000; // displayable length in JTextArea/JTextPane
     private static boolean issaved = false;
     static String fileSep = "/"; // maybe unix filesystem.
-    static String Version = ""; // loaded JSON format version
+    public static String Version = ""; // loaded JSON format version
     public static final int TOSTEPANY = 2147483647; // StepTo number means any value
     static List<String> ExcludeMimeTypes = null;
     private static List<Pattern> ExcludeMimeTypesPatterns = null;
     private static org.apache.logging.log4j.Logger logger4j;
 
+    public static String JSONFileIANACharsetName =
+            Encode.UTF_8.getIANACharsetName(); // JSON file IN/OUT encoding
+    public static String DefaultCSVFileIANACharsetName =
+            Encode.UTF_8.getIANACharsetName(); // "Default" CSV file IN/OUT encoding
+
     //
     // static: Runs only once at startup
     //
     static {
-        /**
-        File log4jdir =
-                new File(ClientDependent.LOG4JXML_DIR); // LOG4JXML_DIR: $HOME/.ZAP or .BurpSuite
-        String fileName = "log4j2.xml";
-        File logFile = new File(log4jdir, fileName);
-        if (!logFile.exists()) {
-            try {
-                ParmGenUtil.copyFileToHome(
-                        logFile.toPath(), "xml/" + fileName, "/burp/" + fileName);
-            } catch (IOException ex) {
-                System.out.println("can't copy log4j2.xml");
-            }
-        }
-
-        if (logFile.exists()) {
-            LoggerContext context = (LoggerContext) LogManager.getContext(false);
-            URI logURI = context.getConfigLocation();
-            if (logURI == null) {
-                context.setConfigLocation(logFile.toURI());
-                System.out.println("log4j: set:" + logFile.getPath());
-            } else {
-                System.out.println("log4j: get URI:" + logURI.toString());
-            }
-        } else {
-            System.out.println("log4j file not found.:" + logFile.getPath());
-        }
-         **/
-
         logger4j = org.apache.logging.log4j.LogManager.getLogger();
 
         setExcludeMimeTypes(
@@ -120,7 +110,6 @@ public class ParmVars {
 
         parmfile = projectdir + fileSep + "MacroBuilder.json";
         plog = new PLog(projectdir);
-        enc = Encode.UTF_8; // default encoding.
         ProxyAuth = "";
         session = new ParmGenSession();
     }
@@ -192,5 +181,15 @@ public class ParmVars {
 
     public static void setParmFile(String v) {
         parmfile = v;
+    }
+
+    /**
+     * get ZAP resource string
+     *
+     * @param key
+     * @return
+     */
+    public static String getZapResourceString(String key) {
+        return bundle_zap.getString(key);
     }
 }

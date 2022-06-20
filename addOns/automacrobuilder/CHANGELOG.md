@@ -2,6 +2,16 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## 8 - 2022-06-20
+### ver1.1.0
+- new feature: [supported simultaneous multiple sequence scanning](https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/1.7.-Simultaneous-multipre-sequence-scanning)
+- improve: changed to new version JSON file format
+- maintenance: updated gson library to the latest version
+
+## 7 - 2022-03-05
+### ver1.0.6
+- underconstruction: new feature implement
+
 ## 6 - 2021-12-15
 ### ver1.0.5
 - maintenance: removed the log4j2 library that this add-on contains

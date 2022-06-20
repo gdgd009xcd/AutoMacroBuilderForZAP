@@ -30,7 +30,6 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
 
     //起動元ウィンドウ
     ParmGenNew parentwin;
-    ParmGenJSONSave csv;
     PRequest selected_request;
     DefaultTableModel ReqParsedTableModel;
     boolean wholeval;// == true 全体を置き換える == false 数値のみ置き換える
@@ -59,9 +58,12 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         if(comboModel==null){
             comboModel = new javax.swing.DefaultComboBoxModel<>(new String[] { bundle.getString("ParmGenAddParms.comboModel.デフォルト.text"), bundle.getString("ParmGenAddParms.comboModel.数値固定長.text"), bundle.getString("ParmGenAddParms.comboModel.英数字固定長.text"), bundle.getString("ParmGenAddParms.comboModel.数値任意長.text"), bundle.getString("ParmGenAddParms.comboModel.英数字任意長.text"), bundle.getString("ParmGenAddParms.comboModel.固定値.text") });
         }
-        initComponents();
+        //initComponents();
+        customInitComponents();
+
         this.setModal(true);
         update();
+
 
     }
 
@@ -74,9 +76,8 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
 
     public void update(){
         ReqParsedTableModel = (DefaultTableModel)ReqParsedTable.getModel();
-        csv = parentwin.getCSV();
         Select_ReplaceTargetURL.removeAllItems();
-        PRequestResponse selected_message = ParmGenJSONSave.selected_messages.get(0);
+        PRequestResponse selected_message = ParmGenGSONSaveV2.selected_messages.get(0);
         int mpos = selected_message.getMacroPos();
         if(mpos<0){
             mpos = ParmVars.TOSTEPANY;
@@ -195,12 +196,13 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         }
         int rmax = ReqParsedTableModel.getRowCount();
         ListSelectionModel lmodel = ReqParsedTable.getSelectionModel();
+        Encode selectedRequestEncode = selected_request.getPageEnc();
         for(j=0; j<rmax;j++){
             String targetptype = (String)ReqParsedTableModel.getValueAt(j, 0);//type
             String name = (String)ReqParsedTableModel.getValueAt(j, 1);//name
             String namedecoded = name;
             try {
-                namedecoded = URLDecoder.decode(name, ParmVars.enc.getIANACharsetName());
+                namedecoded = URLDecoder.decode(name, selectedRequestEncode.getIANACharsetName());
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(ParmGenAddParms.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -657,5 +659,151 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
     @Override
     public void updateMessageAreaInSelectedModel(int panel) {
         //
+    }
+
+    @SuppressWarnings("rawtypes")
+    private void customInitComponents() {
+
+        jLabel5 = new javax.swing.JLabel();
+        jLabel5.putClientProperty("html.disable", Boolean.FALSE);
+        jScrollPane8 = new javax.swing.JScrollPane();
+        ReqParsedTable = new javax.swing.JTable();
+        Add = new javax.swing.JButton();
+        Cancel = new javax.swing.JButton();
+        Select_ReplaceTargetURL = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        ValReplacePart = new javax.swing.JComboBox<>();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle(bundle.getString("ParmGenAddParms.パラメータ選択画面.text")); // NOI18N
+
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel5.setText(bundle.getString("ParmGenAddParms.jLabel5.text")); // NOI18N
+        jLabel5.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        ReqParsedTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+                        {"path", "", "/input.php"},
+                        {"query", "search", "aiueo"},
+                        {"body", "name", "chikara"},
+                        {"body", "password", "secret"},
+                        {"body", "", null},
+                        {"body", null, null}
+                },
+                new String [] {
+                        "位置", "parameter", "value"
+                }
+        ) {
+            Class[] types = new Class [] {
+                    java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        ReqParsedTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        ReqParsedTable.getTableHeader().setReorderingAllowed(false);
+        jScrollPane8.setViewportView(ReqParsedTable);
+        if (ReqParsedTable.getColumnModel().getColumnCount() > 0) {
+            ReqParsedTable.getColumnModel().getColumn(0).setHeaderValue(bundle.getString("ParmGenAddParms.position.text")); // NOI18N
+        }
+
+        Add.setText(bundle.getString("ParmGenAddParms.追加.text")); // NOI18N
+        Add.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AddActionPerformed(evt);
+            }
+        });
+
+        Cancel.setText(bundle.getString("ParmGenAddParms.取消.text")); // NOI18N
+        Cancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CancelActionPerformed(evt);
+            }
+        });
+
+        Select_ReplaceTargetURL.setEditable(true);
+        Select_ReplaceTargetURL.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        Select_ReplaceTargetURL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Select_ReplaceTargetURLActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText(bundle.getString("ParmGenAddParms.置換対象パス：　既設定値に戻す場合は、下記のプルダウンで選択.text")); // NOI18N
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenAddParms.jPanel1.border.text"))); // NOI18N
+
+        ValReplacePart.setModel(comboModel);
+        ValReplacePart.setToolTipText(bundle.getString("ParmGenAddParms.numbertooltip.text")); // NOI18N
+        ValReplacePart.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ValReplacePartActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(ValReplacePart, 0, 140, Short.MAX_VALUE)
+                                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(ValReplacePart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 10, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addComponent(Select_ReplaceTargetURL, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(Add)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                .addComponent(Cancel))
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addGap(12, 12, 12))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
+                                                .addContainerGap())))
+        );
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(Select_ReplaceTargetURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel5)
+                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(Add)
+                                        .addComponent(Cancel))
+                                .addContainerGap())
+        );
+
+        pack();
     }
 }

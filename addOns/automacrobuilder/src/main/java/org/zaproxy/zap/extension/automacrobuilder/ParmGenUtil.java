@@ -22,6 +22,8 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -484,5 +486,70 @@ public class ParmGenUtil {
                 break;
         }
         return mess;
+    }
+
+    /**
+     * decode specified URLencoded value to raw String value
+     *
+     * @param encodedValue
+     * @param encodingCharasetName
+     * @return decoded String or "" ( which value when url decode failed )
+     */
+    public static String URLdecode(String encodedValue, String encodingCharasetName) {
+        String _raw = "";
+        if (encodedValue == null) encodedValue = "";
+        try {
+            // _raw = URLDecoder.decode(_encoded, ParmVars.enc.getIANACharsetName());
+            _raw = URLDecoder.decode(encodedValue, encodingCharasetName);
+        } catch (UnsupportedEncodingException e) {
+            String errorMessage = "URLdecode failed encodedValue[" + encodedValue + "]";
+            LOGGER4J.error(errorMessage, e);
+            _raw = "";
+        }
+        return _raw;
+    }
+
+    /**
+     * Returns the index within this byte array of the first occurrence of the specified keybin byte
+     * array.
+     *
+     * @param seqbin
+     * @param keybin
+     * @param startpos
+     * @param maxLen
+     * @return
+     */
+    public static int indexOf(byte[] seqbin, byte[] keybin, int startpos, int maxLen) {
+        int idx = -1;
+        if (seqbin == null || keybin == null || seqbin.length == 0 || keybin.length == 0) {
+            return -1;
+        }
+
+        int endpos = seqbin.length - keybin.length + 1;
+        if (maxLen > 0 && maxLen < endpos) {
+            endpos = maxLen;
+        }
+
+        if (endpos > 0 && startpos < endpos) {
+            for (int i = startpos; i < endpos; i++) {
+                for (int j = 0; j < keybin.length; j++) {
+                    // System.out.println("  i,j="  + i + "," + j);
+
+                    if (seqbin[i + j] == keybin[j]) {
+                        if (j == keybin.length - 1) {
+                            idx = i;
+                            // System.out.println(" result idx,i,j=" + idx+ "," + i + "," + j);
+                            break;
+                        }
+
+                    } else {
+                        break;
+                    }
+                }
+                if (idx != -1) break;
+            }
+        }
+
+        return idx;
     }
 }

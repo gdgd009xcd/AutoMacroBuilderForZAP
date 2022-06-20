@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
+
 import com.google.gson.GsonBuilder;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -34,17 +36,22 @@ import org.zaproxy.zap.extension.automacrobuilder.GSONSaveObject.AppValue_List;
  *
  * @author gdgd009xcd
  */
-public class ParmGenJSONSave {
+@Deprecated
+public class ParmGenGSONSave {
     private static org.apache.logging.log4j.Logger logger4j =
             org.apache.logging.log4j.LogManager.getLogger();
     ParmGenMacroTrace pmt = null;
-    Iterator<AppParmsIni> it;
     ParmGenWriteFile pfile;
-    public static final String JSONVERSION = "1.1"; // OUTPUT JSON VERSION
-    public static ArrayList<PRequestResponse> selected_messages;
-    public static ArrayList<PRequestResponse> proxy_messages;
+    private static ArrayList<PRequestResponse> selected_messages;
+    private static ArrayList<PRequestResponse> proxy_messages;
 
-    public ParmGenJSONSave(ParmGenMacroTrace _pmt, ArrayList<PRequestResponse> _selected_messages) {
+    /**
+     * Constructor for customActionPerformed method
+     *
+     * @param _pmt
+     * @param _selected_messages
+     */
+    public ParmGenGSONSave(ParmGenMacroTrace _pmt, ArrayList<PRequestResponse> _selected_messages) {
         saveParmGenSetUp(_pmt, null);
         selected_messages = new ArrayList<PRequestResponse>();
         proxy_messages = _selected_messages;
@@ -67,7 +74,8 @@ public class ParmGenJSONSave {
                             false,
                             requeststr.getBytes(),
                             responsestr.getBytes(),
-                            ParmVars.enc);
+                            Encode.UTF_8,
+                            Encode.UTF_8);
             proxy_messages = proxy_messages == null ? new ArrayList<>() : proxy_messages;
             proxy_messages.add(dummy);
         }
@@ -75,11 +83,17 @@ public class ParmGenJSONSave {
         pfile = null;
     }
 
-    public ParmGenJSONSave(List<AppParmsIni> _newparmcsv, ParmGenMacroTrace _pmt) {
+    public ParmGenGSONSave(List<AppParmsIni> _newparmcsv, ParmGenMacroTrace _pmt) {
         saveParmGenSetUp(_pmt, _newparmcsv);
         pfile = null;
     }
 
+    /**
+     * set AppParmsIni to pmt, clear session cookies/tokens
+     *
+     * @param _pmt
+     * @param _newparmcsv
+     */
     private void saveParmGenSetUp(ParmGenMacroTrace _pmt, List<AppParmsIni> _newparmcsv) {
         pmt = _pmt;
         List<AppParmsIni> currentparmcsv = pmt.getAppParmsIniList();
@@ -94,8 +108,6 @@ public class ParmGenJSONSave {
         // ParmGen pgen = new ParmGen(_pmt, _newparmcsv);
         // records = ParmGen.parmcsv;
         logger4j.debug("records is " + (_newparmcsv == null ? "null" : "No null"));
-
-        rewindAppParmsIni();
     }
 
     private String escapeDelimiters(String _d, String code) {
@@ -105,7 +117,7 @@ public class ParmGenJSONSave {
         String encoded = _d;
         try {
             if (code == null) {
-                code = ParmVars.enc.getIANACharsetName();
+                code = JSONFileIANACharsetName;
             }
             if (_dd != null) {
                 encoded = URLEncoder.encode(_dd, code);
@@ -121,6 +133,8 @@ public class ParmGenJSONSave {
         return "\"" + (val == null ? "" : val) + "\"" + (comma ? "," : "");
     }
 
+    /** obsolete no longer used. */
+    @Deprecated
     public void GSONsave() {
         // ファイル初期化
         try {
@@ -135,8 +149,7 @@ public class ParmGenJSONSave {
 
         GSONSaveObject gsobject = new GSONSaveObject();
 
-        gsobject.VERSION = JSONVERSION;
-        gsobject.LANG = ParmVars.enc.getIANACharsetName();
+        // gsobject.LANG = ParmVars.enc.getIANACharsetName();
         gsobject.ProxyInScope = ParmGen.ProxyInScope;
         gsobject.IntruderInScope = ParmGen.IntruderInScope;
         gsobject.RepeaterInScope = ParmGen.RepeaterInScope;
@@ -207,7 +220,7 @@ public class ParmGenJSONSave {
             gsobject.AppParmsIni_List.add(AppParmsIni_ListObj);
         }
 
-        // save Macros
+        // save RequestResponses
         if (pmt != null) {
             pmt.GSONSave(gsobject);
         }
@@ -226,16 +239,5 @@ public class ParmGenJSONSave {
         pfile.close();
         pfile = null;
         ParmVars.Saved(true);
-    }
-
-    public void rewindAppParmsIni() {
-        it = pmt.getIteratorOfAppParmsIni();
-    }
-
-    public AppParmsIni getNextAppParmsIni() {
-        if (it.hasNext()) {
-            return it.next();
-        }
-        return null;
     }
 }

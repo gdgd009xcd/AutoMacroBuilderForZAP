@@ -21,7 +21,7 @@ package org.zaproxy.zap.extension.automacrobuilder;
 
 /** @author gdgd009xcd */
 public interface InterfaceLangOKNG {
-    public void LangOK();
+    public void LangOK(Encode sequenceEncode);
 
     public void LangCANCEL();
 }

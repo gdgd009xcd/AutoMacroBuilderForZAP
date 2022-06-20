@@ -15,6 +15,7 @@ import org.zaproxy.zap.extension.ascan.ActiveScan;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
+import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 
 /**
  * StartedActiveScanContainer
@@ -26,6 +27,7 @@ public class StartedActiveScanContainer {
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
+    private MacroBuilderUI mbui;
     private ParmGenMacroTraceProvider pmtProvider = null;
     private Map<ActiveScan, ParmGenMacroTraceParams> ascanmap = null;
     private static final ThreadLocal<Long> STARTED_THREADS = new ThreadLocal<Long>();
@@ -33,9 +35,10 @@ public class StartedActiveScanContainer {
     private static final ThreadLocal<ParmGenMacroTraceParams> STARTED_PMTPARAMS =
             new ThreadLocal<>();
 
-    StartedActiveScanContainer(ParmGenMacroTraceProvider pmtProvider) {
+    StartedActiveScanContainer(ParmGenMacroTraceProvider pmtProvider, MacroBuilderUI mbui) {
         this.pmtProvider = pmtProvider;
         this.ascanmap = new ConcurrentHashMap<>();
+        this.mbui = mbui;
     }
 
     /**
@@ -166,6 +169,8 @@ public class StartedActiveScanContainer {
      * <p>by ParmGenMacroTraceProvider for currentthread
      */
     public void removeUUID() {
+        LOGGER4J.debug(
+                "removeUUID:" + getUUID() + " currentThread:" + Thread.currentThread().getId());
         STARTED_UUIDS.remove();
     }
 
@@ -209,6 +214,7 @@ public class StartedActiveScanContainer {
         } catch (Exception e) {
             LOGGER4J.error("", e);
         } finally {
+            LOGGER4J.debug("removeEndInstance removed UUID[" + getUUID() + "]");
             removeUUID(); // cleanup UUID for this thread.
         }
     }

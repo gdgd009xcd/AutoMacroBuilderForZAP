@@ -19,11 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import com.google.gson.JsonElement;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -60,82 +56,6 @@ public class ParmGen {
         twin = null;
     }
 
-    /**
-     * load JSON file
-     *
-     * @param filename
-     * @return
-     */
-    private ArrayList<AppParmsIni> loadGSON(String filename) {
-        //
-        List<Exception> exlist = new ArrayList<>(); // Exception list
-        LOGGER4J.info("loadGSON called.");
-
-        ArrayList<AppParmsIni> rlist = null;
-        String pfile = filename;
-
-        try {
-
-            String rdata;
-            String jsondata = new String("");
-            FileReader fr = new FileReader(pfile);
-            try {
-
-                BufferedReader br = new BufferedReader(fr);
-                while ((rdata = br.readLine()) != null) {
-                    jsondata += rdata;
-                } // end of while((rdata = br.readLine()) != null)
-                fr.close();
-                fr = null;
-            } catch (Exception e) {
-                LOGGER4J.error("File Open/RW error", e);
-                exlist.add(e);
-            } finally {
-                if (fr != null) {
-                    try {
-                        fr.close();
-                        fr = null;
-                    } catch (Exception e) {
-                        fr = null;
-                        LOGGER4J.error("File Close error", e);
-                        exlist.add(e);
-                    }
-                }
-            }
-
-            if (exlist.size() > 0) return null;
-
-            GsonParser parser = new GsonParser();
-
-            ParmGenGSON gjson = new ParmGenGSON();
-            JsonElement element = com.google.gson.JsonParser.parseString(jsondata);
-
-            if (parser.elementLoopParser(element, gjson)) {
-                rlist = gjson.Getrlist();
-                pmt.ui.clear();
-                pmt.ui.addNewRequests(gjson.GetMacroRequests());
-                int creq = gjson.getCurrentRequest();
-                pmt.setCurrentRequest(creq);
-                ParmVars.parmfile = filename;
-                ParmVars.Version = gjson.getVersion();
-                ParmVars.enc = gjson.getEncode();
-                ParmVars.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
-
-                pmt.ui.Redraw();
-                ParmVars.Saved(true);
-            } else { // JSON parse failed by something wrong syntax/value..
-                rlist = null;
-            }
-        } catch (Exception e) { // JSON file load failed.
-            LOGGER4J.error("Parse error", e);
-            exlist.add(e);
-            rlist = null;
-        }
-
-        LOGGER4J.info("---------AppPermGen JSON load END ----------");
-        return rlist;
-    }
-
     PRequest ParseRequest(
             PRequest prequest,
             PRequest org_request,
@@ -145,16 +65,7 @@ public class ParmGen {
             AppValue av,
             ParmGenHashMap errorhash) {
 
-        //	String[] headers=request.getHeaderNames();
-        //	boolean noauth = false;
-        //	for(String header : headers){
-        //		if ( header.indexOf("Authorization")==-1){
-        //			noauth = true;
-        //		}
-        //		//printlog(header+" : " + request.getHeader(header), true);
-        //	}
-
-        // if(av.toStepNo>0&&av.toStepNo!=pmt.getStepNo())return null;
+        Encode requestBodyEncode = prequest.getPageEnc();
         if (av.getToStepNo() != ParmVars.TOSTEPANY) {
             if (av.getToStepNo() != pmt.getStepNo()) return null;
         }
@@ -303,7 +214,7 @@ public class ParmGen {
                             content =
                                     new String(
                                             _contarray.getBytes(),
-                                            ParmVars.enc.getIANACharsetName());
+                                            requestBodyEncode.getIANACharsetName());
                         } catch (UnsupportedEncodingException e) {
                             content = null;
                         }
@@ -324,7 +235,8 @@ public class ParmGen {
                                 LOGGER4J.trace(" Modified body[" + n_content + "]");
                                 try {
                                     _contarray.initParmGenBinUtil(
-                                            n_content.getBytes(ParmVars.enc.getIANACharsetName()));
+                                            n_content.getBytes(
+                                                    requestBodyEncode.getIANACharsetName()));
                                 } catch (UnsupportedEncodingException ex) {
                                     Logger.getLogger(ParmGen.class.getName())
                                             .log(Level.SEVERE, null, ex);
@@ -343,7 +255,7 @@ public class ParmGen {
                                         int port = org_request.getPort();
                                         boolean ssl = org_request.isSSL();
                                         org_request.construct(
-                                                host, port, ssl, bmessage, ParmVars.enc);
+                                                host, port, ssl, bmessage, requestBodyEncode);
                                     } catch (UnsupportedEncodingException ex) {
                                         Logger.getLogger(ParmGen.class.getName())
                                                 .log(Level.SEVERE, null, ex);
@@ -370,7 +282,7 @@ public class ParmGen {
                         while ((npos = _contarray.indexOf(boundaryarray.getBytes(), cpos)) != -1) {
                             if (cpos != 0) { // cpos->npos == partdata
                                 partdata = _contarray.subBytes(cpos, npos);
-                                partenc = ParmVars.enc.getIANACharsetName();
+                                partenc = requestBodyEncode.getIANACharsetName();
                                 // Determine partenc: multi-part content encoding from Content-Type
                                 // header in multipart.
                                 int hend = _contarray.indexOf(headerseparator, cpos);
@@ -490,7 +402,7 @@ public class ParmGen {
                                         int port = org_request.getPort();
                                         boolean ssl = org_request.isSSL();
                                         org_request.construct(
-                                                host, port, ssl, bmessage, ParmVars.enc);
+                                                host, port, ssl, bmessage, requestBodyEncode);
                                     } catch (UnsupportedEncodingException ex) {
                                         Logger.getLogger(ParmGen.class.getName())
                                                 .log(Level.SEVERE, null, ex);
@@ -602,45 +514,12 @@ public class ParmGen {
     // constructor for setting new parmcsv
     public ParmGen(ParmGenMacroTrace _pmt, List<AppParmsIni> _parmcsv) {
         pmt = _pmt;
-        if (_parmcsv != null) nullset();
-        initMain(_parmcsv);
-    }
-
-    private void initMain(List<AppParmsIni> newAppParmsIniList) {
-        // main start.
-        // csv load
-        List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
-        if (appParmsIniList == null || newAppParmsIniList != null) {
-
-            pmt.setAppParmsIniList(newAppParmsIniList);
-
-            pmt.nullfetchResValAndCookieMan();
-        }
-    }
-
-    private void nullset() {
-        if (pmt != null) {
-            pmt.setAppParmsIniList(null);
-        }
+        pmt.updateAppParmsIniAndClearCache(_parmcsv);
     }
 
     public static void clearTwin() {
         LOGGER4J.debug("clearTwin.");
         twin = null;
-    }
-
-    public boolean checkAndLoadFile(String fname) { // 20200206 this is executed when json load
-        // at MacruBuilderUI 1304 , ParmGenTop 614
-        // I must implement JSON file check and then ok load function...
-        boolean noerror = false;
-        List<AppParmsIni> newparmcsv = loadGSON(fname);
-        if (newparmcsv != null) {
-            nullset();
-            initMain(newparmcsv);
-            noerror = true;
-        }
-
-        return noerror;
     }
 
     /**
@@ -661,7 +540,8 @@ public class ParmGen {
         if (appParmsIniList == null || appParmsIniList.size() <= 0) {
             // NOP
             if (pmt.isRunning()) {
-                PRequest prequest = new PRequest(_h, port, isSSL, requestbytes, ParmVars.enc);
+                PRequest prequest =
+                        new PRequest(_h, port, isSSL, requestbytes, pmt.getLastResponseEncode());
                 PRequest cookierequest = pmt.configureRequest(prequest);
                 if (cookierequest != null) {
                     return cookierequest.getByteMessage();
@@ -672,7 +552,8 @@ public class ParmGen {
             ParmGenHashMap errorhash = new ParmGenHashMap();
 
             // Request request = connection.getRequest();
-            PRequest prequest = new PRequest(_h, port, isSSL, requestbytes, ParmVars.enc);
+            PRequest prequest =
+                    new PRequest(_h, port, isSSL, requestbytes, pmt.getLastResponseEncode());
 
             // check if we have parameters
             // Construct a new HttpUrl object, since they are immutable
@@ -849,7 +730,7 @@ public class ParmGen {
     }
 
     /**
-     * Set tracked cookie and token in request argument This function for Zap-extension
+     * By this function, Set tracked cookie and token in request argument for Zap-extension
      *
      * @param prequest
      * @return

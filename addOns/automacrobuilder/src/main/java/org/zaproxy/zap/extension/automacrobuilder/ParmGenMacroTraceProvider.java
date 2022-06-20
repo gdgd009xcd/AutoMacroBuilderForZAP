@@ -20,6 +20,7 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,8 +35,8 @@ public class ParmGenMacroTraceProvider {
 
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
-    private Map<UUID, ParmGenMacroTrace> pmtmap;
-    private List<ParmGenMacroTrace> pmtList;
+    private Map<UUID, ParmGenMacroTrace> pmtmap; // current Running Instance of pmt
+    private List<ParmGenMacroTrace> pmtList; // original pmt list
 
     // The following parameters belong to the application scope.
     // so these parameters keep value until ending application.
@@ -137,6 +138,37 @@ public class ParmGenMacroTraceProvider {
     }
 
     /**
+     * add new ParmGenMacroTrace base instance
+     *
+     * @return added ParmGenMacroTrace
+     */
+    public ParmGenMacroTrace addNewBaseInstance() {
+        ParmGenMacroTrace pmt_originalbase = new ParmGenMacroTrace();
+        pmtList.add(pmt_originalbase);
+        return pmt_originalbase;
+    }
+
+    /**
+     * get Iterator of base instances(ParmGenMacroTrace)
+     *
+     * @return
+     */
+    public Iterator<ParmGenMacroTrace> getBaseInstanceIterator() {
+        return pmtList.iterator();
+    }
+
+    /**
+     * remove base instance of the specified index
+     *
+     * @param index
+     */
+    public void removeBaseInstance(int index) {
+        if (index > 0 && index < pmtList.size()) {
+            pmtList.remove(index);
+        }
+    }
+
+    /**
      * get new instance of ParmGenMacroTrace for scan
      *
      * @param sender
@@ -164,6 +196,14 @@ public class ParmGenMacroTraceProvider {
     }
 
     public synchronized void removeEndInstance(UUID uuid) {
-        pmtmap.remove(uuid);
+        try {
+            pmtmap.remove(uuid);
+        } catch (Exception e) {
+            LOGGER4J.error(
+                    "removeEndInstance failed by exception:"
+                            + e.getMessage()
+                            + " thread:"
+                            + Thread.currentThread().getId());
+        }
     }
 }

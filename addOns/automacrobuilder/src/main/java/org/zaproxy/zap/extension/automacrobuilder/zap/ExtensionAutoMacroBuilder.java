@@ -25,7 +25,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import javax.swing.JTextPane;
-import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionAdaptor;
@@ -61,14 +60,6 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
     // URL for AutoMacroBuilder
     private String AMBURL = "https://github.com/gdgd009xcd/AutoMacroBuilderForZAP";
-
-    /**
-     * Relative path (from add-on package) to load add-on resources.
-     *
-     * @see Class#getResource(String)
-     */
-    private static final String RESOURCES =
-            "/org/zaproxy/zap/extension/automacrobuilder/zap/resources";
 
     // private static final ImageIcon ICON =
     //        new ImageIcon(ExtensionAutoMacroBuilder.class.getResource(RESOURCES + "/cake.png"));
@@ -106,7 +97,8 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
         // this.api = new SimpleExampleAPI(this);
         // extensionHook.addApiImplementor(this.api);
-        ExtensionActiveScanWrapper extwrapper = new ExtensionActiveScanWrapper(this.pmtProvider);
+        ExtensionActiveScanWrapper extwrapper =
+                new ExtensionActiveScanWrapper(this.pmtProvider, this.mbui);
 
         // As long as we're not running as a daemon
         if (getView() != null) {
@@ -188,7 +180,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         if (statusPanel == null) {
             statusPanel = new AbstractPanel();
             statusPanel.setLayout(new CardLayout());
-            statusPanel.setName(Constant.messages.getString(PREFIX + ".panel.title"));
+            statusPanel.setName(ParmVars.getZapResourceString(PREFIX + ".panel.title"));
             // System.out.println("getString():" + Constant.messages.getString(PREFIX + ".gorua"));
             // statusPanel.setIcon(ICON);
             JTextPane pane = new JTextPane();
@@ -196,7 +188,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             // Obtain (and set) a font with the size defined in the options
             pane.setFont(FontUtils.getFont("Dialog", Font.PLAIN));
             pane.setContentType("text/html");
-            pane.setText(Constant.messages.getString(PREFIX + ".panel.msg"));
+            pane.setText(ParmVars.getZapResourceString(PREFIX + ".panel.msg"));
             statusPanel.add(pane);
         }
         return statusPanel;
@@ -214,7 +206,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
                             // In this case we'll just show a popup message.
                             View.getSingleton()
                                     .showMessageDialog(
-                                            Constant.messages.getString(
+                                            ParmVars.getZapResourceString(
                                                     PREFIX + ".topmenu.tools.msg"));
                             // And display a file included with the add-on in the Output tab
                             displayFile("");
@@ -258,7 +250,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         if (popupMsgMenuExample == null) {
             popupMsgMenuExample =
                     new RightClickMsgMenu(
-                            this, Constant.messages.getString(PREFIX + ".popup.title"));
+                            this, ParmVars.getZapResourceString(PREFIX + ".popup.title"));
         }
         return popupMsgMenuExample;
     }
@@ -268,8 +260,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             popupadd2MacroBuilder =
                     new PopupMenuAdd2MacroBuilder(
                             this.mbui,
-                            this.pmt,
-                            Constant.messages.getString(
+                            ParmVars.getZapResourceString(
                                     PREFIX + ".popup.title.PopupMenuAdd2MacroBuilder"));
         }
         return popupadd2MacroBuilder;
@@ -282,7 +273,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
     @Override
     public String getDescription() {
-        return Constant.messages.getString(PREFIX + ".desc");
+        return ParmVars.getZapResourceString(PREFIX + ".desc");
     }
 
     @Override

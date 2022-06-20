@@ -1,4 +1,4 @@
-package org.zaproxy.zap.extension.automacrobuilder.view;
+package org.zaproxy.zap.extension.automacrobuilder.zap.view;
 
 import java.awt.*;
 import javax.swing.*;
@@ -6,6 +6,7 @@ import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
+import org.zaproxy.zap.extension.automacrobuilder.view.GridBagJDialog;
 import org.zaproxy.zap.extension.automacrobuilder.zap.AutoMacroBuilderAuthenticationMethodType;
 
 @SuppressWarnings("serial")

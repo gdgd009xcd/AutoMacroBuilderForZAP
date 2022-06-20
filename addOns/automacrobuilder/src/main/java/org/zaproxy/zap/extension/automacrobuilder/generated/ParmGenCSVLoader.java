@@ -190,7 +190,6 @@ public class ParmGenCSVLoader extends javax.swing.JFrame {
         readOneLine();
     }//GEN-LAST:event_ReadNextActionPerformed
 
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton CSelect;
     private javax.swing.JButton Cancel;
