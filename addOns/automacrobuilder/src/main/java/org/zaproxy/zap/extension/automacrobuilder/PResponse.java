@@ -30,9 +30,8 @@ public class PResponse extends ParseHTTPHeaders {
     private ParmGenHashMap map = null;
     private ParmGenParser htmlparser = null;
     private ParmGenGSONDecoder jsonparser = null;
-    // PResponse(){
-    //	super();
-    // }
+
+    public static final int MAX_SIZE_RESPONSE_CONTENTS = 25000;
 
     public PResponse(byte[] bin, Encode _pageenc) {
         super(bin, _pageenc);
@@ -184,20 +183,28 @@ public class PResponse extends ParseHTTPHeaders {
             String theaders, byte[] tbodies, String tcontent_type) {
         List<PResponse.ResponseChunk> reschunks = new ArrayList<>();
 
-        String displayablecontents = "";
+        String mediaType = getContentMimeType();
+        String displayableImageContents = "";
         String application_json_contents = "";
         if (tcontent_type != null && !tcontent_type.isEmpty()) {
             LOGGER4J.debug("content-type[" + tcontent_type + "]");
             List<String> matches =
                     ParmGenUtil.getRegexMatchGroups("image/(jpeg|png|gif)", tcontent_type);
             if (matches.size() > 0) {
-                displayablecontents = matches.get(0);
+                displayableImageContents = matches.get(0);
             }
             List<String> jsonmatches =
                     ParmGenUtil.getRegexMatchGroups("application/(json)", tcontent_type);
             if (jsonmatches.size() > 0) {
                 application_json_contents = jsonmatches.get(0);
             }
+        }
+
+        boolean displayableTextContents = false;
+        if (mediaType.equalsIgnoreCase("text/html")) {
+            displayableTextContents = true;
+        } else if (!application_json_contents.isEmpty()) {
+            displayableTextContents = true;
         }
 
         int partno = 0;
@@ -209,11 +216,11 @@ public class PResponse extends ParseHTTPHeaders {
 
         // create body chunk
         PResponse.ResponseChunk.CHUNKTYPE chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTS;
-        if (!displayablecontents.isEmpty()) {
+        if (!displayableImageContents.isEmpty()) {
             chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTSIMG;
         } else if (tbodies != null
-                && tbodies.length > 20000
-                && application_json_contents.isEmpty()) {
+                && tbodies.length > MAX_SIZE_RESPONSE_CONTENTS
+                && !displayableTextContents) {
             chntype = PResponse.ResponseChunk.CHUNKTYPE.CONTENTSBINARY;
         }
 

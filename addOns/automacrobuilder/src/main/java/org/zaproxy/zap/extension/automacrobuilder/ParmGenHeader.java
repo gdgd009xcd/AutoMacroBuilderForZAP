@@ -33,6 +33,7 @@ public class ParmGenHeader implements DeepClone {
     // ex  Cookie: token=1234 <- been.i = 3
     //    Cookie: goo=tokyo <- been.i = 4
     private String key_uppername; // uppercase header name
+    private ParmGenRequestTokenKey.RequestParamSubType subType;
 
     ParmGenHeader(int _i, String _n, String _v) {
         name = _n;
@@ -45,12 +46,14 @@ public class ParmGenHeader implements DeepClone {
         been.v = _v;
         been.i = _i;
         values.add(been);
+        subType = ParmGenRequestTokenKey.parseParamSubTypeFromHeaderName(name);
     }
 
     private void copyFrom(ParmGenHeader sh) {
         name = sh.name;
         values = ListDeepCopy.listDeepCopy(sh.values);
         key_uppername = sh.key_uppername;
+        subType = sh.subType;
     }
 
     public String getName() {
@@ -74,6 +77,10 @@ public class ParmGenHeader implements DeepClone {
 
     public int getValuesSize() {
         return values.size();
+    }
+
+    public ParmGenRequestTokenKey.RequestParamSubType getSubType() {
+        return subType;
     }
 
     @Override

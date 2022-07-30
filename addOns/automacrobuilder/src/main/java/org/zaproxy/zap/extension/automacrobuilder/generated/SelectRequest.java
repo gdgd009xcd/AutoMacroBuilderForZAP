@@ -13,7 +13,6 @@ import javax.swing.table.TableColumn;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.PResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSave;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSaveV2;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;

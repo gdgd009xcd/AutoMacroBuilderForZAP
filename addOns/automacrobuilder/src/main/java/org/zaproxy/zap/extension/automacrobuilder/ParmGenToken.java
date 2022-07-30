@@ -49,6 +49,7 @@ public class ParmGenToken implements DeepClone {
     ParmGenToken(ParmGenToken tkn) {
         ptk = new ParmGenTokenKey(tkn.ptk);
         ptv = new ParmGenTokenValue(tkn.ptv);
+        enabled = tkn.enabled;
     }
 
     public ParmGenTokenKey getTokenKey() {

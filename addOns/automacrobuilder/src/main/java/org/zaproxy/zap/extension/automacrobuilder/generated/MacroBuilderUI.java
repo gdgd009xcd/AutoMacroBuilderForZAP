@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1284,7 +1285,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 "oauth"
             };
 
-            ArrayList<ParmGenResToken> urltokens = new ArrayList<ParmGenResToken>();// extracted token parameter from Responses.
+            ArrayList<ParmGenResTokenCollections> urltokens = new ArrayList<>();// extracted token parameter from Responses.
             Pattern patternw32 = ParmGenUtil.Pattern_compile("\\w{32}");
 
             List<AppParmsIni> newparms = new ArrayList<AppParmsIni>();// generating parameter for tracking
@@ -1294,72 +1295,62 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
             for (PRequestResponse pqrs : orglist) {
                 HashMap<ParmGenTrackingToken, String> addedtokens = new HashMap<ParmGenTrackingToken, String>();// tokens already extracted from urltokens
-                for(ListIterator<ParmGenResToken> it = urltokens.listIterator(urltokens.size());it.hasPrevious();){//urltokens: extracted tokenlist from Response. 
+                for(ListIterator<ParmGenResTokenCollections> it = urltokens.listIterator(urltokens.size()); it.hasPrevious();){//urltokens: extracted tokenHashMap from Response.
                     //for loop order: fromStepno in descending order(hasPrevious)
 
-                    ParmGenResToken restoken = it.previous();
-                    int fromStepNo = restoken.fromStepNo;
-                    ArrayList<ParmGenTrackingToken> requesttokenlist = new ArrayList<ParmGenTrackingToken>();// token that matched request parameter.
-                    
-                    for(int phase = 0 ; phase<2; phase++){//phase 0: request's token name & value matched,then add to request token list
-                        // phase 1: request's token name matched. then add to request token list.
-                        for (ParmGenToken tkn : restoken.tracktokenlist) {
-                            String token = tkn.getTokenKey().getName();
-                            String value = tkn.getTokenValue().getValue();
-                            ParmGenGSONDecoder reqjdecoder = new ParmGenGSONDecoder(pqrs.request.getBodyStringWithoutHeader());
+                    ParmGenResTokenCollections resTokenCollections = it.previous();
+                    Encode resEncode = resTokenCollections.resEncode;
+                    int fromStepNo = resTokenCollections.fromStepNo;
 
-                            List<ParmGenToken> reqjtklist = reqjdecoder.parseJSON2Token();
+                    ArrayList<ParmGenTrackingToken> requesttokenlist = new ArrayList<ParmGenTrackingToken>();// response tokens that matched request parameter.
 
-                            ParmGenRequestToken _QToken = null;
-                            ParmGenToken _RToken = null;
-                            for(ParmGenToken reqtkn : reqjtklist){
-                                String requestJsonTokenName = null;
-                                ParmGenTokenKey requestJsonParmGenTokenkey = reqtkn.getTokenKey();
-                                if (requestJsonParmGenTokenkey != null) {
-                                    requestJsonTokenName = requestJsonParmGenTokenkey.getName();
-                                }
-                                if(requestJsonTokenName != null
-                                        && !requestJsonTokenName.isEmpty()
-                                        && ((requestJsonTokenName.equals(token)
-                                        && reqtkn.getTokenValue().getValue().equals(value))
-                                        ||(phase==1 && requestJsonTokenName.equals(token)))){// same name && value
-                                    //We found json tracking parameter in request.  
-                                    _RToken = tkn;
-                                    _QToken = new ParmGenRequestToken(reqtkn);
-                                    
-                                    ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
-                                    if(!addedtokens.containsKey(tracktoken)){
-                                        requesttokenlist.add(tracktoken);
-                                        addedtokens.put(tracktoken, "");
-                                    }
-                                }
+                    // parse request for extracting JSON request parameters.
+                    ParmGenGSONDecoder reqjdecoder = new ParmGenGSONDecoder(pqrs.request.getBodyStringWithoutHeader());
+                    List<ParmGenToken> reqjtklist = reqjdecoder.parseJSON2Token();
+
+                    ParmGenRequestToken _QToken = null;
+                    ParmGenToken _RToken = null;
+                    for(ParmGenToken reqtkn : reqjtklist){ // search JSON Name or Value in response
+
+                        ParmGenToken foundResToken = resTokenCollections.findResponseToken(reqtkn);
+
+                        if(foundResToken != null){
+                            //We found json tracking parameter in request.
+                            _RToken = foundResToken;
+                            _QToken = new ParmGenRequestToken(reqtkn);
+
+                            ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
+                            if(!addedtokens.containsKey(tracktoken)){
+                                requesttokenlist.add(tracktoken);
+                                addedtokens.put(tracktoken, "");
                             }
+                        }
+                    }
 
-                            ParmGenRequestToken query_token = pqrs.request.getRequestQueryToken(token);
-                            ParmGenRequestToken body_token = pqrs.request.getRequestBodyToken(token);
-                            logger4j.debug("phase:" + phase +" token[" + token + "] value[" + value + "]");
-                            //phase==0: token name & value matched
-                            //phase==1: token name matched only. we don't care value.
-                            if (pqrs.request.hasQueryParam(token, value) || pqrs.request.hasBodyParam(token, value)
-                                    || (phase==1 && (pqrs.request.hasQueryParamName(token) || pqrs.request.hasBodyParamName(token)))) {
+                    // ParmGenRequestToken query_token = pqrs.request.getRequestQueryToken(token);
+                    // ParmGenRequestToken body_token = pqrs.request.getRequestBodyToken(token);
+                    for(ParmGenRequestToken requestToken: pqrs.request.getRequestTokens()) {
+                        ParmGenToken foundResToken = resTokenCollections.findResponseToken(requestToken);
 
-                                //add a token to  Query / Body Request parameter. 
-                                switch(tkn.getTokenKey().GetTokenType()){
+                        if (foundResToken != null) {
+
+                            //add a token to  Query / Body Request parameter.
+                            switch (foundResToken.getTokenKey().GetTokenType()) {
                                 case ACTION:
                                 case HREF:
 
-                                    ParmGenParseURL _psrcurl = new ParmGenParseURL(tkn.getTokenValue().getURL());
+                                    ParmGenParseURL _psrcurl = new ParmGenParseURL(foundResToken.getTokenValue().getURL());
                                     ParmGenParseURL _pdesturl = new ParmGenParseURL(pqrs.request.getURL());
                                     String srcurl = _psrcurl.getPath();
                                     String desturl = _pdesturl.getPath();
-                                    logger4j.debug( "srcurl|desturl:[" + srcurl + "]|[" + desturl + "]");
-                                    if(desturl.indexOf(srcurl)!=-1){// ACTION SRC/HREF attribute's path == destination request path
-                                        _RToken = tkn;
-                                        if(query_token !=null){
+                                    logger4j.debug("srcurl|desturl:[" + srcurl + "]|[" + desturl + "]");
+                                    if (desturl.indexOf(srcurl) != -1) {// ACTION SRC/HREF attribute's path == destination request path
+                                        _RToken = foundResToken;
+                                        if (requestToken != null) {
                                             //We found same name/value ACTION/HREF's query paramter in request's query parameter.
-                                            _QToken = query_token;
+                                            _QToken = requestToken;
                                             ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
-                                            if(!addedtokens.containsKey(tracktoken)){
+                                            if (!addedtokens.containsKey(tracktoken)) {
                                                 requesttokenlist.add(tracktoken);
                                                 addedtokens.put(tracktoken, "");
                                             }
@@ -1367,43 +1358,32 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     }
                                     break;
                                 default:
-                                    _RToken = tkn;
-                                    if(query_token !=null){
+                                    _RToken = foundResToken;
+                                    if (requestToken != null) {
                                         //We found same name/value INPUT TAG(<INPUT type=...>)'s paramter in request's query parameter.
-                                        _QToken = query_token;
+                                        _QToken = requestToken;
                                         ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
-                                        if(!addedtokens.containsKey(tracktoken)){
-                                            requesttokenlist.add(tracktoken);
-                                            addedtokens.put(tracktoken, "");
-                                        }
-                                    }
-                                    if(body_token!=null){
-                                        //We found same name/value INPUT TAG(<INPUT type=...>)'s paramter in request's body parameter.
-                                        _QToken = body_token;
-                                        ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
-                                        if(!addedtokens.containsKey(tracktoken)){
+                                        if (!addedtokens.containsKey(tracktoken)) {
                                             requesttokenlist.add(tracktoken);
                                             addedtokens.put(tracktoken, "");
                                         }
                                     }
                                     break;
-                                }
                             }
-                            
-                            //bearer/cookie header parameter
-                            ArrayList<HeaderPattern> hlist = pqrs.request.hasHeaderMatchedValue(value);
-                            if(hlist!=null&&hlist.size()>0){
-                                for(HeaderPattern hpattern: hlist){
-                                    _QToken = hpattern.getQToken();
-                                    _RToken = tkn;
-                                    ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, hpattern.getTokenValueRegex());
-                                    if(!addedtokens.containsKey(tracktoken)){
-                                        requesttokenlist.add(tracktoken);
-                                        addedtokens.put(tracktoken, "");
-                                    }
-                                }
+                        }
+                    }
+
+                    //bearer/cookie header parameter
+                    ArrayList<HeaderPattern> hlist = pqrs.request.hasHeaderMatchedValue(resTokenCollections);
+                    if(hlist!=null&&hlist.size()>0){
+                        for(HeaderPattern hpattern: hlist){
+                            _QToken = hpattern.getQToken();
+                            _RToken = hpattern.getFoundResponseToken();
+                            ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, hpattern.getTokenValueRegex());
+                            if (!addedtokens.containsKey(tracktoken)) {
+                                requesttokenlist.add(tracktoken);
+                                addedtokens.put(tracktoken, "");
                             }
-                            
                         }
                     }
 
@@ -1437,8 +1417,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         for (ParmGenTrackingToken PGTtkn : requesttokenlist) {
                             AppValue apv = new AppValue();
                             
-                            ParmGenRequestToken _QToken = PGTtkn.getRequestToken();
-                            ParmGenToken _RToken = PGTtkn.getResponseToken();
+                            _QToken = PGTtkn.getRequestToken();
+                            _RToken = PGTtkn.getResponseToken();
                             ParmGenRequestTokenKey.RequestParamType rptype = _QToken.getKey().getRequestParamType();
                             String token = _RToken.getTokenKey().getName();
                             //body/query/header
@@ -1564,6 +1544,419 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     ParmGenParser pgparser = new ParmGenParser(body);
                     ArrayList<ParmGenToken> bodytklist = pgparser.getNameValues();
                     ParmGenArrayList tklist = new ParmGenArrayList();// tklist: tracking token list
+                    ParmGenResTokenCollections trackurltoken = new ParmGenResTokenCollections();
+                    //trackurltoken.request = pqrs.request;
+                    trackurltoken.resTokenUrlDecodedNameSlashValueHash = new HashMap<>();
+                    trackurltoken.resTokenUrlDecodedNameHash = new HashMap<>();
+                    trackurltoken.resTokenUrlDecodedValueHash = new HashMap<>();
+                    trackurltoken.resEncode = pqrs.response.getPageEnc();
+                    InterfaceCollection<ParmGenToken> ic = pqrs.response.getLocationTokens(tklist);
+                    //JSON parse
+                    ParmGenGSONDecoder jdecoder = new ParmGenGSONDecoder(body);
+                    List<ParmGenToken> jtklist = jdecoder.parseJSON2Token();
+
+                    //add extracted tokens to tklist
+                    tklist.addAll(bodytklist);
+                    tklist.addAll(jtklist);
+
+                    for (ParmGenToken token : tklist) {
+                        //PHPSESSID, token, SesID, jsessionid
+                        String tokenName = token.getTokenKey().getName();
+                        String tokenValue = token.getTokenValue().getValue();
+                        if (tokenName != null && !tokenName.isEmpty() && tokenValue != null && !tokenValue.isEmpty()) { // token must have name and value.
+                            boolean namematched = false;
+                            for (String tkn : tknames) {//予約語に一致
+                                if (tokenName.equalsIgnoreCase(tkn)) {//完全一致 tokenname  that matched reserved token name
+                                    namematched = true;
+                                    break;
+                                }
+                            }
+                            if (!namematched) {//nameはtknamesに一致しない
+                                for (String tkn : tknames) {
+                                    if (tokenName.toUpperCase().indexOf(tkn.toUpperCase()) != -1) {//予約語に部分一致 tokenname that partially matched reserved token name
+                                        namematched = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            // value値がToken値だとみられる
+                            if (!namematched) {//nameはtknamesに一致しない
+
+
+                                if (ParmGenUtil.isTokenValue(tokenValue)) {// token value that looks like tracking token
+                                    namematched = true;
+                                }
+                            }
+                            token.setEnabled(namematched);//namematched==true: token that looks like tracking token
+                            String urlDecodedTokenName = ParmGenUtil.URLdecode(tokenName, trackurltoken.resEncode.getIANACharsetName());
+                            String urlDecodedTokenValue = ParmGenUtil.URLdecode(tokenValue, trackurltoken.resEncode.getIANACharsetName());
+                            String nameSlashValue = urlDecodedTokenName + "/" + urlDecodedTokenValue;
+                            trackurltoken.resTokenUrlDecodedNameSlashValueHash.put(nameSlashValue, token);
+                            trackurltoken.resTokenUrlDecodedNameHash.put(urlDecodedTokenName, token);
+                            trackurltoken.resTokenUrlDecodedValueHash.put(urlDecodedTokenValue, token);
+                            trackurltoken.fromStepNo = pos;
+                        }
+
+                    }
+
+                    if(!trackurltoken.resTokenUrlDecodedNameSlashValueHash.isEmpty()){
+                        urltokens.add(trackurltoken);
+                    }
+                    //### skip end
+                }else{
+                    logger4j.debug("automacro:Response analysis skipped stepno:" + pos + " MIMEtype:" + res_contentMimeType);
+                }
+                
+                
+                pos++;
+            }
+            
+            logger4j.debug("newparms.size=" + newparms.size());
+            new ParmGenTokenJDialog(pmtProvider, false, newparms, pmt).setVisible(true);
+        }
+    }//GEN-LAST:event_ParamTrackingActionPerformed
+
+    @SuppressWarnings("serial")
+    @Deprecated
+    private void ObsoleteParamTrackingActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+        //fileChooser起動
+        File cfile = new File(ParmVars.getParmFile());
+        String dirname = cfile.getParent();
+        JFileChooser jfc = new JFileChooser(dirname) {
+
+            @Override
+            public void approveSelection() {
+                File f = getSelectedFile();
+                if (f.exists() && getDialogType() == SAVE_DIALOG) {
+                    String m = String.format(
+                            "<html>%s already exists.<br>Do you want to replace it?",
+                            f.getAbsolutePath());
+                    int rv = JOptionPane.showConfirmDialog(
+                            this, m, "Save As", JOptionPane.YES_NO_OPTION);
+                    if (rv != JOptionPane.YES_OPTION) {
+                        return;
+                    }
+                }
+                super.approveSelection();
+            }
+        };
+        ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
+        if (pmt == null) return;
+        ParmFileFilter pFilter = new ParmFileFilter();
+        jfc.setFileFilter(pFilter);
+        List<PRequestResponse> orglist = pmt.getOriginalPRequestResponseList();
+        if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION && orglist!=null) {
+
+            //code to handle choosed file here.
+            File file = jfc.getSelectedFile();
+            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
+            if(!pFilter.accept(file)){//拡張子無しの場合は付与
+                name += ".json";
+            }
+            ParmVars.setParmFile(name);
+            //エンコードの設定
+            //ParmVars.encエンコードの決定
+            //先頭ページのレスポンスのcharsetを取得
+            PRequestResponse toppage = orglist.get(0);
+            String tcharset = toppage.response.getCharset();
+            //ParmVars.enc = Encode.getEnum(tcharset);
+
+            String tknames[] = {//予約語 reserved token names
+                    "PHPSESSID",
+                    "JSESSIONID",
+                    "SESID",
+                    "TOKEN",
+                    "_CSRF_TOKEN",
+                    "authenticity_token",
+                    "NONCE",
+                    "access_id",
+                    "fid",
+                    "ethna_csrf",
+                    "uniqid",
+                    "oauth"
+            };
+
+            ArrayList<ParmGenResToken> urltokens = new ArrayList<ParmGenResToken>();// extracted token parameter from Responses.
+            Pattern patternw32 = ParmGenUtil.Pattern_compile("\\w{32}");
+
+            List<AppParmsIni> newparms = new ArrayList<AppParmsIni>();// generating parameter for tracking
+            PRequestResponse respqrs = null;
+            //int row = 0;
+            int pos = 0;
+
+            for (PRequestResponse pqrs : orglist) {
+                HashMap<ParmGenTrackingToken, String> addedtokens = new HashMap<ParmGenTrackingToken, String>();// tokens already extracted from urltokens
+                for(ListIterator<ParmGenResToken> it = urltokens.listIterator(urltokens.size());it.hasPrevious();){//urltokens: extracted tokenlist from Response.
+                    //for loop order: fromStepno in descending order(hasPrevious)
+
+                    ParmGenResToken restoken = it.previous();
+                    int fromStepNo = restoken.fromStepNo;
+                    ArrayList<ParmGenTrackingToken> requesttokenlist = new ArrayList<ParmGenTrackingToken>();// token that matched request parameter.
+
+                    for(int phase = 0 ; phase<2; phase++){//phase 0: request's token name & value matched,then add to request token list
+                        // phase 1: request's token name matched. then add to request token list.
+                        for (ParmGenToken tkn : restoken.tracktokenlist) {
+                            String token = tkn.getTokenKey().getName();
+                            String value = tkn.getTokenValue().getValue();
+                            ParmGenGSONDecoder reqjdecoder = new ParmGenGSONDecoder(pqrs.request.getBodyStringWithoutHeader());
+
+                            List<ParmGenToken> reqjtklist = reqjdecoder.parseJSON2Token();
+
+                            ParmGenRequestToken _QToken = null;
+                            ParmGenToken _RToken = null;
+                            for(ParmGenToken reqtkn : reqjtklist){
+                                String requestJsonTokenName = null;
+                                ParmGenTokenKey requestJsonParmGenTokenkey = reqtkn.getTokenKey();
+                                if (requestJsonParmGenTokenkey != null) {
+                                    requestJsonTokenName = requestJsonParmGenTokenkey.getName();
+                                }
+                                if(requestJsonTokenName != null
+                                        && !requestJsonTokenName.isEmpty()
+                                        && ((requestJsonTokenName.equals(token)
+                                        && reqtkn.getTokenValue().getValue().equals(value))
+                                        ||(phase==1 && requestJsonTokenName.equals(token)))){// same name && value
+                                    //We found json tracking parameter in request.
+                                    _RToken = tkn;
+                                    _QToken = new ParmGenRequestToken(reqtkn);
+
+                                    ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
+                                    if(!addedtokens.containsKey(tracktoken)){
+                                        requesttokenlist.add(tracktoken);
+                                        addedtokens.put(tracktoken, "");
+                                    }
+                                }
+                            }
+
+                            ParmGenRequestToken query_token = pqrs.request.getRequestQueryToken(token);
+                            ParmGenRequestToken body_token = pqrs.request.getRequestBodyToken(token);
+                            logger4j.debug("phase:" + phase +" token[" + token + "] value[" + value + "]");
+                            //phase==0: token name & value matched
+                            //phase==1: token name matched only. we don't care value.
+                            if (pqrs.request.hasQueryParam(token, value) || pqrs.request.hasBodyParam(token, value)
+                                    || (phase==1 && (pqrs.request.hasQueryParamName(token) || pqrs.request.hasBodyParamName(token)))) {
+
+                                //add a token to  Query / Body Request parameter.
+                                switch(tkn.getTokenKey().GetTokenType()){
+                                    case ACTION:
+                                    case HREF:
+
+                                        ParmGenParseURL _psrcurl = new ParmGenParseURL(tkn.getTokenValue().getURL());
+                                        ParmGenParseURL _pdesturl = new ParmGenParseURL(pqrs.request.getURL());
+                                        String srcurl = _psrcurl.getPath();
+                                        String desturl = _pdesturl.getPath();
+                                        logger4j.debug( "srcurl|desturl:[" + srcurl + "]|[" + desturl + "]");
+                                        if(desturl.indexOf(srcurl)!=-1){// ACTION SRC/HREF attribute's path == destination request path
+                                            _RToken = tkn;
+                                            if(query_token !=null){
+                                                //We found same name/value ACTION/HREF's query paramter in request's query parameter.
+                                                _QToken = query_token;
+                                                ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
+                                                if(!addedtokens.containsKey(tracktoken)){
+                                                    requesttokenlist.add(tracktoken);
+                                                    addedtokens.put(tracktoken, "");
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    default:
+                                        _RToken = tkn;
+                                        if(query_token !=null){
+                                            //We found same name/value INPUT TAG(<INPUT type=...>)'s paramter in request's query parameter.
+                                            _QToken = query_token;
+                                            ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
+                                            if(!addedtokens.containsKey(tracktoken)){
+                                                requesttokenlist.add(tracktoken);
+                                                addedtokens.put(tracktoken, "");
+                                            }
+                                        }
+                                        if(body_token!=null){
+                                            //We found same name/value INPUT TAG(<INPUT type=...>)'s paramter in request's body parameter.
+                                            _QToken = body_token;
+                                            ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
+                                            if(!addedtokens.containsKey(tracktoken)){
+                                                requesttokenlist.add(tracktoken);
+                                                addedtokens.put(tracktoken, "");
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+
+                            //bearer/cookie header parameter
+                            ArrayList<HeaderPattern> hlist = pqrs.request.hasHeaderMatchedValue(value);
+                            if(hlist!=null&&hlist.size()>0){
+                                for(HeaderPattern hpattern: hlist){
+                                    _QToken = hpattern.getQToken();
+                                    _RToken = tkn;
+                                    ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, hpattern.getTokenValueRegex());
+                                    if(!addedtokens.containsKey(tracktoken)){
+                                        requesttokenlist.add(tracktoken);
+                                        addedtokens.put(tracktoken, "");
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    if (requesttokenlist.size()>0) {//tracking parameters are generated from requesttokenlist.
+                        //パラメータ生成
+                        AppParmsIni aparms = new AppParmsIni();//add new record
+                        //request URL
+                        //String TargetURLRegex = ".*" + pqrs.request.getPath() + ".*";
+                        String TargetURLRegex = ".*";//SetTo any
+                        //boolean isformdata = pqrs.request.isFormData();
+                        aparms.setUrl(TargetURLRegex);
+                        aparms.setLen(4);//default
+                        aparms.setTypeVal(AppParmsIni.T_TRACK);
+                        aparms.setIniVal(0);
+                        aparms.setMaxVal(0);
+                        aparms.setCsvName("");
+                        aparms.initPause(false);
+                        // aparms.parmlist = new ArrayList<AppValue>();
+                        if(MBfromStepNo.isSelected()){
+                            aparms.setTrackFromStep(fromStepNo);
+                        }else{
+                            aparms.setTrackFromStep(-1);
+                        }
+
+                        if(MBtoStepNo.isSelected()){
+                            aparms.setSetToStep(pos);
+                        }else{
+                            aparms.setSetToStep(ParmVars.TOSTEPANY);
+                        }
+
+                        for (ParmGenTrackingToken PGTtkn : requesttokenlist) {
+                            AppValue apv = new AppValue();
+
+                            ParmGenRequestToken _QToken = PGTtkn.getRequestToken();
+                            ParmGenToken _RToken = PGTtkn.getResponseToken();
+                            ParmGenRequestTokenKey.RequestParamType rptype = _QToken.getKey().getRequestParamType();
+                            String token = _RToken.getTokenKey().getName();
+                            //body/query/header
+                            String valtype = "query";
+
+                            switch(rptype){
+                                case Query:
+                                    break;
+                                case Header:
+                                    valtype = "header";
+                                    break;
+                                default:
+                                    valtype = "body";
+                                    break;
+                            }
+
+                            apv.setValPart(valtype);
+                            apv.clearNoCount();
+                            apv.setCsvpos(-1);
+                            // (?:[&=?]+|^)token=(value)
+
+                            String value = _RToken.getTokenValue().getValue();
+                            apv.setResFetchedValue(value);
+                            int len = value.length();// For Future use. len is currently No Used. len: token value length. May be,we should be specified len into regex's token value length
+                            String paramname = token;
+                            if(_QToken!=null){// May be Request Token name(_RToken's Name) != Response Token name(_QToken's name)
+                                int rlen = _QToken.getValue().length();
+                                if(len<rlen) len = rlen;
+                                paramname = _QToken.getKey().getName();
+                            }
+
+                            apv.setUrlEncode(true);//www-form-urlencoded default
+
+                            String regex = "(?:[&=?]|^)" + ParmGenUtil.escapeRegexChars(paramname) + "=([^&=\\r\\n ;#]+)";//default regex. It may be necessary to set the embedding token value length.
+                            switch(rptype){
+                                case Form_data:
+                                    regex = "(?:[A-Z].* name=\"" + ParmGenUtil.escapeRegexChars(paramname) + "\".*(?:\\r|\\n|\\r\\n))(?:[A-Z].*(?:\\r|\\n|\\r\\n)){0,}(?:\\r|\\n|\\r\\n)(?:.*?)(.+)";
+                                    apv.setUrlEncode(false);
+                                    break;
+                                case Json:
+                                    regex = "\"" + ParmGenUtil.escapeRegexChars(paramname) + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)\"(.+?)\"(?:[\\t \\]\\r\\n]*)(?:,|})";
+                                    List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBodyStringWithoutHeader());
+                                    boolean jsonmatched = false;
+                                    String jsonvalue = _QToken.getValue();
+
+                                    if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
+                                        jsonmatched = true;
+                                    }
+                                    if(!jsonmatched){// "key": value
+                                        regex ="\"" + ParmGenUtil.escapeRegexChars(paramname) + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)([^,:{}\\\"]+?)(?:[\\t \\]\\r\\n]*)(?:,|})";
+                                        jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBodyStringWithoutHeader());
+
+                                        if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
+                                            jsonmatched = true;
+                                        }
+                                    }
+                                    apv.setUrlEncode(false);
+                                    break;
+                                case X_www_form_urlencoded:
+                                    regex = "(?:[&=?]|^)" + ParmGenUtil.escapeRegexChars(paramname) + "=([^&=]+)";
+                                    break;
+                                case Header:
+                                    regex = PGTtkn.getRegex();
+                                    apv.setUrlEncode(false);
+                                    break;
+                            }
+
+
+
+                            String encodedregex = regex;
+                            try {
+                                encodedregex = URLEncoder.encode(regex, JSONFileIANACharsetName);
+                            } catch (UnsupportedEncodingException ex) {
+                                Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
+
+                            }
+                            apv.setURLencodedVal(encodedregex);
+                            //apv.setresURL(".*" + restoken.request.getPath() + ".*");
+                            apv.setresURL(".*");//TrackFrom any URL
+                            apv.setresRegexURLencoded("");
+                            int resvalpart = AppValue.V_AUTOTRACKBODY;
+                            switch (_RToken.getTokenKey().GetTokenType()) {
+                                case LOCATION:
+                                    resvalpart = AppValue.V_HEADER;
+                                    break;
+                                case XCSRF:
+                                    break;
+                                default:
+                                    break;
+
+                            }
+                            apv.setresPartType(apv.getValPart(resvalpart));
+                            apv.setResRegexPos(_RToken.getTokenKey().getFcnt());
+                            apv.setToken(token);
+
+
+                            apv.setFromStepNo(-1);
+
+                            apv.setToStepNo(ParmVars.TOSTEPANY);
+                            apv.setTokenType(_RToken.getTokenKey().GetTokenType());
+                            apv.setEnabled(_RToken.isEnabled());
+                            aparms.addAppValue(apv);
+                        }
+                        //aparms.setRow(row);
+                        //row++;
+                        //aparms.crtGenFormat(true);
+                        newparms.add(aparms);
+                    }
+
+                }
+
+
+                //respqrs = pqrs;
+                //レスポンストークン解析
+                String body = pqrs.response.getBodyStringWithoutHeader();
+
+                String res_contentMimeType = pqrs.response.getContentMimeType();// Content-Type's Mimetype: ex. "text/html"
+
+                // Content-Type/subtype matched excludeMimeType then skip below codes..
+                if(!ParmVars.isMimeTypeExcluded(res_contentMimeType)){
+                    //### skip start
+                    //レスポンスから追跡パラメータ抽出
+                    ParmGenParser pgparser = new ParmGenParser(body);
+                    ArrayList<ParmGenToken> bodytklist = pgparser.getNameValues();
+                    ParmGenArrayList tklist = new ParmGenArrayList();// tklist: tracking token list
                     ParmGenResToken trackurltoken = new ParmGenResToken();
                     //trackurltoken.request = pqrs.request;
                     trackurltoken.tracktokenlist = new ArrayList<ParmGenToken>();
@@ -1618,15 +2011,15 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 }else{
                     logger4j.debug("automacro:Response analysis skipped stepno:" + pos + " MIMEtype:" + res_contentMimeType);
                 }
-                
-                
+
+
                 pos++;
             }
-            
+
             logger4j.debug("newparms.size=" + newparms.size());
             new ParmGenTokenJDialog(pmtProvider, false, newparms, pmt).setVisible(true);
         }
-    }//GEN-LAST:event_ParamTrackingActionPerformed
+    }
 
     private void ClearMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ClearMacroActionPerformed
         // TODO add your handling code here:
