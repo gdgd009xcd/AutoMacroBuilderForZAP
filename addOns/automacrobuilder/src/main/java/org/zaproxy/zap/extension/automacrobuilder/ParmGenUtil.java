@@ -552,4 +552,21 @@ public class ParmGenUtil {
 
         return idx;
     }
+
+    /**
+     * whether the value is URLencoded
+     *
+     * @param value
+     * @return
+     */
+    public static boolean isURLencoded(String value) {
+        Pattern urlEncoded = Pattern.compile("%[A-Fa-f0-9][A-Fa-f0-9]");
+        if (value != null && !value.isEmpty()) {
+            Matcher m = urlEncoded.matcher(value);
+            if (m.find()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

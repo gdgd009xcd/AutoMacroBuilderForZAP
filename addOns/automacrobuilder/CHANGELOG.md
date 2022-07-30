@@ -2,6 +2,11 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## 9 - 2022-07-30
+### ver1.1.1
+- improve: improve performance for "Track"(auto generating parameter tracking) button action.
+- bugfix: fixed some "track" button action problems.
+
 ## 8 - 2022-06-20
 ### ver1.1.0
 - new feature: [supported simultaneous multiple sequence scanning](https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/1.7.-Simultaneous-multipre-sequence-scanning)

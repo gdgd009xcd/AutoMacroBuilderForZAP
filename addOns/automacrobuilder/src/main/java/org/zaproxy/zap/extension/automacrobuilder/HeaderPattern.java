@@ -35,6 +35,7 @@ public class HeaderPattern {
     private String tkvalue_regex = null;
     private ParmGenRequestTokenKey.RequestParamType rptype;
     private ParmGenRequestTokenKey.RequestParamSubType rpsubtype;
+    private ParmGenToken foundResponseToken = null;
 
     HeaderPattern(
             String uhname,
@@ -61,6 +62,11 @@ public class HeaderPattern {
         tkvalue_regex = src.tkvalue_regex;
         rptype = src.rptype;
         rpsubtype = src.rpsubtype;
+        if (src.foundResponseToken != null) {
+            foundResponseToken = new ParmGenToken(src.foundResponseToken);
+        } else {
+            foundResponseToken = null;
+        }
     }
 
     public String getUpperHeaderName() {
@@ -114,6 +120,14 @@ public class HeaderPattern {
         // ParmGenRequestTokenKey.RequestParamSubType _subtype,String _name, String _value, int
         // _fcnt)
         return new ParmGenRequestToken(rptype, rpsubtype, tkname, "", fcnt);
+    }
+
+    public void setFoundResponseToken(ParmGenToken foundResponseToken) {
+        this.foundResponseToken = foundResponseToken;
+    }
+
+    public ParmGenToken getFoundResponseToken() {
+        return this.foundResponseToken;
     }
 
     // this hash doesn't care about fcnt. because request has same rptype/subtype/tkname tokens.

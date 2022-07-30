@@ -406,7 +406,7 @@ class FetchResponseVal implements DeepClone {
                             default:
                                 break;
                         }
-                        if (_uencode == true) {
+                        if (_uencode == true && !ParmGenUtil.isURLencoded(matchval)) {
                             String venc = matchval;
                             try {
                                 venc =
@@ -466,7 +466,7 @@ class FetchResponseVal implements DeepClone {
                             String v = tval.getValue();
                             if (v != null) { // this variable != null or isEmpty() is acceptable.
 
-                                if (_uencode == true) {
+                                if (_uencode == true && !ParmGenUtil.isURLencoded(v)) {
                                     String venc = v;
                                     try {
                                         venc =

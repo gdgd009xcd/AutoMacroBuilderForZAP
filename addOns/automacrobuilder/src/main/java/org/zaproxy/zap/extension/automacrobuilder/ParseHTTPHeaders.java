@@ -97,9 +97,17 @@ class ParseHTTPHeaders implements DeepClone {
         new HeaderPattern(
                 "Authorization",
                 // String.format("xxxx (Bearer) %s xxxx", tokenvalue)
-                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*([bB][eE][aA][rR][eE][rR])[\\r\\n\\t ]*%s(?:[\\r\\n\\t ])*",
-                // String.format("xxxx %s (value) xxxx", tokenvalue)
-                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*%s[\\r\\n\\t ]*([a-zA-Z0-9\\-\\._~\\+/]+\\=*)(?:[\\r\\n\\t ])*",
+                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*([bB][eE][aA][rR][eE][rR])[ ]%s(?:[\\r\\n\\t ])*",
+                // String.format("xxxx %s (value) xxxx", tokenname)
+                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*%s[ ]([a-zA-Z0-9\\-\\._~\\+/]+\\=*)(?:[\\r\\n\\t ])*",
+                ParmGenRequestTokenKey.RequestParamType.Header,
+                ParmGenRequestTokenKey.RequestParamSubType.Bearer),
+        new HeaderPattern(
+                "Authorization",
+                // String.format("xxxx () %s xxxx", tokenvalue)
+                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*()%s(?:[\\r\\n\\t ])*",
+                // String.format("xxxx (Bearer value) xxxx", tokenname)
+                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*([bB][eE][aA][rR][eE][rR][ ][a-zA-Z0-9\\-\\._~\\+/]+\\=*)(?:[\\r\\n\\t ])*",
                 ParmGenRequestTokenKey.RequestParamType.Header,
                 ParmGenRequestTokenKey.RequestParamSubType.Bearer),
         // Cookie: token  =  value
@@ -517,17 +525,7 @@ class ParseHTTPHeaders implements DeepClone {
                     } else if (nv[0].toLowerCase().startsWith("content-length")) {
                         content_length = Integer.parseInt(nv[1]);
                     } else if (nv[0].toLowerCase().startsWith("cookie")) {
-                        String[] cookies = nv[1].split("[\r\n;]");
-                        cookieparams.clear();
-                        for (int ck = 0; ck < cookies.length; ck++) {
-                            String[] cnv = cookies[ck].trim().split("[=]");
-                            if (cnv.length > 1) {
-                                String[] nvpair = new String[2];
-                                nvpair[0] = new String(cnv[0]);
-                                nvpair[1] = new String(cnv[1]);
-                                cookieparams.add(nvpair);
-                            }
-                        }
+                        cookieparams = parseCookieValues(nv[1], null);
                     } else if (nv[0].toLowerCase().startsWith("set-cookie")) { // レスポンスのSet-Cookie値
                         setcookieheaders.add(nv[1]);
                         /**
@@ -1259,6 +1257,46 @@ class ParseHTTPHeaders implements DeepClone {
         return null;
     }
 
+    /**
+     * get List of request's query and body param
+     *
+     * @return List
+     */
+    public List<ParmGenRequestToken> getRequestTokens() {
+        List<ParmGenRequestToken> requestTokens = new ArrayList<>();
+        if (queryparams != null) {
+            for (String[] pair : queryparams) { // queryparams
+                ParmGenRequestToken requestToken =
+                        new ParmGenRequestToken(
+                                ParmGenRequestTokenKey.RequestParamType.Query,
+                                ParmGenRequestTokenKey.RequestParamSubType.Default,
+                                pair[0],
+                                pair[1],
+                                0);
+                requestTokens.add(requestToken);
+            }
+        }
+        if (getBodyParams() != null) {
+            for (String[] pair : bodyparams) { // bodyparams
+                ParmGenRequestTokenKey.RequestParamType rptype =
+                        ParmGenRequestTokenKey.RequestParamType.X_www_form_urlencoded;
+                if (isFormData()) {
+                    rptype = ParmGenRequestTokenKey.RequestParamType.Form_data;
+                }
+                ParmGenRequestToken requestToken =
+                        new ParmGenRequestToken(
+                                rptype,
+                                ParmGenRequestTokenKey.RequestParamSubType.Default,
+                                pair[0],
+                                pair[1],
+                                0);
+                requestTokens.add(requestToken);
+            }
+        }
+
+        return requestTokens;
+    }
+
     public String getQueryParamValue(String _name) {
         if (hashqueryparams != null) {
             return hashqueryparams.get(_name);
@@ -1384,6 +1422,7 @@ class ParseHTTPHeaders implements DeepClone {
      * @param tkval
      * @return
      */
+    @Deprecated
     public ArrayList<HeaderPattern> hasHeaderMatchedValue(String tkval) {
         //
         ArrayList<HeaderPattern> alist = new ArrayList<>();
@@ -1428,6 +1467,106 @@ class ParseHTTPHeaders implements DeepClone {
             }
         }
         return alist;
+    }
+
+    public ArrayList<HeaderPattern> hasHeaderMatchedValue(ParmGenResTokenCollections collections) {
+        //
+        ArrayList<HeaderPattern> alist = new ArrayList<>();
+
+        for (HeaderPattern hpattern : headerpatterns) {
+            ParmGenHeader pgh =
+                    getParmGenHeader(hpattern.getUpperHeaderName()); // get same name header
+            if (pgh != null) {
+
+                // Authorization: Bearer token68
+                // extract token68, then compare it with tkval
+                ListIterator<ParmGenBeen> it = pgh.getValuesIter();
+                while (it.hasNext()) { // access the header list sequentially
+                    HeaderPattern hpattern_copy = new HeaderPattern(hpattern);
+                    ParmGenBeen bn = it.next();
+                    String headerline = pgh.getName() + ": " + bn.v;
+                    ParmGenToken foundResponseToken = null;
+
+                    foundResponseToken =
+                            collections.resTokenUrlDecodedValueHash.get(
+                                    bn.v); // search header's value
+
+                    if (foundResponseToken != null
+                            && foundResponseToken.isEnabled()) { // use valid(Enabled) token only
+                        String tkval = foundResponseToken.getTokenValue().getValue();
+                        Pattern tkname_pattern = hpattern_copy.getTokenName_RegexPattern(tkval);
+                        Matcher tkname_matcher = tkname_pattern.matcher(headerline);
+                        if (tkname_matcher.find()) {
+                            String tokenname = tkname_matcher.group(1);
+                            hpattern_copy.setTkName(tokenname);
+                            Pattern tkvalue_pattern =
+                                    hpattern_copy.getTokenValue_RegexPattern(tokenname);
+                            Matcher tkvalue_matcher = tkvalue_pattern.matcher(headerline);
+                            if (tkvalue_matcher.find()) {
+                                String matched_tkvalue = tkvalue_matcher.group(1);
+                                if (matched_tkvalue != null && matched_tkvalue.equals(tkval)) {
+                                    hpattern_copy.setFcnt(0);
+                                    hpattern_copy.setFoundResponseToken(foundResponseToken);
+                                    alist.add(hpattern_copy);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return alist;
+    }
+
+    /**
+     * parse Cookie values and extract cookie's name=value pairs
+     *
+     * @param values
+     * @param parsedCookieParams
+     * @return
+     */
+    public static ArrayList<String[]> parseCookieValues(
+            String values, ArrayList<String[]> parsedCookieParams) {
+        Pattern cookiesPattern =
+                Pattern.compile(
+                        "([^\\cA-\\cZ()<>@,;:\\\\\"/\\[\\]?={} ]+)[\\r\\n\\t ]*=[\\r\\n\\t ]*(\"?[\\x21\\x23-\\x2B\\x2D-\\x3A\\x3C-\\x5B\\x5D-\\x7E]+\"?)");
+        if (parsedCookieParams == null) {
+            parsedCookieParams = new ArrayList<>();
+        }
+        if (values != null && !values.isEmpty()) {
+            Matcher m = cookiesPattern.matcher(values);
+            while (m.find()) {
+                int groupCount = m.groupCount();
+                if (groupCount > 1) {
+                    String name = m.group(1);
+                    String value = m.group(2);
+                    String[] nvpair = new String[2];
+                    nvpair[0] = name;
+                    nvpair[1] = value;
+                    parsedCookieParams.add(nvpair);
+                }
+            }
+        }
+        return parsedCookieParams;
+    }
+
+    public static String[] parseBearerValue(String value) {
+        Pattern bearerPattern =
+                Pattern.compile(
+                        "([bB][eE][aA][rR][eE][rR])[\\r\\n\\t ]*([a-zA-Z0-9\\-\\._~\\+/]+\\=*)");
+        if (value != null && !value.isEmpty()) {
+            Matcher m = bearerPattern.matcher(value);
+            if (m.find()) {
+                int groupCount = m.groupCount();
+                if (groupCount > 1) {
+                    String[] nvpair = new String[2];
+                    nvpair[0] = m.group(1);
+                    nvpair[1] = m.group(2);
+                    return nvpair;
+                }
+            }
+        }
+        return null;
     }
 
     public void setUUID2CustomHeader(UUID uuid) {

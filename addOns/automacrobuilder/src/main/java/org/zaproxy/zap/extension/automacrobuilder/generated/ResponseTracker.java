@@ -15,7 +15,6 @@ import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSave;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSaveV2;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;

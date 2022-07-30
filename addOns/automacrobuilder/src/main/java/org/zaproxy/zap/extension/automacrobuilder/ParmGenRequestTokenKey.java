@@ -36,7 +36,7 @@ public class ParmGenRequestTokenKey {
         Nop
     }
 
-    enum RequestParamSubType {
+    public enum RequestParamSubType {
         Default,
         Cookie,
         Bearer,
@@ -74,6 +74,21 @@ public class ParmGenRequestTokenKey {
 
     public RequestParamSubType getRequestParamSubType() {
         return subtype;
+    }
+
+    /**
+     * parse headerName and determine Subtype.
+     *
+     * @param headerName
+     * @return
+     */
+    public static RequestParamSubType parseParamSubTypeFromHeaderName(String headerName) {
+        if (headerName.toUpperCase().indexOf("AUTHORIZATION") != -1) {
+            return RequestParamSubType.Bearer;
+        } else if (headerName.toUpperCase().indexOf("COOKIE") != -1) {
+            return RequestParamSubType.Cookie;
+        }
+        return RequestParamSubType.Default;
     }
 
     // HashMap

@@ -44,6 +44,8 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     public static final URL BRKICONURL =
             ParmGenTextDoc.class.getResource(RESOURCES + "/broken.png");
 
+    public static final int MAX_SIZE_REQUEST_PART = 25000;
+
     public static String CONTENTS_PLACEHOLDER_PREFIX = "<__X_PARMGEN:";
     public static String CONTENTS_PLACEHOLDER_SUFFIX = ":NEGMRAP_X__>";
 
@@ -383,7 +385,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                     case CONTENTSIMG:
                         {
                             Style s = null;
-                            if (chunk.getBytes().length > 20000) {
+                            if (chunk.getBytes().length > MAX_SIZE_REQUEST_PART) {
                                 // s = doc.getStyle("binary");
                                 String partno =
                                         CONTENTS_PLACEHOLDER_PREFIX
@@ -420,7 +422,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                         break;
                     case CONTENTS:
                         Style s = null;
-                        if (chunk.getBytes().length > 20000) {
+                        if (chunk.getBytes().length > MAX_SIZE_REQUEST_PART) {
                             // s = doc.getStyle("binary");
                             String partno =
                                     CONTENTS_PLACEHOLDER_PREFIX
@@ -429,7 +431,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                             ImageIcon icon = new ImageIcon(BINICONURL, partno);
                             // doc.addStyle(partno, def);
                             s = makeStyleImageButton(def, icon, partno);
-                            LOGGER4J.debug("@CONTENTS length:" + chunk.getBytes().length);
+                            LOGGER4J.debug("BINICONED @CONTENTS length:" + chunk.getBytes().length);
                             element = partno;
                         } else {
                             s = null;
