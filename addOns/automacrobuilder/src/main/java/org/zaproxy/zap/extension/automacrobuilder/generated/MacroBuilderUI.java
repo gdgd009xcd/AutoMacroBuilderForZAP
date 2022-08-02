@@ -1392,7 +1392,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         AppParmsIni aparms = new AppParmsIni();//add new record
                         //request URL
                         //String TargetURLRegex = ".*" + pqrs.request.getPath() + ".*";
-                        String TargetURLRegex = ".*";//SetTo any 
+                        String TargetURLRegex = ".*";//SetTo any
                         //boolean isformdata = pqrs.request.isFormData();
                         aparms.setUrl(TargetURLRegex);
                         aparms.setLen(4);//default
@@ -1407,23 +1407,23 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         }else{
                             aparms.setTrackFromStep(-1);
                         }
-                        
+
                         if(MBtoStepNo.isSelected()){
                             aparms.setSetToStep(pos);
                         }else{
                             aparms.setSetToStep(ParmVars.TOSTEPANY);
                         }
-                        
+
                         for (ParmGenTrackingToken PGTtkn : requesttokenlist) {
                             AppValue apv = new AppValue();
-                            
+
                             _QToken = PGTtkn.getRequestToken();
                             _RToken = PGTtkn.getResponseToken();
                             ParmGenRequestTokenKey.RequestParamType rptype = _QToken.getKey().getRequestParamType();
                             String token = _RToken.getTokenKey().getName();
                             //body/query/header
                             String valtype = "query";
-                            
+
                             switch(rptype){
                                 case Query:
                                     break;
@@ -1442,16 +1442,16 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
                             String value = _RToken.getTokenValue().getValue();
                             apv.setResFetchedValue(value);
-                            int len = value.length();// For Future use. len is currently No Used. len: token value length. May be,we should be specified len into regex's token value length 
+                            int len = value.length();// For Future use. len is currently No Used. len: token value length. May be,we should be specified len into regex's token value length
                             String paramname = token;
                             if(_QToken!=null){// May be Request Token name(_RToken's Name) != Response Token name(_QToken's name)
                                 int rlen = _QToken.getValue().length();
                                 if(len<rlen) len = rlen;
                                 paramname = _QToken.getKey().getName();
                             }
-                            
+
                             apv.setUrlEncode(true);//www-form-urlencoded default
-                            
+
                             String regex = "(?:[&=?]|^)" + ParmGenUtil.escapeRegexChars(paramname) + "=([^&=\\r\\n ;#]+)";//default regex. It may be necessary to set the embedding token value length.
                             switch(rptype){
                                 case Form_data:
@@ -1463,14 +1463,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBodyStringWithoutHeader());
                                     boolean jsonmatched = false;
                                     String jsonvalue = _QToken.getValue();
-                                    
+
                                     if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
                                         jsonmatched = true;
                                     }
                                     if(!jsonmatched){// "key": value
                                         regex ="\"" + ParmGenUtil.escapeRegexChars(paramname) + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)([^,:{}\\\"]+?)(?:[\\t \\]\\r\\n]*)(?:,|})";
                                         jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBodyStringWithoutHeader());
-                                        
+
                                         if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
                                             jsonmatched = true;
                                         }
@@ -1485,15 +1485,15 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     apv.setUrlEncode(false);
                                     break;
                             }
-                            
-                            
-                            
+
+
+
                             String encodedregex = regex;
                             try {
                                 encodedregex = URLEncoder.encode(regex, JSONFileIANACharsetName);
                             } catch (UnsupportedEncodingException ex) {
                                 Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
-                               
+
                             }
                             apv.setURLencodedVal(encodedregex);
                             //apv.setresURL(".*" + restoken.request.getPath() + ".*");
@@ -1513,7 +1513,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             apv.setresPartType(apv.getValPart(resvalpart));
                             apv.setResRegexPos(_RToken.getTokenKey().getFcnt());
                             apv.setToken(token);
-                            
+
 
                             apv.setFromStepNo(-1);
 
@@ -1529,14 +1529,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     }
 
                 }
-                
+
 
                 //respqrs = pqrs;
                 //レスポンストークン解析
                 String body = pqrs.response.getBodyStringWithoutHeader();
-                
+
                 String res_contentMimeType = pqrs.response.getContentMimeType();// Content-Type's Mimetype: ex. "text/html"
-                
+
                 // Content-Type/subtype matched excludeMimeType then skip below codes..
                 if(!ParmVars.isMimeTypeExcluded(res_contentMimeType)){
                     //### skip start
@@ -1606,11 +1606,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 }else{
                     logger4j.debug("automacro:Response analysis skipped stepno:" + pos + " MIMEtype:" + res_contentMimeType);
                 }
-                
-                
+
+
                 pos++;
             }
-            
+
             logger4j.debug("newparms.size=" + newparms.size());
             new ParmGenTokenJDialog(pmtProvider, false, newparms, pmt).setVisible(true);
         }
