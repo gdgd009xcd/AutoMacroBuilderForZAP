@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "1.1.1"
+version = "1.1.2"
 description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {
@@ -9,7 +9,7 @@ tasks.withType<JavaCompile> {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("org.jsoup:jsoup:1.14.3")
+    implementation("org.jsoup:jsoup:1.15.3")
 }
 
 tasks {
