@@ -125,7 +125,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText(bundle.getString("ParmGenTokenJDialog.追跡するパラメータを指定してください。.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenTokenJDialog.SelectParamLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

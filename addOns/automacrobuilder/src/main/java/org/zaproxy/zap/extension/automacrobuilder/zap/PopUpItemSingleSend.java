@@ -25,6 +25,8 @@ public class PopUpItemSingleSend extends JMenuItem {
             org.apache.logging.log4j.LogManager.getLogger();
 
     private HttpSender sender = null;
+
+    @Deprecated
     private static HttpMethodHelper helper = new HttpMethodHelper();
 
     private BeforeMacroDoActionProvider beforemacroprovider = null;
@@ -76,7 +78,7 @@ public class PopUpItemSingleSend extends JMenuItem {
                                                             .beginProcess(beforemacroprovider);
                                                     htmess.setTimeSentMillis(
                                                             System.currentTimeMillis());
-                                                    send(htmess);
+                                                    pmt.send(sender, htmess);
                                                     postmacroprovider.setParameters(
                                                             f_acon,
                                                             htmess,
@@ -117,18 +119,11 @@ public class PopUpItemSingleSend extends JMenuItem {
     /**
      * Get HttpSender Instance
      *
-     * <p>You should call shutdown() after sendAndRecv.
+     * <P>no need to use sender.shutdown.</P>
      */
     public HttpSender getHttpSenderInstance() {
         if (sender == null) {
-            ConnectionParam cparam = Model.getSingleton().getOptionsParam().getConnectionParam();
-            int sec = cparam.getTimeoutInSecs();
-            LOGGER4J.debug("DefaultTimeout: " + sec);
-            cparam.setHttpStateEnabled(
-                    false); // HttpState No used. i.e. cookie management disabled provided by ZAP.
-
-            sender = new HttpSender(cparam, false, HttpSender.MANUAL_REQUEST_INITIATOR);
-            // setUseCookies(false); // since zap 2.9.0
+            sender = new HttpSender(HttpSender.MANUAL_REQUEST_INITIATOR);
         }
         return sender;
     }
@@ -140,11 +135,11 @@ public class PopUpItemSingleSend extends JMenuItem {
      */
     public void shutdownHttpSender() {
         if (sender != null) {
-            sender.shutdown();
             sender = null;
         }
     }
 
+    @Deprecated
     private HttpMethod runMethod(HttpMessage msg) throws IOException {
         HttpMethod method = null;
 
@@ -169,6 +164,7 @@ public class PopUpItemSingleSend extends JMenuItem {
         return method;
     }
 
+    @Deprecated
     private void send(HttpMessage msg) throws IOException {
         boolean isFollowRedirect = false;
         HttpMethod method = null;

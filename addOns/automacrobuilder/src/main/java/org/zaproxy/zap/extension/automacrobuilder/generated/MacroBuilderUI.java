@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -546,7 +545,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         setPreferredSize(new java.awt.Dimension(873, 850));
 
-        jPanel4.setPreferredSize(new java.awt.Dimension(871, 1400));
+        jPanel4.setPreferredSize(new java.awt.Dimension(871, 1500));
 
         paramlog.setPreferredSize(new java.awt.Dimension(847, 300));
         paramlog.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -582,7 +581,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
-        paramlog.addTab(bundle.getString("MacroBuilderUI.リクエスト.text"), jPanel1); // NOI18N
+        paramlog.addTab(bundle.getString("MacroBuilderUI.paramlogToAddRequestTabTitle.text"), jPanel1); // NOI18N
 
         MacroResponse.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -608,7 +607,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
-        paramlog.addTab(bundle.getString("MacroBuilderUI.レスポンス.text"), jPanel2); // NOI18N
+        paramlog.addTab(bundle.getString("MacroBuilderUI.paramlogToAddResponseTabTitle.text"), jPanel2); // NOI18N
 
         jScrollPane5.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -628,9 +627,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
-        paramlog.addTab(bundle.getString("MacroBuilderUI.追跡.text"), jPanel3); // NOI18N
+        paramlog.addTab(bundle.getString("MacroBuilderUI.paramlogToAddTrackingTabTitle.text"), jPanel3); // NOI18N
 
-        ParamTracking.setText(bundle.getString("MacroBuilderUI.追跡.text")); // NOI18N
+        ParamTracking.setText(bundle.getString("MacroBuilderUI.paramlogToAddTrackingTabTitle.text")); // NOI18N
         ParamTracking.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ParamTrackingActionPerformed(evt);
@@ -644,7 +643,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
-        ClearMacro.setText(bundle.getString("MacroBuilderUI.クリア.text")); // NOI18N
+        ClearMacro.setText(bundle.getString("MacroBuilderUI.ClearMacroBtn.text")); // NOI18N
         ClearMacro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ClearMacroActionPerformed(evt);
@@ -673,7 +672,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
-        jLabel2.setText(bundle.getString("MacroBuilderUI.マクロリクエスト一覧.text")); // NOI18N
+        jLabel2.setText(bundle.getString("MacroBuilderUI.MacroRequestListLabel2.text")); // NOI18N
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("MacroBuilderUI.TakeOverCache.text"))); // NOI18N
 
@@ -685,6 +684,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
+        jLabel4.putClientProperty("html.disable", Boolean.FALSE);
         jLabel4.setText(bundle.getString("MacroBuilderUI.TakeOverInfoLabel.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -722,8 +722,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         });
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel3.setText("<HTML>\n<DL>\n<BR>\n<LI>baseline(experimental): you can test(tamper) tracking tokens with scanner/intruder which has baseline request.\n<LI>replace(default): Tracking tokens is completely replaced with extracted value from previous page's response.\n<BR><BR>* For Details , refer ?button in the \"baseline/replace mode\" section. \n<DL>\n</HTML>");
-        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        //jLabel3.setText("<HTML>\n<DL>\n<BR>\n<LI>baseline(experimental): you can test(tamper) tracking tokens<BR> with scanner/intruder which has baseline request.\n<LI>replace(default): Tracking tokens is completely replaced with extracted value from previous page's response.\n<BR><BR>* For Details , refer ?button in the \"baseline/replace mode\" section. \n<DL>\n</HTML>");
+        jLabel3.setText(bundle.getString("MacroBuilderUI.TrackingParamterConfig.text"));
+        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        //LineBorder lborder = new LineBorder(Color.RED, 2, false);
+        //jLabel3.setBorder(lborder);
+
 
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -741,7 +745,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     .addComponent(TrackMode, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
@@ -753,7 +757,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         .addComponent(TrackMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(39, 39, 39)
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -766,7 +770,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         waitsec.setText("0");
 
-        MBfromStepNo.setText(bundle.getString("MacroBuilderUI.追跡FROM設定.text")); // NOI18N
+        MBfromStepNo.setText(bundle.getString("MacroBuilderUI.FromStepBtn.text")); // NOI18N
         MBfromStepNo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 MBfromStepNoActionPerformed(evt);
@@ -916,9 +920,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             .addComponent(ParamTracking, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Load, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Save, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(StartScan, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(UpSelected, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(DownSelected, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(StartScan, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(UpSelected, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(DownSelected, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -928,7 +932,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                 .addComponent(waitsec, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(231, 231, 231))
                             .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(MBfromStepNo, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(MBfromStepNo, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(26, 26, 26)))
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(MBtoStepNo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

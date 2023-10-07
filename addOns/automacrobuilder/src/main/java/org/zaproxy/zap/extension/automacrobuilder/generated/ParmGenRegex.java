@@ -14,10 +14,8 @@ import javax.swing.text.Document;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
@@ -25,13 +23,11 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 
-import com.sun.management.VMOption;
 import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCancelAction;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.PResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
@@ -92,14 +88,14 @@ public class ParmGenRegex extends javax.swing.JDialog {
         if(comboModel_columnpolicy==null){
             comboModel_columnpolicy = new javax.swing.DefaultComboBoxModel<String>(new String[] { 
             java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_fixed.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_以上（最小マッチ）.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_以上（最大マッチ）.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_以下.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_範囲.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_1以上（最小マッチ）.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_1以上（最大マッチ）.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_0以上（最小マッチ）.text"),
-            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_0以上（最大マッチ）.text")
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_Or_More(lazy).text"),
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_Or_More(greedy).text"),
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_Or_Less_than.text"),
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_range.text"),
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_1orMore(lazy).text"),
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_1orMore(greedy).text"),
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_0orMore(lazy).text"),
+            java.util.ResourceBundle.getBundle("burp/Bundle").getString("ParmGenRegex.comboModel_columnpolicy_0orMore(greedy).text")
             });
         }
     }
@@ -340,7 +336,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
             m = compiledregex.matcher(original);
         }catch(Exception e){
             ParmVars.plog.printException(e);
-            JOptionPane.showMessageDialog(this,bundle.getString("ParmGenRegex.正規表現が不正.text")+ e.toString() ,  bundle.getString("ParmGenRegex.正規表現エラー.text"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,bundle.getString("ParmGenRegex.OptionPaneErrorMessage_RegexSyntaxError.text")+ e.toString() ,  bundle.getString("ParmGenRegex.ErrorOptionPaneTitle.text"), JOptionPane.ERROR_MESSAGE);
             return;
         }
         
@@ -422,11 +418,11 @@ public class ParmGenRegex extends javax.swing.JDialog {
         if ( fidx != -1){
             OriginalText.setCaretPosition(findplist.get(fidx));
             fidx++;
-            JOptionPane.showMessageDialog(this, Integer.toString(fcount)+bundle.getString("ParmGenRegex.箇所一致しました。.text"), bundle.getString("ParmGenRegex.検索結果.text"), JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, Integer.toString(fcount)+bundle.getString("ParmGenRegex.SearchResultMessage.text"), bundle.getString("ParmGenRegex.SearchResultTitle.text"), JOptionPane.INFORMATION_MESSAGE);
         }else{
             
             java.awt.Toolkit.getDefaultToolkit().beep();
-            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.正規表現が一致しませんでした。.text"), bundle.getString("ParmGenRegex.検索結果.text"), JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.RegexMatchFailedMessage.text"), bundle.getString("ParmGenRegex.SearchResultTitle.text"), JOptionPane.QUESTION_MESSAGE);
         }
     }
     
@@ -564,7 +560,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         OrigUndoRedoMenu.add(SelectPattern);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle(bundle.getString("ParmGenRegex.正規表現テスト画面.text")); // NOI18N
+        setTitle(bundle.getString("ParmGenRegex.RegexEditorDialogTitle.text")); // NOI18N
 
         RegexText.setText("Formp=[^&=]*?([a-z0-9]+)[^&=]*?");
         RegexText.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -602,13 +598,13 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
         TextTab.addTab("Text", jScrollPane2);
 
-        jLabel1.setText(bundle.getString("ParmGenRegex.正規表現.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenRegex.RegexEditorDialogLabel1.text")); // NOI18N
 
-        jLabel2.setText(bundle.getString("ParmGenRegex.オリジナル.text")); // NOI18N
+        jLabel2.setText(bundle.getString("ParmGenRegex.OriginalLabel2.text")); // NOI18N
 
         RegexType.setModel(comboModel_regextype);
 
-        jLabel3.setText(bundle.getString("ParmGenRegex.桁数.text")); // NOI18N
+        jLabel3.setText(bundle.getString("ParmGenRegex.NumOfDigitsLabel3.text")); // NOI18N
 
         ColumnPolicy.setModel(comboModel_columnpolicy);
         ColumnPolicy.addActionListener(new java.awt.event.ActionListener() {
@@ -629,30 +625,30 @@ public class ParmGenRegex extends javax.swing.JDialog {
         To.setText("10");
         To.setPreferredSize(new java.awt.Dimension(10, 22));
 
-        FTlabel.setText(bundle.getString("ParmGenRegex.～.text")); // NOI18N
+        FTlabel.setText(bundle.getString("ParmGenRegex.RangeFTlabel.text")); // NOI18N
 
-        Add.setText(bundle.getString("ParmGenRegex.追加.text")); // NOI18N
+        Add.setText(bundle.getString("ParmGenRegex.AddBtn.text")); // NOI18N
         Add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 AddActionPerformed(evt);
             }
         });
 
-        Save.setText(bundle.getString("ParmGenRegex.保存.text")); // NOI18N
+        Save.setText(bundle.getString("ParmGenRegex.SaveBtn.text")); // NOI18N
         Save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 SaveActionPerformed(evt);
             }
         });
 
-        Cancel.setText(bundle.getString("ParmGenRegex.取消.text")); // NOI18N
+        Cancel.setText(bundle.getString("ParmGenRegex.CancelBtn.text")); // NOI18N
         Cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CancelActionPerformed(evt);
             }
         });
 
-        RegexTest.setText(bundle.getString("ParmGenRegex.テスト.text")); // NOI18N
+        RegexTest.setText(bundle.getString("ParmGenRegex.RegexTestBtn.text")); // NOI18N
         RegexTest.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RegexTestActionPerformed(evt);
@@ -663,7 +659,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         MULTILINE.setText(bundle.getString("ParmGenRegex.MULTILINE.text")); // NOI18N
         MULTILINE.setEnabled(false);
 
-        CASE_INSENSITIVE.setText(bundle.getString("ParmGenRegex.英大小文字区別しない.text")); // NOI18N
+        CASE_INSENSITIVE.setText(bundle.getString("ParmGenRegex.CaseInsensitiveCheckBox.text")); // NOI18N
         CASE_INSENSITIVE.setEnabled(false);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -827,15 +823,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
             return;
         }
 
-        if (regextype_val.equals(bundle.getString("ParmGenRegex.数値.text"))){
+        if (regextype_val.equals(bundle.getString("ParmGenRegex.RegexTypeNumber.text"))){
             regprefix = "\\d";
-        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.英数字.text"))){
+        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.RegexTypeAlphanum.text"))){
             regprefix = "[0-9a-zA-Z]";
-        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.全角(%NN).text"))){
+        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.RegexTypeURLencoding.text"))){
             regprefix = "(?:%[0-9ABCDEFabcdef]{2})";
-        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.任意(.*).text"))){
+        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.RegexTypeDotAsterisk.text"))){
             regprefix = ".";
-        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.改行含む任意.text"))){
+        }else if(regextype_val.equals(bundle.getString("ParmGenRegex.RegexTypeCRLFANY.text"))){
             regprefix = "(?:\\r|\\n|.)";
         
         }else{
@@ -843,27 +839,27 @@ public class ParmGenRegex extends javax.swing.JDialog {
         }
 
         String minmatch = "";
-        if (column_policy_val.indexOf(bundle.getString("ParmGenRegex.最小マッチ.text"))!=-1){
+        if (column_policy_val.indexOf(bundle.getString("ParmGenRegex.SelectedColumnPolicyLazy.text"))!=-1){
             minmatch = "?";
         }
         regex = ""; 
         String quant = "";
-        if (column_policy_val.startsWith(bundle.getString("ParmGenRegex.以上.text")) && fromI >= 0){
+        if (column_policy_val.startsWith(bundle.getString("ParmGenRegex.SelectedColumnPolicyOrMore.text")) && fromI >= 0){
             regex = new String(regprefix);
             quant = new String("{" + Integer.toString(fromI) + ",}" + minmatch);
-        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.以下.text"))){
+        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.SelectedColumnPolicyOrLess.text"))){
             regex = new String(regprefix);
             quant = new String( "{,"+ Integer.toString(fromI) + "}");
-        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.範囲.text"))){
+        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.SelectedColumnPolicyRange.text"))){
             regex = new String(regprefix);
             quant = new String("{"+ Integer.toString(fromI) + "," + Integer.toString(toI)+ "}");
-        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.1以上.text"))){
+        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.SelectedColumnPolicy1OrMore.text"))){
             regex = new String(regprefix);
             quant = new String("+" + minmatch);
-        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.0以上.text"))){
+        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.SelectedColumnPolicy0OrMore.text"))){
             regex = new String(regprefix);
             quant = new String("*" + minmatch);
-        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.固定.text"))){
+        }else if(column_policy_val.startsWith(bundle.getString("ParmGenRegex.SelectedColumnPolicyFixed.text"))){
             regex = new String(regprefix);
             quant = new String("{" + Integer.toString(fromI) + "}" + minmatch);
         }else{
@@ -899,13 +895,13 @@ public class ParmGenRegex extends javax.swing.JDialog {
         // TODO add your handling code here:
         String column_policy_val = (String)ColumnPolicy.getSelectedItem();
         
-        if(column_policy_val.indexOf(bundle.getString("ParmGenRegex.範囲.text"))!=-1){
+        if(column_policy_val.indexOf(bundle.getString("ParmGenRegex.SelectedColumnPolicyRange.text"))!=-1){
             From.setEnabled(true);
             To.setEnabled(true);
             FTlabel.setEnabled(true);
-        }else if(column_policy_val.indexOf(bundle.getString("ParmGenRegex.以上.text"))!=-1||
-                column_policy_val.indexOf(bundle.getString("ParmGenRegex.以下.text"))!=-1||
-                column_policy_val.indexOf(bundle.getString("ParmGenRegex.固定.text"))!=-1
+        }else if(column_policy_val.indexOf(bundle.getString("ParmGenRegex.SelectedColumnPolicyOrMore.text"))!=-1||
+                column_policy_val.indexOf(bundle.getString("ParmGenRegex.SelectedColumnPolicyOrLess.text"))!=-1||
+                column_policy_val.indexOf(bundle.getString("ParmGenRegex.SelectedColumnPolicyFixed.text"))!=-1
                 ){
             From.setEnabled(true);
             To.setEnabled(false);
@@ -940,9 +936,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
             //setVisible(false);
             dispose();
         }else if(gcnt>1){
-            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.正規表現にグループ指定が複数あります。.text"), bundle.getString("ParmGenRegex.正規表現エラー.text"), JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.OptionPaneErrorMessage_HasMultipleGroupRegexBrackets.text"), bundle.getString("ParmGenRegex.ErrorOptionPaneTitle.text"), JOptionPane.QUESTION_MESSAGE);
         }else{
-            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.正規表現にグループ指定()がありません。()で置換する部分を囲んでください。.text"), bundle.getString("ParmGenRegex.正規表現エラー.text"), JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenRegex.OptionPaneErrorMessage_NoGroupRegexBracket.text"), bundle.getString("ParmGenRegex.ErrorOptionPaneTitle.text"), JOptionPane.QUESTION_MESSAGE);
         }
     }//GEN-LAST:event_SaveActionPerformed
 

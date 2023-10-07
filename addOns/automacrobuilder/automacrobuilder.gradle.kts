@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "1.1.2"
+version = "1.1.4"
 description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {
@@ -39,7 +39,6 @@ spotless {
     java {
         clearSteps()
         googleJavaFormat().aosp()
-        paddedCell()
         // println(project.projectDir)
         // targetExclude(listOf("somewhere/*.java", "**/automacrobuilder/**/generated/*.java")) 
         targetExclude(listOf("**/automacrobuilder/**/generated/*.java"))
@@ -58,7 +57,7 @@ zapAddOn {
     // addOnStatus.set(AddOnStatus.ALPHA|BETA|RELEASE)
     addOnStatus.set(AddOnStatus.BETA)
 
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.13.0")
 
     manifest {
         author.set("gdgd009xcd")

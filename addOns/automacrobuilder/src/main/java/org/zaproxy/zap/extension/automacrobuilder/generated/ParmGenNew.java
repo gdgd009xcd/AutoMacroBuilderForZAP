@@ -145,7 +145,7 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
         setAppParmsIni();
 
 
-        ResponseArea.setToolTipText(bundle.getString("ParmGenNew.<HTML>※追跡パラメータの登録方法<BR>追跡する値を選択し、追加ボタンを押す。</HTML>.text"));
+        ResponseArea.setToolTipText(bundle.getString("ParmGenNew.ResponseAreaToolTip.text"));
         
         if (current_model != P_TRACKMODEL) {
             TrackFromLabel.setEnabled(false);
@@ -698,7 +698,7 @@ private void setAppParmsIni(){
         RegexPopup.add(CondRegex);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle(bundle.getString("ParmGenNew.PARMGEN編集画面.text")); // NOI18N
+        setTitle(bundle.getString("ParmGenNew.MainDialogTitle.text")); // NOI18N
 
         ModelTabs.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -706,28 +706,28 @@ private void setAppParmsIni(){
             }
         });
 
-        NumberRegexTest.setText(bundle.getString("ParmGenNew.正規表現テスト.text")); // NOI18N
+        NumberRegexTest.setText(bundle.getString("ParmGenNew.RegexTestBtn.text")); // NOI18N
         NumberRegexTest.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 NumberRegexTestActionPerformed(evt);
             }
         });
 
-        nParamDel.setText(bundle.getString("ParmGenNew.削除.text")); // NOI18N
+        nParamDel.setText(bundle.getString("ParmGenNew.DeleteBtn.text")); // NOI18N
         nParamDel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamDelActionPerformed(evt);
             }
         });
 
-        nParamUP.setText(bundle.getString("ParmGenNew.▲UP  .text")); // NOI18N
+        nParamUP.setText(bundle.getString("ParmGenNew.UpBtn.text")); // NOI18N
         nParamUP.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamUPActionPerformed(evt);
             }
         });
 
-        nParamDOWN.setText(bundle.getString("ParmGenNew.▼DOWN.text")); // NOI18N
+        nParamDOWN.setText(bundle.getString("ParmGenNew.DownBtn.text")); // NOI18N
         nParamDOWN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamDOWNActionPerformed(evt);
@@ -766,7 +766,7 @@ private void setAppParmsIni(){
             nParamTable.getColumnModel().getColumn(3).setHeaderValue(bundle.getString("ParmGenNew.nParamTable.title3.text")); // NOI18N
         }
 
-        nParamAdd.setText(bundle.getString("ParmGenNew.追加.text")); // NOI18N
+        nParamAdd.setText(bundle.getString("ParmGenNew.ParamAddBtn.text")); // NOI18N
         nParamAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamAddActionPerformed(evt);
@@ -780,24 +780,24 @@ private void setAppParmsIni(){
             }
         });
 
-        jLabel5.setText(bundle.getString("ParmGenNew.置換対象パス.text")); // NOI18N
+        jLabel5.setText(bundle.getString("ParmGenNew.ReplaceTargetTitleLabel.text")); // NOI18N
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenNew.jPanel2.border.title.text"))); // NOI18N
 
-        jLabel2.setText(bundle.getString("ParmGenNew.初期値.text")); // NOI18N
+        jLabel2.setText(bundle.getString("ParmGenNew.InitialValueTitleLabel.text")); // NOI18N
 
         NumberInit.setText("1");
-        NumberInit.setToolTipText(bundle.getString("ParmGenNew.最大2147483647まで.text")); // NOI18N
+        NumberInit.setToolTipText(bundle.getString("ParmGenNew.NumberInitToolTip.text")); // NOI18N
         NumberInit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 NumberInitActionPerformed(evt);
             }
         });
 
-        jLabel3.setText(bundle.getString("ParmGenNew.桁数.text")); // NOI18N
+        jLabel3.setText(bundle.getString("ParmGenNew.NumOfDigitsLabel3.text")); // NOI18N
 
         NumberLen.setText("4");
-        NumberLen.setToolTipText(bundle.getString("ParmGenNew.最大10ケタまで.text")); // NOI18N
+        NumberLen.setToolTipText(bundle.getString("ParmGenNew.NumberLenToolTip.text")); // NOI18N
         NumberLen.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 NumberLenActionPerformed(evt);
@@ -805,8 +805,8 @@ private void setAppParmsIni(){
         });
 
         NumberRewind.setSelected(true);
-        NumberRewind.setText(bundle.getString("ParmGenNew.カウンタを初期化する.text")); // NOI18N
-        NumberRewind.setToolTipText(bundle.getString("ParmGenNew.<HTML>カウンタを初期値で初期化する場合は、チェック.text")); // NOI18N
+        NumberRewind.setText(bundle.getString("ParmGenNew.RewindCheckBox.text")); // NOI18N
+        NumberRewind.setToolTipText(bundle.getString("ParmGenNew.NumberRewindCheckBox.text")); // NOI18N
         NumberRewind.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 NumberRewindActionPerformed(evt);
@@ -947,7 +947,7 @@ private void setAppParmsIni(){
 
         ModelTabs.addTab(bundle.getString("ParmGenNew.SeqNumber.TabConstrains.tabTitle.text"), SeqNumber); // NOI18N
 
-        jButton6.setText(bundle.getString("ParmGenNew.CSVファイル選択.text")); // NOI18N
+        jButton6.setText(bundle.getString("ParmGenNew.SelectCSVFileBtn6.text")); // NOI18N
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton6ActionPerformed(evt);
@@ -961,7 +961,7 @@ private void setAppParmsIni(){
             }
         });
 
-        csvParamAdd.setText(bundle.getString("ParmGenNew.追加.text")); // NOI18N
+        csvParamAdd.setText(bundle.getString("ParmGenNew.ParamAddBtn.text")); // NOI18N
         csvParamAdd.setMaximumSize(new java.awt.Dimension(107, 23));
         csvParamAdd.setMinimumSize(new java.awt.Dimension(107, 23));
         csvParamAdd.setPreferredSize(new java.awt.Dimension(107, 23));
@@ -971,7 +971,7 @@ private void setAppParmsIni(){
             }
         });
 
-        csvParamDel.setText(bundle.getString("ParmGenNew.削除.text")); // NOI18N
+        csvParamDel.setText(bundle.getString("ParmGenNew.DeleteBtn.text")); // NOI18N
         csvParamDel.setMaximumSize(new java.awt.Dimension(107, 23));
         csvParamDel.setMinimumSize(new java.awt.Dimension(107, 23));
         csvParamDel.setPreferredSize(new java.awt.Dimension(107, 23));
@@ -981,7 +981,7 @@ private void setAppParmsIni(){
             }
         });
 
-        csvParamUP.setText(bundle.getString("ParmGenNew.▲UP  .text")); // NOI18N
+        csvParamUP.setText(bundle.getString("ParmGenNew.UpBtn.text")); // NOI18N
         csvParamUP.setMaximumSize(new java.awt.Dimension(107, 23));
         csvParamUP.setMinimumSize(new java.awt.Dimension(107, 23));
         csvParamUP.addActionListener(new java.awt.event.ActionListener() {
@@ -990,7 +990,7 @@ private void setAppParmsIni(){
             }
         });
 
-        csvParamDOWN.setText(bundle.getString("ParmGenNew.▼DOWN.text")); // NOI18N
+        csvParamDOWN.setText(bundle.getString("ParmGenNew.DownBtn.text")); // NOI18N
         csvParamDOWN.setMaximumSize(new java.awt.Dimension(107, 23));
         csvParamDOWN.setMinimumSize(new java.awt.Dimension(107, 23));
         csvParamDOWN.setPreferredSize(new java.awt.Dimension(107, 23));
@@ -1000,7 +1000,7 @@ private void setAppParmsIni(){
             }
         });
 
-        csvParamRegexTest.setText(bundle.getString("ParmGenNew.正規表現テスト.text")); // NOI18N
+        csvParamRegexTest.setText(bundle.getString("ParmGenNew.RegexTestBtn.text")); // NOI18N
         csvParamRegexTest.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 csvParamRegexTestActionPerformed(evt);
@@ -1014,7 +1014,7 @@ private void setAppParmsIni(){
             }
         });
 
-        jLabel6.setText(bundle.getString("ParmGenNew.置換対象パス.text")); // NOI18N
+        jLabel6.setText(bundle.getString("ParmGenNew.ReplaceTargetTitleLabel.text")); // NOI18N
 
         csvParamTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -1052,8 +1052,8 @@ private void setAppParmsIni(){
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenNew.jPanel1.title.text"))); // NOI18N
 
         CSVrewind.setSelected(true);
-        CSVrewind.setText(bundle.getString("ParmGenNew.カウンタを初期化する.text")); // NOI18N
-        CSVrewind.setToolTipText(bundle.getString("ParmGenNew.<HTML>カウンタを初期値で初期化する際は、チェック.text")); // NOI18N
+        CSVrewind.setText(bundle.getString("ParmGenNew.RewindCheckBox.text")); // NOI18N
+        CSVrewind.setToolTipText(bundle.getString("ParmGenNew.CSVRewindCheckBoxToolTip.text")); // NOI18N
         CSVrewind.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CSVrewindActionPerformed(evt);
@@ -1152,35 +1152,35 @@ private void setAppParmsIni(){
 
         ModelTabs.addTab(bundle.getString("ParmGenNew.SeqCSV.TabConstraints.tabTitle.text"), SeqCSV); // NOI18N
 
-        nParamAdd4.setText(bundle.getString("ParmGenNew.追加.text")); // NOI18N
+        nParamAdd4.setText(bundle.getString("ParmGenNew.ParamAddBtn.text")); // NOI18N
         nParamAdd4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamAdd4ActionPerformed(evt);
             }
         });
 
-        nParamDel12.setText(bundle.getString("ParmGenNew.削除.text")); // NOI18N
+        nParamDel12.setText(bundle.getString("ParmGenNew.DeleteBtn.text")); // NOI18N
         nParamDel12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamDel12ActionPerformed(evt);
             }
         });
 
-        nParamDel13.setText(bundle.getString("ParmGenNew.▲UP  .text")); // NOI18N
+        nParamDel13.setText(bundle.getString("ParmGenNew.UpBtn.text")); // NOI18N
         nParamDel13.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamDel13ActionPerformed(evt);
             }
         });
 
-        nParamDel14.setText(bundle.getString("ParmGenNew.▼DOWN.text")); // NOI18N
+        nParamDel14.setText(bundle.getString("ParmGenNew.DownBtn.text")); // NOI18N
         nParamDel14.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nParamDel14ActionPerformed(evt);
             }
         });
 
-        RegexTestSelectedColumn.setText(bundle.getString("ParmGenNew.正規表現テスト.text")); // NOI18N
+        RegexTestSelectedColumn.setText(bundle.getString("ParmGenNew.RegexTestBtn.text")); // NOI18N
         RegexTestSelectedColumn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RegexTestSelectedColumnActionPerformed(evt);
@@ -1239,7 +1239,7 @@ private void setAppParmsIni(){
             trackTable.getColumnModel().getColumn(15).setHeaderValue(bundle.getString("ParmGenNew.trackTable.replaceZeroSize.text")); // NOI18N
         }
 
-        jLabel9.setText(bundle.getString("ParmGenNew.置換対象パス.text")); // NOI18N
+        jLabel9.setText(bundle.getString("ParmGenNew.ReplaceTargetTitleLabel.text")); // NOI18N
 
         trackTargetURL.setText(".*/input.php.*");
         trackTargetURL.addActionListener(new java.awt.event.ActionListener() {
@@ -1294,7 +1294,7 @@ private void setAppParmsIni(){
 
         ModelTabs.addTab(bundle.getString("ParmGenNew.SeqResponse.TabConstraints.tabTitle.text"), SeqResponse); // NOI18N
 
-        jLabel1.setText(bundle.getString("ParmGenNew.対象パス.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenNew.TargetPathTitleLabel1.text")); // NOI18N
 
         tamperTargetURL.setText("jTextField1");
 
@@ -1320,42 +1320,42 @@ private void setAppParmsIni(){
         tamperTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane5.setViewportView(tamperTable);
 
-        addTamper.setText(bundle.getString("ParmGenNew.追加.text")); // NOI18N
+        addTamper.setText(bundle.getString("ParmGenNew.ParamAddBtn.text")); // NOI18N
         addTamper.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addTamperActionPerformed(evt);
             }
         });
 
-        upTamper.setText(bundle.getString("ParmGenNew.▲.text")); // NOI18N
+        upTamper.setText(bundle.getString("ParmGenNew.UpTamperBtn.text")); // NOI18N
         upTamper.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upTamperActionPerformed(evt);
             }
         });
 
-        delTamper.setText(bundle.getString("ParmGenNew.削除.text")); // NOI18N
+        delTamper.setText(bundle.getString("ParmGenNew.DeleteBtn.text")); // NOI18N
         delTamper.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 delTamperActionPerformed(evt);
             }
         });
 
-        downTamper.setText(bundle.getString("ParmGenNew.▼.text")); // NOI18N
+        downTamper.setText(bundle.getString("ParmGenNew.DownTamperBtn.text")); // NOI18N
         downTamper.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downTamperActionPerformed(evt);
             }
         });
 
-        modTamper.setText(bundle.getString("ParmGenNew.編集.text")); // NOI18N
+        modTamper.setText(bundle.getString("ParmGenNew.ModTamperEditBtn.text")); // NOI18N
         modTamper.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 modTamperActionPerformed(evt);
             }
         });
 
-        jLabel4.setText(bundle.getString("ParmGenNew.パターン.text")); // NOI18N
+        jLabel4.setText(bundle.getString("ParmGenNew.PatternTitleLabel4.text")); // NOI18N
 
         AttackPatternFile.setText("jTextField1");
 
@@ -1417,21 +1417,21 @@ private void setAppParmsIni(){
 
         ModelTabs.addTab("Tamper", SeqRandom);
 
-        SaveParm.setText(bundle.getString("ParmGenNew.保存.text")); // NOI18N
+        SaveParm.setText(bundle.getString("ParmGenNew.SaveParmBtn.text")); // NOI18N
         SaveParm.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 SaveParmActionPerformed(evt);
             }
         });
 
-        CancelParm.setText(bundle.getString("ParmGenNew.取消.text")); // NOI18N
+        CancelParm.setText(bundle.getString("ParmGenNew.CancelParmBtn.text")); // NOI18N
         CancelParm.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CancelParmActionPerformed(evt);
             }
         });
 
-        RequestSelectBtn.setText(bundle.getString("ParmGenNew.リクエスト/レスポンス選択する.text")); // NOI18N
+        RequestSelectBtn.setText(bundle.getString("ParmGenNew.RequestSelectBtn.text")); // NOI18N
         RequestSelectBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RequestSelectBtnActionPerformed(evt);
@@ -1649,7 +1649,7 @@ private void setAppParmsIni(){
         ParmVars.session.clear();
         //new ResponseTracker(this).setVisible(true);
        //new SelectRequest("レスポンス選択", this, new ResponseTracker(this), ParmGenNew.P_RESPONSETAB).setVisible(true);
-        new SelectRequest(bundle.getString("ParmGenNew.レスポンス選択.text"), this, new ParmGenAutoTrack(this), ParmGenNew.P_RESPONSETAB).setVisible(true);
+        new SelectRequest(bundle.getString("ParmGenNew.SelectResponseDialogTitle.text"), this, new ParmGenAutoTrack(this), ParmGenNew.P_RESPONSETAB).setVisible(true);
     }//GEN-LAST:event_nParamAdd4ActionPerformed
 
     private void numberTargetURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_numberTargetURLActionPerformed
@@ -1673,7 +1673,7 @@ private void setAppParmsIni(){
 
     private void RequestSelectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RequestSelectBtnActionPerformed
         // TODO add your handling code here:
-        new SelectRequest(bundle.getString("ParmGenNew.リクエスト選択.text"), this, null, -1).setVisible(true);
+        new SelectRequest(bundle.getString("ParmGenNew.SelectRequestDialogTitle.text"), this, null, -1).setVisible(true);
     }//GEN-LAST:event_RequestSelectBtnActionPerformed
 
     private void SaveParmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveParmActionPerformed
@@ -1906,7 +1906,7 @@ private void setAppParmsIni(){
             switch(current_model){
                 case P_TRACKMODEL:
                     LOGGER4J.debug("TrackFromEnabled current_model:" + i);
-                    ResReqTabs.add(bundle.getString("ParmGenNew.レスポンス.text"), ResPanel);
+                    ResReqTabs.add(bundle.getString("ParmGenNew.ResReqTabs_AddResponseTab.text"), ResPanel);
                     ResReqTabs.setSelectedIndex(P_REQUESTTAB);
                     TrackFromLabel.setEnabled(true);
                     TrackFrom.setEnabled(true);

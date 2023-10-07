@@ -898,23 +898,23 @@ public class AppValue {
                     LOGGER4J.info(
                             java.text.MessageFormat.format(
                                     bundle.getString("ParmGen.parameter_regex_msg1.text"),
-                                    new Object[] {value, matchval, token, strcnt}));
+                                    new Object[] {pmt.getStepNo(), token, matchval, strcnt, value}));
                     //
                     pmt.addComments(
                             java.text.MessageFormat.format(
                                     bundle.getString("ParmGen.parameter_regex_msg2.text"),
-                                    new Object[] {value, matchval, token, strcnt}));
+                                    new Object[] {pmt.getStepNo(), token, matchval, strcnt, value}));
                     errorhash_value = new ParmGenTokenValue("", strcnt, true);
                     errorhash.put(errorhash_key, errorhash_value);
                 } else {
-                    LOGGER4J.info(
+                    LOGGER4J.warn(
                             java.text.MessageFormat.format(
                                     bundle.getString("ParmGen.parameter_regex_err1.text"),
-                                    new Object[] {value, token, matchval}));
+                                    new Object[] {pmt.getStepNo(), token, matchval, value}));
                     pmt.addComments(
                             java.text.MessageFormat.format(
                                     bundle.getString("ParmGen.parameter_regex_err2.text"),
-                                    new Object[] {value, token, matchval}));
+                                    new Object[] {pmt.getStepNo(), token, matchval, value}));
                     isnull = true;
                     errorhash_value = new ParmGenTokenValue("", strcnt, false);
                     ParmGenTokenValue storederror = errorhash.get(errorhash_key);

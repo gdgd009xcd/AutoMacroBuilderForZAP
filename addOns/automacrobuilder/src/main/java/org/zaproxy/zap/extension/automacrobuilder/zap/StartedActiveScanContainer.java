@@ -160,6 +160,7 @@ public class StartedActiveScanContainer {
      * @param uuid
      */
     public void addUUID(UUID uuid) {
+        LOGGER4J.debug("addUUID:" + uuid + "currentThread:" + Thread.currentThread().getId());
         STARTED_UUIDS.set(uuid);
     }
 
@@ -190,6 +191,7 @@ public class StartedActiveScanContainer {
      */
     public ParmGenMacroTrace getRunningInstance() {
         UUID uuid = getUUID();
+        LOGGER4J.debug("getRunningInstance UUID:" + uuid + "currentThread:" + Thread.currentThread().getId());
         return this.pmtProvider.getRunningInstance(uuid);
     }
 

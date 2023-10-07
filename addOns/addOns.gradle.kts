@@ -9,8 +9,7 @@ import org.zaproxy.gradle.addon.misc.CreateGitHubRelease
 import org.zaproxy.gradle.addon.misc.ExtractLatestChangesFromChangelog
 
 plugins {
-    jacoco
-    id("org.zaproxy.add-on") version "0.3.0" apply false
+    id("org.zaproxy.add-on") version "0.8.0" apply false
 }
 
 description = "Common configuration of the add-ons."
@@ -19,10 +18,7 @@ val parentProjects = listOf(
         ""
 )
 
-val jacocoToolVersion = "0.8.4"
-jacoco {
-    toolVersion = jacocoToolVersion
-}
+
 
 subprojects {
     if (parentProjects.contains(project.name)) {
@@ -30,19 +26,15 @@ subprojects {
     }
 
     apply(plugin = "java-library")
-    apply(plugin = "jacoco")
     apply(plugin = "org.zaproxy.add-on")
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
-    jacoco {
-        toolVersion = jacocoToolVersion
-    }
 
-    val apiGenClasspath = configurations.detachedConfiguration(dependencies.create("org.zaproxy:zap:2.9.0"))
+    val apiGenClasspath = configurations.detachedConfiguration(dependencies.create("org.zaproxy:zap:2.13.0"))
 
     zapAddOn {
         releaseLink.set(project.provider { "https://github.com/zaproxy/zap-extensions/releases/${zapAddOn.addOnId.get()}-v@CURRENT_VERSION@" })
@@ -95,34 +87,9 @@ tasks.register<TestReport>("testReport") {
     }
 }
 
-val jacocoMerge by tasks.registering(JacocoMerge::class) {
-    destinationFile = file("$buildDir/jacoco/all.exec")
-    subprojects.forEach {
-        it.plugins.withType(JavaPlugin::class) {
-            executionData(it.tasks.withType<Test>())
-        }
-    }
 
-    doFirst {
-        executionData = files(executionData.files.filter { it.exists() })
-    }
-}
 
-val jacocoReport by tasks.registering(JacocoReport::class) {
-    executionData(jacocoMerge)
-    subprojects.forEach {
-        it.plugins.withType(JavaPlugin::class) {
-            val sourceSets = it.extensions.getByName("sourceSets") as SourceSetContainer
-            sourceDirectories.from(files(sourceSets["main"].java.srcDirs))
-            classDirectories.from(files(sourceSets["main"].output.classesDirs))
-        }
-    }
 
-    doLast {
-        val reportUrl = File(reports.html.destination, "index.html").toURL()
-        logger.lifecycle("Coverage Report: $reportUrl")
-    }
-}
 
 System.getenv("GITHUB_REF")?.let { ref ->
     if ("refs/tags/" !in ref || !ref.contains(Regex(".*-v.*"))) {
@@ -170,8 +137,6 @@ fun subproject(addOnId: String): Provider<Project> =
 fun Project.java(configure: JavaPluginExtension.() -> Unit): Unit =
     (this as ExtensionAware).extensions.configure("java", configure)
 
-fun Project.jacoco(configure: JacocoPluginExtension.() -> Unit): Unit =
-    (this as ExtensionAware).extensions.configure("jacoco", configure)
 
 fun Project.zapAddOn(configure: AddOnPluginExtension.() -> Unit): Unit =
     (this as ExtensionAware).extensions.configure("zapAddOn", configure)

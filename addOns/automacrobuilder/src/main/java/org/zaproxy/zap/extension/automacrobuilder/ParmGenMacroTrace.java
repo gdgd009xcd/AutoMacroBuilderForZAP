@@ -488,7 +488,9 @@ public class ParmGenMacroTrace extends ClientDependent {
             if (cookieMan != null) {
                 cookieMan.removeAll();
             }
+            clientrequest.resetCookieManager(this);// reset(clear) dependent system's cookie manager state(i.e. ZAP HttpState).
         }
+
         if (fetchResVal != null) {
             fetchResVal.clearDistances();
         }

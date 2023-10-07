@@ -48,7 +48,7 @@ public class ParmFileFilter extends FileFilter {
     }
 
     public String getDescription() {
-        return bundle.getString("ParmFileFilter.PARMGEN設定.text");
+        return bundle.getString("ParmFileFilter.Description.text");
     }
 
     /* 拡張子を取り出す */

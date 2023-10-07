@@ -56,6 +56,7 @@ public class ClientRequest implements InterfaceClientRequest {
             try {
                 // send message
                 pmt.send(pmt.getSender(), htmess);
+                LOGGER4J.info("STEP[" + pmt.getStepNo() + "] send URL:" + htmess.getRequestHeader().getURI());
                 HttpRequestHeader requestheader = htmess.getRequestHeader();
                 HttpRequestBody requestbody = htmess.getRequestBody();
 
@@ -111,6 +112,10 @@ public class ClientRequest implements InterfaceClientRequest {
         return pqrs;
     }
 
+    public void resetCookieManager(ParmGenMacroTrace pmt){
+        pmt.resetZapCookieState(pmt.getSender());
+    }
+
     /**
      * set cookies & tokens in currentmessage
      *
@@ -147,6 +152,7 @@ public class ClientRequest implements InterfaceClientRequest {
      * @param currentmessage
      */
     public void postZapCurrentResponse(ParmGenMacroTrace pmt, HttpMessage currentmessage) {
+        LOGGER4J.info("STEP[" + pmt.getStepNo() + "] current send URL:" + currentmessage.getRequestHeader().getURI());
         PRequestResponse prs = ZapUtil.getPRequestResponse(currentmessage, pmt.getSequenceEncode());
 
         String url = prs.request.getURL();

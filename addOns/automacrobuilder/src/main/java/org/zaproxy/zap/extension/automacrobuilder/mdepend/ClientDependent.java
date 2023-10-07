@@ -32,6 +32,7 @@ import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.UUIDGenerator;
+import org.zaproxy.zap.network.HttpRequestConfig;
 
 /** @author gdgd009xcd */
 public class ClientDependent {
@@ -40,6 +41,8 @@ public class ClientDependent {
         BURPSUITE,
         ZAP
     }
+
+    private HttpRequestConfig httpRequestConfig = null;
 
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
@@ -55,6 +58,7 @@ public class ClientDependent {
     private HttpMessage currentmessage = null;
 
     // HttpMethodHelper has NO variable members. so, this instance can share any threads.
+    @Deprecated
     private static HttpMethodHelper helper = new HttpMethodHelper();
 
     /**
@@ -103,6 +107,7 @@ public class ClientDependent {
      * @return
      * @throws IOException
      */
+    @Deprecated
     private HttpMethod runMethod(HttpSender sender, HttpMessage msg) throws IOException {
         HttpMethod method = null;
 
@@ -135,7 +140,8 @@ public class ClientDependent {
      * @param msg
      * @throws IOException
      */
-    public void send(HttpSender sender, HttpMessage msg) throws IOException {
+    @Deprecated
+    public void sendDeprecated(HttpSender sender, HttpMessage msg) throws IOException {
         boolean isFollowRedirect = false;
         HttpMethod method = null;
         HttpResponseHeader resHeader = null;
@@ -175,6 +181,25 @@ public class ClientDependent {
         }
     }
 
+    private HttpRequestConfig getHttpRequestConfig() {
+        if (httpRequestConfig == null) {
+            HttpRequestConfig.Builder builder = HttpRequestConfig.builder();
+            builder.setFollowRedirects(false);
+            builder.setNotifyListeners(false);
+            httpRequestConfig = builder.build();
+            int sotimeout = httpRequestConfig.getSoTimeout();
+            LOGGER4J.debug("default timeout=" + sotimeout);
+        }
+        return httpRequestConfig;
+    }
+
+    public void send(HttpSender sender, HttpMessage msg) throws IOException {
+        sender.setFollowRedirect(false);// No follow redirects
+        msg.setRequestingUser(null);// No Authenticate
+        sender.setUser(null);// No Authenticate
+
+        sender.sendAndReceive(msg, getHttpRequestConfig());
+    }
     public int getScanQuePercentage() {
 
         return -1;
@@ -231,5 +256,13 @@ public class ClientDependent {
 
     public boolean isError() {
         return iserror;
+    }
+
+    /**
+     * reset ZAP(HttpClient)'s cookie state
+     */
+    protected void resetZapCookieState(HttpSender sender) {
+        sender.setUseCookies(false);// reset(clear) cookie state
+        sender.setUseCookies(true);
     }
 }

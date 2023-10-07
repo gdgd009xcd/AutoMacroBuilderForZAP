@@ -3,6 +3,16 @@ All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 11 - 2023-10-06
+### ver1.1.4
+- maintenance: refactored properties file to Japanese Charset name to alphanumeric name. 
+- maintenance: changed log message to more readable.
+- maintenance: no longer used .form file. I will directly edit java code for GUI maintenance.
+- upgrade: dependent "org.zaproxy.add-on" version upgraded to 0.8.0
+- upgrade: gradle version upgraded to 8.2.1
+- upgrade: dependent zap version upgraded to 2.13.0
+- maintenance: Due to side effects of the above upgrade, some code has been changed.
+
 ## 10 - 2022-09-15
 ### ver1.1.2
 - maintenance: updated jsoup library to the latest version
