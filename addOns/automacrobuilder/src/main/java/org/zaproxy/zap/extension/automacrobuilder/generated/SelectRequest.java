@@ -123,7 +123,7 @@ public class SelectRequest extends javax.swing.JDialog {
         ResponseEntity = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle(bundle.getString("SelectRequest.リクエスト選択.text")); // NOI18N
+        setTitle(bundle.getString("SelectRequest.SelectTitle.text")); // NOI18N
 
         RequestTable.setModel(model);
         RequestTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
@@ -141,14 +141,14 @@ public class SelectRequest extends javax.swing.JDialog {
             }
         });
 
-        jButton2.setText(bundle.getString("SelectRequest.取消.text")); // NOI18N
+        jButton2.setText(bundle.getString("SelectRequest.Cancel.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
 
-        jLabel1.setText(bundle.getString("SelectRequest.リクエストを下記一覧から選択し、ＯＫボタンで選択。.text")); // NOI18N
+        jLabel1.setText(bundle.getString("SelectRequest.InstructionDescLabel1.text")); // NOI18N
 
         RequestEntity.setText("GET /index.php?DB=1 HTTP/1.1\nHost: glide\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: ja,en-US;q=0.7,en;q=0.3\nAccept-Encoding: gzip, deflate\nConnection: close\nUpgrade-Insecure-Requests: 1\nContent-Length: 0\n");
         jScrollPane6.setViewportView(RequestEntity);

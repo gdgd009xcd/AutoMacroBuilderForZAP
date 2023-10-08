@@ -31,7 +31,7 @@ import org.zaproxy.zap.extension.tab.Tab;
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")
-public class MyWorkPanel extends AbstractPanel implements Tab {
+public class MyWorkPanel extends AbstractPanel {
 
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();

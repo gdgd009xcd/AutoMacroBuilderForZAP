@@ -223,13 +223,13 @@ public class AppParmsIni {
     public String getTypeValDspString() {
         switch (typeval) {
             case T_NUMBER:
-                return bundle.getString("ParmGen.数値昇順.text");
+                return bundle.getString("ParmGen.AscendingOrder.text");
             case T_CSV:
-                return bundle.getString("ParmGen.CSVファイル昇順.text");
+                return bundle.getString("ParmGen.CSVAscendOrder.text");
             case T_RANDOM:
-                return bundle.getString("ParmGen.乱数.text");
+                return bundle.getString("ParmGen.Random.text");
             case T_TRACK:
-                return bundle.getString("ParmGen.追跡.text");
+                return bundle.getString("ParmGen.Tracking.text");
             case T_TAMPER:
                 return bundle.getString("ParmGen.TAMPERPROXY.text");
         }

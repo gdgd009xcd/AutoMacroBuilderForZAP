@@ -56,7 +56,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         isformdata = false;
         wholeval = _wholeval;
         if(comboModel==null){
-            comboModel = new javax.swing.DefaultComboBoxModel<>(new String[] { bundle.getString("ParmGenAddParms.comboModel.デフォルト.text"), bundle.getString("ParmGenAddParms.comboModel.数値固定長.text"), bundle.getString("ParmGenAddParms.comboModel.英数字固定長.text"), bundle.getString("ParmGenAddParms.comboModel.数値任意長.text"), bundle.getString("ParmGenAddParms.comboModel.英数字任意長.text"), bundle.getString("ParmGenAddParms.comboModel.固定値.text") });
+            comboModel = new javax.swing.DefaultComboBoxModel<>(new String[] { bundle.getString("ParmGenAddParms.comboModel.Default.text"), bundle.getString("ParmGenAddParms.comboModel.NumberFixedLength.text"), bundle.getString("ParmGenAddParms.comboModel.AlphanumFixedLength.text"), bundle.getString("ParmGenAddParms.comboModel.NumberHasAnyLength.text"), bundle.getString("ParmGenAddParms.comboModel.AlphanumHasAnyLength.text"), bundle.getString("ParmGenAddParms.comboModel.FixedValue.text") });
         }
         //initComponents();
         customInitComponents();
@@ -256,7 +256,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         ValReplacePart = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle(bundle.getString("ParmGenAddParms.パラメータ選択画面.text")); // NOI18N
+        setTitle(bundle.getString("ParmGenAddParms.DialogTitle.text")); // NOI18N
 
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel5.setText(bundle.getString("ParmGenAddParms.jLabel5.text")); // NOI18N
@@ -290,14 +290,14 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             ReqParsedTable.getColumnModel().getColumn(0).setHeaderValue(bundle.getString("ParmGenAddParms.position.text")); // NOI18N
         }
 
-        Add.setText(bundle.getString("ParmGenAddParms.追加.text")); // NOI18N
+        Add.setText(bundle.getString("ParmGenAddParms.AddBtn.text")); // NOI18N
         Add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 AddActionPerformed(evt);
             }
         });
 
-        Cancel.setText(bundle.getString("ParmGenAddParms.取消.text")); // NOI18N
+        Cancel.setText(bundle.getString("ParmGenAddParms.CancelBtn.text")); // NOI18N
         Cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CancelActionPerformed(evt);
@@ -312,7 +312,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             }
         });
 
-        jLabel1.setText(bundle.getString("ParmGenAddParms.置換対象パス：　既設定値に戻す場合は、下記のプルダウンで選択.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenAddParms.HowToRestoreTargetPathRegexInfoTitleLabel1.text")); // NOI18N
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenAddParms.jPanel1.border.text"))); // NOI18N
 
@@ -676,7 +676,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         ValReplacePart = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle(bundle.getString("ParmGenAddParms.パラメータ選択画面.text")); // NOI18N
+        setTitle(bundle.getString("ParmGenAddParms.DialogTitle.text")); // NOI18N
 
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel5.setText(bundle.getString("ParmGenAddParms.jLabel5.text")); // NOI18N
@@ -710,14 +710,14 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             ReqParsedTable.getColumnModel().getColumn(0).setHeaderValue(bundle.getString("ParmGenAddParms.position.text")); // NOI18N
         }
 
-        Add.setText(bundle.getString("ParmGenAddParms.追加.text")); // NOI18N
+        Add.setText(bundle.getString("ParmGenAddParms.AddBtn.text")); // NOI18N
         Add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 AddActionPerformed(evt);
             }
         });
 
-        Cancel.setText(bundle.getString("ParmGenAddParms.取消.text")); // NOI18N
+        Cancel.setText(bundle.getString("ParmGenAddParms.CancelBtn.text")); // NOI18N
         Cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CancelActionPerformed(evt);
@@ -732,7 +732,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             }
         });
 
-        jLabel1.setText(bundle.getString("ParmGenAddParms.置換対象パス：　既設定値に戻す場合は、下記のプルダウンで選択.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenAddParms.HowToRestoreTargetPathRegexInfoTitleLabel1.text")); // NOI18N
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ParmGenAddParms.jPanel1.border.text"))); // NOI18N
 

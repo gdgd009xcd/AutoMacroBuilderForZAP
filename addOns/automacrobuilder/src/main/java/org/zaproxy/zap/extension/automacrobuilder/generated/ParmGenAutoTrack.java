@@ -188,7 +188,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
         }
         //リクエスト選択へ。
         dispose();
-        new SelectRequest(bundle.getString("ParmGenAutoTrack.リクエスト選択.text"), parentwin, new ParmGenAddParms(parentwin, true), ParmGenNew.P_REQUESTTAB).setVisible(true);
+        new SelectRequest(bundle.getString("ParmGenAutoTrack.SelectRequest.text"), parentwin, new ParmGenAddParms(parentwin, true), ParmGenNew.P_REQUESTTAB).setVisible(true);
     }//GEN-LAST:event_NextBtnActionPerformed
 
     private void RegexBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RegexBtnActionPerformed

@@ -8,4 +8,9 @@ public interface InterfaceClientRequest {
      * @return
      */
     PRequestResponse clientRequest(ParmGenMacroTrace pmt, PRequest prequest);
+
+    /**
+     * reset(clear) dependent system's cookie manager(i.e. HttpState)
+     */
+    void resetCookieManager(ParmGenMacroTrace pmt);
 }

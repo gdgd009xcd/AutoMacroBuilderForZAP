@@ -6,6 +6,8 @@
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,18 +22,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import com.google.gson.JsonElement;
+import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.CloseXbtnTabPanel;
 import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
+import org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder;
 
 import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
 import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.ZAP_ICONS;
@@ -70,12 +74,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     JPanel plusBtnPanel = null;
 
 
+    ExtensionAutoMacroBuilder extensionAutoMacroBuilder = null;
 
     /**
      * Creates new form MacroBuilderUI
      */
     @SuppressWarnings("unchecked")
-    public MacroBuilderUI(ParmGenMacroTraceProvider pmtProvider) {
+    public MacroBuilderUI(ParmGenMacroTraceProvider pmtProvider, ExtensionAutoMacroBuilder extensionAutoMacroBuilder) {
+        this.extensionAutoMacroBuilder = extensionAutoMacroBuilder;
         maxTabIndex = 0;
         this.MacroRequestListTabsCurrentIndex = 0;
         this.pmtProvider = pmtProvider;
@@ -378,7 +384,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
                 displayInfo.clear();
                 displayInfo.selected_request_idx = cpos;
-                paramlogTabbedPaneSelectedContentsLoad(selectedTabIndex);
+                messageViewTabbedPaneSelectedContentsLoad(selectedTabIndex);
             }
         }
     }
@@ -410,6 +416,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         disableRequest = new javax.swing.JMenuItem();
         enableRequest = new javax.swing.JMenuItem();
         deleteRequest = new javax.swing.JMenuItem();
+        showRequest = new javax.swing.JMenuItem();
         RequestEdit = new javax.swing.JPopupMenu();
         edit = new javax.swing.JMenuItem();
         restore = new javax.swing.JMenuItem();
@@ -418,15 +425,15 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         show = new javax.swing.JMenuItem();
         jScrollPane2 = new javax.swing.JScrollPane();
         jPanel4 = new javax.swing.JPanel();
-        paramlog = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane4 = new javax.swing.JScrollPane();
+        messageView = new javax.swing.JTabbedPane();
+        requestView = new javax.swing.JPanel();
+        requestScroller = new javax.swing.JScrollPane();
         MacroRequest = new javax.swing.JTextPane();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane6 = new javax.swing.JScrollPane();
+        responseView = new javax.swing.JPanel();
+        responseScroller = new javax.swing.JScrollPane();
         MacroResponse = new javax.swing.JTextPane();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane5 = new javax.swing.JScrollPane();
+        trackingView = new javax.swing.JPanel();
+        trackingScroller = new javax.swing.JScrollPane();
         MacroComments = new javax.swing.JTextArea();
         ParamTracking = new javax.swing.JButton();
         custom = new javax.swing.JButton();
@@ -459,6 +466,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         MacroRequestListTabs = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         RequestList = new javax.swing.JList<>();
+
 
         SendTo.setText(bundle.getString("MacroBuilderUI.SENDTO.text")); // NOI18N
 
@@ -512,6 +520,17 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         });
         PopupMenuForRequestList.add(deleteRequest);
 
+        showRequest.setText(bundle.getString("MacroBuilderUI.showRequest.text")); // NOI18N
+        showRequest.addActionListener(new ActionListener() {
+            final ExtensionAutoMacroBuilder ext = MacroBuilderUI.this.extensionAutoMacroBuilder;
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                View.getSingleton()
+                        .getWorkbench().showPanel(ext.getMessageViewStatusPanel());
+            }
+        });
+        PopupMenuForRequestList.add(showRequest);
+
         edit.setText(bundle.getString("MacroBuilderUI.REQUESTEDIT.text")); // NOI18N
         edit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -546,12 +565,20 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         setPreferredSize(new java.awt.Dimension(873, 850));
 
-        jPanel4.setPreferredSize(new java.awt.Dimension(871, 1400));
+        jPanel4.setPreferredSize(new java.awt.Dimension(871, 1500));
 
-        paramlog.setPreferredSize(new java.awt.Dimension(847, 300));
-        paramlog.addChangeListener(new javax.swing.event.ChangeListener() {
+        descriptionVacantArea = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JLabel messageAreaMovedToStatusLabel = new JLabel();
+        messageAreaMovedToStatusLabel.putClientProperty("html.disable", Boolean.FALSE);
+        messageAreaMovedToStatusLabel.setText(bundle.getString("MacroBuilderUI.describeMessageView"));
+        descriptionVacantArea.add(messageAreaMovedToStatusLabel);
+        LineBorder lborder = new LineBorder(Color.BLACK, 2, false);
+        descriptionVacantArea.setBorder(lborder);
+
+        messageView.setPreferredSize(new java.awt.Dimension(847, 300));
+        messageView.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                paramlogStateChanged(evt);
+                messageViewStateChanged(evt);
             }
         });
 
@@ -566,23 +593,23 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 MacroRequestMouseClicked(evt);
             }
         });
-        jScrollPane4.setViewportView(MacroRequest);
+        requestScroller.setViewportView(MacroRequest);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout requestViewLayout = new javax.swing.GroupLayout(requestView);
+        requestView.setLayout(requestViewLayout);
+        requestViewLayout.setHorizontalGroup(
+            requestViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(requestViewLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
+                .addComponent(requestScroller, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+        requestViewLayout.setVerticalGroup(
+            requestViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(requestScroller, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
-        paramlog.addTab(bundle.getString("MacroBuilderUI.リクエスト.text"), jPanel1); // NOI18N
+        messageView.addTab(bundle.getString("MacroBuilderUI.messageViewToAddRequestTabTitle.text"), requestView); // NOI18N
 
         MacroResponse.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -595,42 +622,50 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 MacroResponseMouseClicked(evt);
             }
         });
-        jScrollPane6.setViewportView(MacroResponse);
+        responseScroller.setViewportView(MacroResponse);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
+        javax.swing.GroupLayout responseViewLayout = new javax.swing.GroupLayout(responseView);
+        responseView.setLayout(responseViewLayout);
+        responseViewLayout.setHorizontalGroup(
+            responseViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(responseScroller, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+        responseViewLayout.setVerticalGroup(
+            responseViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(responseScroller, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
-        paramlog.addTab(bundle.getString("MacroBuilderUI.レスポンス.text"), jPanel2); // NOI18N
+        messageView.addTab(bundle.getString("MacroBuilderUI.messageViewToAddResponseTabTitle.text"), responseView); // NOI18N
 
-        jScrollPane5.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        trackingScroller.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         MacroComments.setColumns(20);
         MacroComments.setLineWrap(true);
         MacroComments.setRows(5);
-        jScrollPane5.setViewportView(MacroComments);
+        trackingScroller.setViewportView(MacroComments);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
+        javax.swing.GroupLayout trackingViewLayout = new javax.swing.GroupLayout(trackingView);
+        trackingView.setLayout(trackingViewLayout);
+        trackingViewLayout.setHorizontalGroup(
+            trackingViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(trackingScroller, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+        trackingViewLayout.setVerticalGroup(
+            trackingViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(trackingScroller, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
         );
 
-        paramlog.addTab(bundle.getString("MacroBuilderUI.追跡.text"), jPanel3); // NOI18N
+        messageView.addTab(
+                bundle.getString("MacroBuilderUI.messageViewToAddTrackingTabTitle.text"),
+                null,
+                trackingView,
+                bundle.getString("MacroBuilderUI.messageViewToAddTrackingTabToolTop.text")); // NOI18N
 
-        ParamTracking.setText(bundle.getString("MacroBuilderUI.追跡.text")); // NOI18N
+
+        messageViewPanel = new JPanel(new BorderLayout());
+        messageViewPanel.add(messageView);
+
+        ParamTracking.setText(bundle.getString("MacroBuilderUI.ParamTrackingBtn.text")); // NOI18N
         ParamTracking.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ParamTrackingActionPerformed(evt);
@@ -644,7 +679,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
-        ClearMacro.setText(bundle.getString("MacroBuilderUI.クリア.text")); // NOI18N
+        ClearMacro.setText(bundle.getString("MacroBuilderUI.ClearMacroBtn.text")); // NOI18N
         ClearMacro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ClearMacroActionPerformed(evt);
@@ -673,7 +708,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
-        jLabel2.setText(bundle.getString("MacroBuilderUI.マクロリクエスト一覧.text")); // NOI18N
+        jLabel2.setText(bundle.getString("MacroBuilderUI.MacroRequestListLabel2.text")); // NOI18N
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("MacroBuilderUI.TakeOverCache.text"))); // NOI18N
 
@@ -685,6 +720,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         });
 
+        jLabel4.putClientProperty("html.disable", Boolean.FALSE);
         jLabel4.setText(bundle.getString("MacroBuilderUI.TakeOverInfoLabel.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -722,8 +758,12 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         });
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel3.setText("<HTML>\n<DL>\n<BR>\n<LI>baseline(experimental): you can test(tamper) tracking tokens with scanner/intruder which has baseline request.\n<LI>replace(default): Tracking tokens is completely replaced with extracted value from previous page's response.\n<BR><BR>* For Details , refer ?button in the \"baseline/replace mode\" section. \n<DL>\n</HTML>");
-        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        //jLabel3.setText("<HTML>\n<DL>\n<BR>\n<LI>baseline(experimental): you can test(tamper) tracking tokens<BR> with scanner/intruder which has baseline request.\n<LI>replace(default): Tracking tokens is completely replaced with extracted value from previous page's response.\n<BR><BR>* For Details , refer ?button in the \"baseline/replace mode\" section. \n<DL>\n</HTML>");
+        jLabel3.setText(bundle.getString("MacroBuilderUI.TrackingParamterConfig.text"));
+        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        //LineBorder lborder = new LineBorder(Color.RED, 2, false);
+        //jLabel3.setBorder(lborder);
+
 
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -741,7 +781,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     .addComponent(TrackMode, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
@@ -753,7 +793,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         .addComponent(TrackMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(39, 39, 39)
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -766,7 +806,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         waitsec.setText("0");
 
-        MBfromStepNo.setText(bundle.getString("MacroBuilderUI.追跡FROM設定.text")); // NOI18N
+        MBfromStepNo.setText(bundle.getString("MacroBuilderUI.FromStepBtn.text")); // NOI18N
         MBfromStepNo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 MBfromStepNoActionPerformed(evt);
@@ -901,7 +941,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 826, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(paramlog, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(descriptionVacantArea, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -916,9 +956,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             .addComponent(ParamTracking, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Load, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Save, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(StartScan, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(UpSelected, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(DownSelected, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(StartScan, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(UpSelected, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(DownSelected, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -926,9 +966,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                 .addComponent(jCheckBox2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addComponent(waitsec, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(231, 231, 231))
+                                .addGap(150, 150, 150))
                             .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(MBfromStepNo, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(MBfromStepNo, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(26, 26, 26)))
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(MBtoStepNo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -968,7 +1008,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         .addGap(18, 18, 18)
                         .addComponent(MacroRequestListTabs, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(28, 28, 28)
-                .addComponent(paramlog, javax.swing.GroupLayout.PREFERRED_SIZE, 328, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(descriptionVacantArea, javax.swing.GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -1084,8 +1124,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      *
      * @param selectedTabIndexOfRequestList
      */
-    private void paramlogTabbedPaneSelectedContentsLoad(int selectedTabIndexOfRequestList){
-        int selIndex = paramlog.getSelectedIndex();//tabbedpanes selectedidx 0start..
+    private void messageViewTabbedPaneSelectedContentsLoad(int selectedTabIndexOfRequestList){
+        int selIndex = messageView.getSelectedIndex();//tabbedpanes selectedidx 0start..
         switch(selIndex){
             case 0:
                 MacroRequestLoadContents(selectedTabIndexOfRequestList);
@@ -1123,7 +1163,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
             displayInfo.clear();
             displayInfo.selected_request_idx = pos;
-            paramlogTabbedPaneSelectedContentsLoad(selectedTabIndex);
+            messageViewTabbedPaneSelectedContentsLoad(selectedTabIndex);
         } else {
             logger4j.debug("RequestListValueChanged noselect pos:" + pos);
         }
@@ -1785,15 +1825,15 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void paramlogStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_paramlogStateChanged
+    private void messageViewStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_messageViewStateChanged
         // TODO add your handling code here:
         // jTabbedPane tab select problem fixed. by this eventhandler is defined... what a strange behavior. 
-        //int selIndex = paramlog.getSelectedIndex();
-	//String t = paramlog.getTitleAt(selIndex);
-	//logger4j.info("paramlogStateChanged: title[" + t + "]");
+        //int selIndex = messageView.getSelectedIndex();
+	//String t = messageView.getTitleAt(selIndex);
+	//logger4j.info("messageViewStateChanged: title[" + t + "]");
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
-        paramlogTabbedPaneSelectedContentsLoad(selectedTabIndex);
-    }//GEN-LAST:event_paramlogStateChanged
+        messageViewTabbedPaneSelectedContentsLoad(selectedTabIndex);
+    }//GEN-LAST:event_messageViewStateChanged
 
     private void UpSelectedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UpSelectedActionPerformed
         // TODO add your handling code here:
@@ -1964,7 +2004,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private void MacroRequestMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroRequestMousePressed
         // TODO add your handling code here:
         logger4j.debug("MacroRequestMousePressed...start");
-        paramlogTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // must content load before RequestEdit.show
+        messageViewTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // must content load before RequestEdit.show
         if (evt.isPopupTrigger()) {
             logger4j.debug("MacroRequestMousePressed PopupTriggered.");
             RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
@@ -1993,7 +2033,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private void MacroResponseMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MacroResponseMousePressed
         // TODO add your handling code here:
         logger4j.debug( "MacroResponseMousePressed...start");
-        paramlogTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // must content load before ResponseShow.show
+        messageViewTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // must content load before ResponseShow.show
         if (evt.isPopupTrigger()) {
             logger4j.debug("MacroResponseMousePressed PopupTriggered.");
             ResponseShow.show(evt.getComponent(), evt.getX(), evt.getY());
@@ -2520,7 +2560,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     private void MacroCommentsMousePressed(java.awt.event.MouseEvent evt) {
         // TODO add your handling code here:
-        paramlogTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // at this point, must load contents because first called MousePressed Event than any other mouse events
+        messageViewTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // at this point, must load contents because first called MousePressed Event than any other mouse events
         if (evt.isPopupTrigger()) {
 
         }
@@ -2541,6 +2581,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     public void clearDisplayInfoViewFlags() {
         displayInfo.clearViewFlags();
+    }
+
+    public JPanel getMessageViewPanel() {
+        return this.messageViewPanel;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2571,6 +2615,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JButton UpSelected;
     private javax.swing.JButton custom;
     private javax.swing.JMenuItem deleteRequest;
+    private javax.swing.JMenuItem showRequest;
     private javax.swing.JMenuItem disableRequest;
     private javax.swing.JMenuItem edit;
     private javax.swing.JMenuItem enableRequest;
@@ -2581,20 +2626,23 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel requestView;
+    private javax.swing.JPanel responseView;
+    private javax.swing.JPanel trackingView;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane requestScroller;
+    private javax.swing.JScrollPane trackingScroller;
+    private javax.swing.JScrollPane responseScroller;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTabbedPane paramlog;
+    private javax.swing.JTabbedPane messageView;
+    private javax.swing.JPanel messageViewPanel;
+    private javax.swing.JPanel descriptionVacantArea;
+    private javax.swing.JLabel dummyLabel;
     private javax.swing.JLabel requestListNum;
     private javax.swing.JMenuItem restore;
     private javax.swing.JMenuItem show;

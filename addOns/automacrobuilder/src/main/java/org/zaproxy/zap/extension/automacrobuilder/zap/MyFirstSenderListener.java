@@ -68,7 +68,7 @@ public class MyFirstSenderListener implements HttpSenderListener {
                 LOGGER4J.debug("beforemacro end threadid:" + Thread.currentThread().getId());
                 LOGGER4J.debug("Sender is originated from StartedActiveScan. senderid:" + arg2);
             } else {
-                LOGGER4J.debug("sender is not created by ExtensionActiveScanWrapper");
+                LOGGER4J.debug("onHttpRequestSend: no action. sender is not created by ExtensionActiveScanWrapper");
             }
         } finally {
         }
@@ -77,6 +77,7 @@ public class MyFirstSenderListener implements HttpSenderListener {
     @Override
     public void onHttpResponseReceive(HttpMessage arg0, int arg1, HttpSender arg2) {
         // TODO Auto-generated method stub
+        boolean mustCleanUp = false;
         try {
             LOGGER4J.debug(
                     "called onHttpResponseReceive :"
@@ -88,6 +89,7 @@ public class MyFirstSenderListener implements HttpSenderListener {
                 // only call following methods when Scanner.start(Target) is called by
                 // ExtensionActiveScanWrapper
                 // run postMacro
+                mustCleanUp = true;
                 LOGGER4J.debug("postmacro started threadid:" + Thread.currentThread().getId());
                 postmacroprovider.setParameters(this.startedcon, arg0, arg1, arg2);
                 ThreadManagerProvider.getThreadManager().beginProcess(postmacroprovider);
@@ -95,10 +97,14 @@ public class MyFirstSenderListener implements HttpSenderListener {
                 LOGGER4J.debug(
                         "onHttpRequestReceive Sender is originated from StartedActiveScan. scanid:"
                                 + arg2);
+            } else {
+                LOGGER4J.debug("onHttpResponseReceive: no action. sender is not created by ExtensionActiveScanWrapper");
             }
         } finally {
-            this.startedcon.removeThreadid(); // always keep clean.
-            this.startedcon.removeUUID();
+            if (mustCleanUp) {
+                this.startedcon.removeThreadid(); // always keep clean.
+                this.startedcon.removeUUID();
+            }
         }
     }
 
@@ -122,9 +128,6 @@ public class MyFirstSenderListener implements HttpSenderListener {
                 break;
             case HttpSender.MANUAL_REQUEST_INITIATOR:
                 name = "MANUAL_REQUEST_INITIATOR";
-                break;
-            case HttpSender.CHECK_FOR_UPDATES_INITIATOR:
-                name = "CHECK_FOR_UPDATES_INITIATOR";
                 break;
             case HttpSender.BEAN_SHELL_INITIATOR:
                 name = "BEAN_SHELL_INITIATOR";

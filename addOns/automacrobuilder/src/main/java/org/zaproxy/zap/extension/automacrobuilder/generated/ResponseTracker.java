@@ -401,46 +401,46 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
         ResponseArea = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle(bundle.getString("ResponseTracker.レスポンス追跡.text")); // NOI18N
+        setTitle(bundle.getString("ResponseTracker.ExtractTrackingParamTitle.text")); // NOI18N
 
-        RegexTextBtn.setText(bundle.getString("ResponseTracker.2)正規表現テスト.text")); // NOI18N
+        RegexTextBtn.setText(bundle.getString("ResponseTracker.RegexTextBtn.text")); // NOI18N
         RegexTextBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RegexTextBtnActionPerformed(evt);
             }
         });
 
-        jLabel1.setText(bundle.getString("ResponseTracker.<HTML> 1)表示されたレスポンスの追跡する値をマウスで選択し、値選択ボタンを押す。<BR> 2)正規表現テストボタンで、値が選択されることを確認する。<BR> 3)次へボタンで、リクエスト設定画面へ。.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ResponseTracker.InstructionDescLabel1.text")); // NOI18N
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         ResponseURL.setText("jTextField1");
 
-        jLabel2.setText(bundle.getString("ResponseTracker.ＵＲＬ.text")); // NOI18N
+        jLabel2.setText(bundle.getString("ResponseTracker.URL.text")); // NOI18N
 
-        jButton2.setText(bundle.getString("ResponseTracker.1)値選択.text")); // NOI18N
+        jButton2.setText(bundle.getString("ResponseTracker.SelectValue.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
 
-        jButton3.setText(bundle.getString("ResponseTracker.3)次へ.text")); // NOI18N
+        jButton3.setText(bundle.getString("ResponseTracker.NextBtn3.text")); // NOI18N
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
 
-        jButton4.setText(bundle.getString("ResponseTracker.キャンセル.text")); // NOI18N
+        jButton4.setText(bundle.getString("ResponseTracker.CancelBtn4.text")); // NOI18N
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
             }
         });
 
-        jLabel3.setText(bundle.getString("ResponseTracker.レスポンス.text")); // NOI18N
+        jLabel3.setText(bundle.getString("ResponseTracker.ResponseLabel3.text")); // NOI18N
 
-        FixedValue.setText(bundle.getString("ResponseTracker.固定長.text")); // NOI18N
+        FixedValue.setText(bundle.getString("ResponseTracker.FixedValueCheckBox.text")); // NOI18N
 
         jScrollPane1.setViewportView(ResponseArea);
 
@@ -666,7 +666,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
         if(poscnt!=null){
             ParmVars.session.put(ParmGenSession.K_RESPONSEPOSITION, poscnt);
             dispose();
-            new SelectRequest(bundle.getString("ResponseTracker.リクエスト選択.text"), parentwin, new ParmGenAddParms(parentwin, true), ParmGenNew.P_REQUESTTAB).setVisible(true);
+            new SelectRequest(bundle.getString("ResponseTracker.SelectRequestTitle.text"), parentwin, new ParmGenAddParms(parentwin, true), ParmGenNew.P_REQUESTTAB).setVisible(true);
         }else{
             JOptionPane.showMessageDialog(this,"<HTML>正規表現に誤りがあります。</HTML>" ,  "正規表現エラー", JOptionPane.ERROR_MESSAGE);
         }
@@ -690,46 +690,46 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
         ResponseArea = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle(bundle.getString("ResponseTracker.レスポンス追跡.text")); // NOI18N
+        setTitle(bundle.getString("ResponseTracker.ExtractTrackingParamTitle.text")); // NOI18N
 
-        RegexTextBtn.setText(bundle.getString("ResponseTracker.2)正規表現テスト.text")); // NOI18N
+        RegexTextBtn.setText(bundle.getString("ResponseTracker.RegexTextBtn.text")); // NOI18N
         RegexTextBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RegexTextBtnActionPerformed(evt);
             }
         });
 
-        jLabel1.setText(bundle.getString("ResponseTracker.<HTML> 1)表示されたレスポンスの追跡する値をマウスで選択し、値選択ボタンを押す。<BR> 2)正規表現テストボタンで、値が選択されることを確認する。<BR> 3)次へボタンで、リクエスト設定画面へ。.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ResponseTracker.InstructionDescLabel1.text")); // NOI18N
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         ResponseURL.setText("jTextField1");
 
-        jLabel2.setText(bundle.getString("ResponseTracker.ＵＲＬ.text")); // NOI18N
+        jLabel2.setText(bundle.getString("ResponseTracker.URL.text")); // NOI18N
 
-        jButton2.setText(bundle.getString("ResponseTracker.1)値選択.text")); // NOI18N
+        jButton2.setText(bundle.getString("ResponseTracker.SelectValue.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
 
-        jButton3.setText(bundle.getString("ResponseTracker.3)次へ.text")); // NOI18N
+        jButton3.setText(bundle.getString("ResponseTracker.NextBtn3.text")); // NOI18N
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
 
-        jButton4.setText(bundle.getString("ResponseTracker.キャンセル.text")); // NOI18N
+        jButton4.setText(bundle.getString("ResponseTracker.CancelBtn4.text")); // NOI18N
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
             }
         });
 
-        jLabel3.setText(bundle.getString("ResponseTracker.レスポンス.text")); // NOI18N
+        jLabel3.setText(bundle.getString("ResponseTracker.ResponseLabel3.text")); // NOI18N
 
-        FixedValue.setText(bundle.getString("ResponseTracker.固定長.text")); // NOI18N
+        FixedValue.setText(bundle.getString("ResponseTracker.FixedValueCheckBox.text")); // NOI18N
 
         jScrollPane1.setViewportView(ResponseArea);
 

@@ -1,10 +1,10 @@
 plugins {
-    id("com.diffplug.gradle.spotless") version "3.27.2"
+    id("com.diffplug.spotless") version "6.20.0"
     id("com.github.ben-manes.versions") version "0.27.0"
 }
 
 allprojects {
-    apply(plugin = "com.diffplug.gradle.spotless")
+    apply(plugin = "com.diffplug.spotless")
     apply(plugin = "com.github.ben-manes.versions")
 
     repositories {

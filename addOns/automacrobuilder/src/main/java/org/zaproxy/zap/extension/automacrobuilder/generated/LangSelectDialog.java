@@ -62,7 +62,7 @@ public class LangSelectDialog extends javax.swing.JDialog {
         setModal(true);
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText(bundle.getString("LangSelectDialog.表示言語を選択してください。.text")); // NOI18N
+        jLabel1.setText(bundle.getString("LangSelectDialog.SelectLanguage.text")); // NOI18N
 
         LANGUAGE.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         LANGUAGE.addActionListener(new java.awt.event.ActionListener() {

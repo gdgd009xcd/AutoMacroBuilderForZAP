@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import org.apache.logging.log4j.Level;
+
 import java.util.List;
 
 /**
@@ -29,6 +31,7 @@ import java.util.List;
 public class OneThreadProcessor {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
+    final Level DEBUGPROCESS = Level.getLevel("DEBUGPROCESS");
     private long id;
     private ThreadManager tm;
     private boolean isend;
@@ -57,7 +60,7 @@ public class OneThreadProcessor {
         this.th = th;
         this.id = th.getId();
         this.tm = tm;
-        LOGGER4J.info("ProcessCreated:" + id);
+        LOGGER4J.log(DEBUGPROCESS,"ProcessCreated:" + id);
         this.isend = false;
         this.isaborted = false;
         this.starttime = 0;
@@ -84,7 +87,7 @@ public class OneThreadProcessor {
         this.th = th;
         this.id = th.getId();
         this.tm = tm;
-        LOGGER4J.info("ProcessReplaced:" + id);
+        LOGGER4J.log(DEBUGPROCESS,"ProcessReplaced:" + id);
         this.isend = false;
         this.isaborted = false;
         this.starttime = 0;
@@ -170,7 +173,7 @@ public class OneThreadProcessor {
         // ================== A) thread local zone end.
         // This method should call the following function at the very end:
         boolean aborted = this.tm.endProcess(this, this.doaction, doendaction);
-        LOGGER4J.info("Process terminated:" + id);
+        LOGGER4J.log(DEBUGPROCESS,"Process terminated:" + id);
         // thread local zone ended..
         return aborted;
     }

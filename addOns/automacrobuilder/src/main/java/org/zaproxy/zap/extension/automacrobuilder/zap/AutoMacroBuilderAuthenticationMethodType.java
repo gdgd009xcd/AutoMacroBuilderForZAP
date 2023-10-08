@@ -226,10 +226,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
         protected HttpSender getHttpSender() {
             if (this.httpSender == null) {
                 this.httpSender =
-                        new HttpSender(
-                                Model.getSingleton().getOptionsParam().getConnectionParam(),
-                                true,
-                                HttpSender.AUTHENTICATION_INITIATOR);
+                        new HttpSender(HttpSender.AUTHENTICATION_INITIATOR);
             }
             return httpSender;
         }

@@ -4,7 +4,6 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenAddParms;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -42,7 +41,7 @@ public class ParmGenCSVLoader extends javax.swing.JFrame {
     public boolean  readOneLine(){
         ArrayList<String> columns = frn.readColumns();
         if(columns==null){
-            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenCSVLoader.ＣＳＶファイル読み込み失敗.text"), bundle.getString("ParmGenCSVLoader.CSVファイル読み込み.text"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, bundle.getString("ParmGenCSVLoader.CSVLoadErrorOptionPaneMessage.text"), bundle.getString("ParmGenCSVLoader.CSVLoadErrorOptionPaneTitle.text"), JOptionPane.ERROR_MESSAGE);
             return false;
         }else{
             while(model.getRowCount()>0){
@@ -74,16 +73,16 @@ public class ParmGenCSVLoader extends javax.swing.JFrame {
         ReadNext = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle(bundle.getString("ParmGenCSVLoader.CSVカラム選択.text")); // NOI18N
+        setTitle(bundle.getString("ParmGenCSVLoader.DialogTitle.text")); // NOI18N
 
-        CSelect.setText(bundle.getString("ParmGenCSVLoader.選択.text")); // NOI18N
+        CSelect.setText(bundle.getString("ParmGenCSVLoader.CSelectBtn.text")); // NOI18N
         CSelect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CSelectActionPerformed(evt);
             }
         });
 
-        Cancel.setText(bundle.getString("ParmGenCSVLoader.取消.text")); // NOI18N
+        Cancel.setText(bundle.getString("ParmGenCSVLoader.CancelBtn.text")); // NOI18N
         Cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CancelActionPerformed(evt);
@@ -113,9 +112,9 @@ public class ParmGenCSVLoader extends javax.swing.JFrame {
             ColumnTable.getColumnModel().getColumn(1).setHeaderValue(bundle.getString("ParmGenCSVLoader.columnvalue.text")); // NOI18N
         }
 
-        jLabel1.setText(bundle.getString("ParmGenCSVLoader.<HTML> カラムを下記一覧から選択し、選択ボタンを押す。.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenCSVLoader.InstructionForSelectingColumnTitleLabel1.text")); // NOI18N
 
-        ReadNext.setText(bundle.getString("ParmGenCSVLoader.次レコード読み込み.text")); // NOI18N
+        ReadNext.setText(bundle.getString("ParmGenCSVLoader.ReadNextBtn.text")); // NOI18N
         ReadNext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ReadNextActionPerformed(evt);
@@ -175,7 +174,6 @@ public class ParmGenCSVLoader extends javax.swing.JFrame {
                 ParmVars.session.put(i, ParmGenSession.K_COLUMN, Integer.toString(colpos));
             }
             dispose();
-            //new SelectRequest(bundle.getString("ParmGenCSVLoader.リクエスト選択.text"), parentwin, new ParmGenAddParms((ParmGenNew)parentwin, true), ParmGenNew.P_REQUESTTAB).setVisible(true);
             new ParmGenAddParms((ParmGenNew)parentwin, true).setVisible(true);
         }
     }//GEN-LAST:event_CSelectActionPerformed

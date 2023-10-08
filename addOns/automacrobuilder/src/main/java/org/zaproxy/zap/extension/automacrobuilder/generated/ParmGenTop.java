@@ -271,40 +271,40 @@ public class ParmGenTop extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle(bundle.getString("ParmGenTop.PARMGENトップ画面.text")); // NOI18N
+        setTitle(bundle.getString("ParmGenTop.DialogTitle.text")); // NOI18N
 
-        jLabel1.setText(bundle.getString("ParmGenTop.文字コード.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenTop.LangLabel1.text")); // NOI18N
 
         LANGUAGE.setModel(new javax.swing.DefaultComboBoxModel<String>(new String[] { "SJIS", "EUC-JP", "UTF-8", "ISO8859-1", "x-MacCentralEurope" }));
-        LANGUAGE.setToolTipText(bundle.getString("ParmGenTop.文字コード.text")); // NOI18N
+        LANGUAGE.setToolTipText(bundle.getString("ParmGenTop.LangSelectComboBoxToolTip.text")); // NOI18N
         LANGUAGE.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 LANGUAGEActionPerformed(evt);
             }
         });
 
-        Add.setText(bundle.getString("ParmGenTop.新規.text")); // NOI18N
+        Add.setText(bundle.getString("ParmGenTop.AddBtn.text")); // NOI18N
         Add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 AddActionPerformed(evt);
             }
         });
 
-        Mod.setText(bundle.getString("ParmGenTop.修正.text")); // NOI18N
+        Mod.setText(bundle.getString("ParmGenTop.ModBtn.text")); // NOI18N
         Mod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ModActionPerformed(evt);
             }
         });
 
-        Del.setText(bundle.getString("ParmGenTop.削除.text")); // NOI18N
+        Del.setText(bundle.getString("ParmGenTop.DelBtn.text")); // NOI18N
         Del.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DelActionPerformed(evt);
             }
         });
 
-        Cancel.setText(bundle.getString("ParmGenTop.閉じる.text")); // NOI18N
+        Cancel.setText(bundle.getString("ParmGenTop.CancelBtn.text")); // NOI18N
         Cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CancelActionPerformed(evt);
@@ -415,7 +415,7 @@ public class ParmGenTop extends javax.swing.JFrame {
                 .addComponent(RepeaterScope))
         );
 
-        jLabel2.setText(bundle.getString("ParmGenTop.注意：処理実行前に、この画面は保存または閉じるボタンで閉じてください。.text")); // NOI18N
+        jLabel2.setText(bundle.getString("ParmGenTop.CautionDescriptionLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -578,40 +578,40 @@ public class ParmGenTop extends javax.swing.JFrame {
         jLabel2.putClientProperty("html.disable", Boolean.FALSE);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle(bundle.getString("ParmGenTop.PARMGENトップ画面.text")); // NOI18N
+        setTitle(bundle.getString("ParmGenTop.DialogTitle.text")); // NOI18N
 
-        jLabel1.setText(bundle.getString("ParmGenTop.文字コード.text")); // NOI18N
+        jLabel1.setText(bundle.getString("ParmGenTop.LangLabel1.text")); // NOI18N
 
         LANGUAGE.setModel(new javax.swing.DefaultComboBoxModel<String>(new String[] { "SJIS", "EUC-JP", "UTF-8", "ISO8859-1", "x-MacCentralEurope" }));
-        LANGUAGE.setToolTipText(bundle.getString("ParmGenTop.文字コード.text")); // NOI18N
+        LANGUAGE.setToolTipText(bundle.getString("ParmGenTop.LangSelectComboBoxToolTip.text")); // NOI18N
         LANGUAGE.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 LANGUAGEActionPerformed(evt);
             }
         });
 
-        Add.setText(bundle.getString("ParmGenTop.新規.text")); // NOI18N
+        Add.setText(bundle.getString("ParmGenTop.AddBtn.text")); // NOI18N
         Add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 AddActionPerformed(evt);
             }
         });
 
-        Mod.setText(bundle.getString("ParmGenTop.修正.text")); // NOI18N
+        Mod.setText(bundle.getString("ParmGenTop.ModBtn.text")); // NOI18N
         Mod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ModActionPerformed(evt);
             }
         });
 
-        Del.setText(bundle.getString("ParmGenTop.削除.text")); // NOI18N
+        Del.setText(bundle.getString("ParmGenTop.DelBtn.text")); // NOI18N
         Del.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DelActionPerformed(evt);
             }
         });
 
-        Cancel.setText(bundle.getString("ParmGenTop.閉じる.text")); // NOI18N
+        Cancel.setText(bundle.getString("ParmGenTop.CancelBtn.text")); // NOI18N
         Cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CancelActionPerformed(evt);
@@ -722,7 +722,7 @@ public class ParmGenTop extends javax.swing.JFrame {
                                 .addComponent(RepeaterScope))
         );
 
-        jLabel2.setText(bundle.getString("ParmGenTop.注意：処理実行前に、この画面は保存または閉じるボタンで閉じてください。.text")); // NOI18N
+        jLabel2.setText(bundle.getString("ParmGenTop.CautionDescriptionLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
