@@ -3,10 +3,11 @@ All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## 11 - 2023-10-06
-### ver1.1.4
-- maintenance: refactored properties file to Japanese Charset name to alphanumeric name. 
-- maintenance: changed log message to more readable.
+## 11 - 2023-10-08
+### ver1.1.5
+- maintenance: refactored properties file to Japanese Charset name to alphanumeric name.
+- improvement: messageView(Request/Response/Results message viewer) move to "informatin area"(which attached such as history tab) in ZAP UI
+- improvement: changed log message to more readable.
 - maintenance: no longer used .form file. I will directly edit java code for GUI maintenance.
 - upgrade: dependent "org.zaproxy.add-on" version upgraded to 0.8.0
 - upgrade: gradle version upgraded to 8.2.1

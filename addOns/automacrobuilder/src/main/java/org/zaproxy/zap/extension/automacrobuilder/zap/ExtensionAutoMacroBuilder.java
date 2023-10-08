@@ -36,6 +36,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.MessageVIewStatusPanel;
 import org.zaproxy.zap.extension.sessions.ExtensionSessionManagement;
 import org.zaproxy.zap.session.SessionManagementMethodType;
 import org.zaproxy.zap.utils.FontUtils;
@@ -73,6 +74,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     private ParmGenMacroTraceProvider pmtProvider = null;
     private ParmGenMacroTrace pmt = null;
     private MacroBuilderUI mbui = null;
+    private MessageVIewStatusPanel messageViewStatusPanel = null;
 
     // private SimpleExampleAPI api;
 
@@ -87,7 +89,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         this.pmt = pmtProvider.getBaseInstance(0);
 
         if (this.mbui == null) {
-            this.mbui = new MacroBuilderUI(this.pmtProvider);
+            this.mbui = new MacroBuilderUI(this.pmtProvider, this);
         }
     }
 
@@ -106,6 +108,10 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             // extensionHook.getHookMenu().addPopupMenuItem(getPopupMsgMenuExample());
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuAdd2MacroBuilder());
             // extensionHook.getHookView().addStatusPanel(getStatusPanel());
+
+            this.messageViewStatusPanel = new MessageVIewStatusPanel(extwrapper,
+                    this.mbui, "messageView", extensionHook);
+            extensionHook.getHookView().addStatusPanel(this.messageViewStatusPanel);
             extensionHook
                     .getHookView()
                     .addWorkPanel(
@@ -141,6 +147,10 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             sessMethodTypes.add(new AutoMacroBuilderSessionManagementMethodType());
         }
         LOGGER4J.debug("succeeded getting methodTypes: size=" + methodTypes.size());
+    }
+
+    public MessageVIewStatusPanel getMessageViewStatusPanel() {
+        return this.messageViewStatusPanel;
     }
 
     @Override
