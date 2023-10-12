@@ -43,7 +43,7 @@ To download & build this addon, simply run:
 
 $ git clone https://github.com/gdgd009xcd/AutoMacroBuilderForZAP.git  
 $ cd AutoMacroBuilderForZAP/  
-$ ./gradlew build  
+$ ./gradlew addOns:automacrobuilder:jarZapAddOn  
 
 The add-on will be placed in the directory `AutoMacroBuilderForZAP/addOns/automacrobuilder/build/zapAddOn/bin`
 
