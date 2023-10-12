@@ -1,1 +1,87 @@
-### dummy ###
+name: Upload Release Asset for ZAP addOn
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+env:
+  ZAP_ADDON_BUILD_DIR: 'addOns/automacrobuilder/build/zapAddOn'
+  ZAP_ADDON_BUILD_TASK: 'addOns:automacrobuilder:jarZapAddOn'
+
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ubuntu-latest
+    steps:
+      - name: set env.ZAP_ADDON_BUILD_BIN_DIR
+        run: |
+          echo "ZAP_ADDON_BUILD_BIN_DIR=${{env.ZAP_ADDON_BUILD_DIR}}/bin" >> $GITHUB_ENV
+      - name: Checkout project sources
+        uses: actions/checkout@v3
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Run build with Gradle Wrapper
+        run: ./gradlew ${{env.ZAP_ADDON_BUILD_TASK}}
+      - name: get zap file name
+        id: zapFileName
+        run: |
+          echo "filename=`ls ${{env.ZAP_ADDON_BUILD_BIN_DIR}}`" >> $GITHUB_OUTPUT
+      - name: get sha256sum hash with zapFile
+        id: zapShaHash
+        run: |
+          echo "zapshahash=`sha256sum ${{env.ZAP_ADDON_BUILD_BIN_DIR}}/${{steps.zapFileName.outputs.filename}} | sed -r 's/^([0-9a-zA-Z]+)\s+.+$/\1/'`" >> $GITHUB_OUTPUT
+      - name: get zap status(remove all \r\n and extract status value within <status> tag)
+        id: zapStatus
+        run: |
+          echo "zapstatus=`sed ':lbl1;N;s/[\n\r]//;b lbl1' ${{env.ZAP_ADDON_BUILD_DIR}}/ZapAddOn.xml | sed -E 's/.*<status>[\t ]*([^\r\n\t ]+)[\t ]*<\/status>.*/\1/g'`" >> $GITHUB_OUTPUT
+      - name: make env.DESCRIPTION
+        id: DESCRIPTION
+        run: |
+          echo 'DESCRIPTION<<EOF' >> $GITHUB_ENV
+          echo -e "${{ steps.zapFileName.outputs.filename }}\n" >> $GITHUB_ENV
+          echo -e "sha256sum:${{ steps.zapShaHash.outputs.zapshahash }}\n" >> $GITHUB_ENV
+          echo "`cat ${{env.ZAP_ADDON_BUILD_DIR}}/latest-changes.md`" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: get tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+      - name: make RELEASE_TITLE
+        id: RELEASE_TITLE
+        run: echo "RELEASE_TITLE=version ${{ steps.vars.outputs.tag }} ${{ steps.zapStatus.outputs.zapstatus }} release" >> $GITHUB_OUTPUT
+      - name: Check output
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ steps.vars.outputs.tag }}
+      - name: echo zap info
+        run: |
+          echo "filename[${{ steps.zapFileName.outputs.filename }}]"
+          echo "sha256sum[${{ steps.zapShaHash.outputs.zapshahash }}]"
+          echo "Status[${{ steps.zapStatus.outputs.zapstatus }}]"
+          echo "RELEASE_TITLE[${{steps.RELEASE_TITLE.outputs.RELEASE_TITLE}}]"
+          echo "DESCRIPTION[${{ env.DESCRIPTION }}]"
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          release_name: ${{steps.RELEASE_TITLE.outputs.RELEASE_TITLE}}
+          body: ${{ env.DESCRIPTION }}
+          draft: true
+          prerelease: true
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ${{env.ZAP_ADDON_BUILD_BIN_DIR}}/${{steps.zapFileName.outputs.filename}}
+          asset_name: ${{steps.zapFileName.outputs.filename}}
+          asset_content_type: application/zip
+
