@@ -377,17 +377,12 @@ private void setAppParmsIni(){
             case P_CSVMODEL:
                 row = new Object[]{_reqplace, false, Integer.parseInt(ParmVars.session.get(ni, ParmGenSession.K_COLUMN)), nval, islastparam};
                 break;
-            case P_TAMPERMODEL://とりあえず、パラメータレコードを作成し、この時点では一部のデータをセットする。
-                //置換位置　   置換する・しない　Value　Name　Attack(未使用)　Advance　Position　URLencode
-                // _reqplace  false            nval   name  ""      "0"       "append"        false
-                row = new Object[]{_reqplace, false, nval, name, "", "0" , payloadposition , false};
-                break;
             case P_TRACKMODEL:
                 if(ParmVars.session.get(0, ParmGenSession.K_TOKEN)==null){
                     urlencode = false;
                     if(target_req_isformdata!=true){
                         if(Boolean.parseBoolean(ParmVars.session.get(ParmGenSession.K_URLENCODE))==true){
-                            //引き継ぎ先リクエストがformdataではなく、引き継ぎ元リクエストがレスポンスボディ。
+                            // target request  which will set tracking parameter is not form-data and source of tracking parameter is request body.
                             urlencode = true;
                         }
                     }
@@ -450,7 +445,7 @@ private void setAppParmsIni(){
     }
     
     /*
-     * current_modelのtargetURLを更新
+     * update targetURL within current_model
      */
     public void updateTargetURL(String targetURL){
         String mname = "";
@@ -483,7 +478,7 @@ private void setAppParmsIni(){
     }
 
     /*
-     * current_modelのtargetURLを返す
+     * get target URL within current_model
      */
     public String getTargetURL(){
         switch(current_model){
@@ -1620,7 +1615,7 @@ private void setAppParmsIni(){
                 return;
             }
         }
-        //セッションクリア
+        // clea sessions
         ParmVars.session.clear();
         ParmGenCSVLoader csvloader = new ParmGenCSVLoader(this,csvFilePath.getText());
         if(csvloader.readOneLine()){
@@ -1645,10 +1640,8 @@ private void setAppParmsIni(){
                 return;
             }
         }
-        //セッションクリア
+        // clear sessions
         ParmVars.session.clear();
-        //new ResponseTracker(this).setVisible(true);
-       //new SelectRequest("レスポンス選択", this, new ResponseTracker(this), ParmGenNew.P_RESPONSETAB).setVisible(true);
         new SelectRequest(bundle.getString("ParmGenNew.SelectResponseDialogTitle.text"), this, new ParmGenAutoTrack(this), ParmGenNew.P_RESPONSETAB).setVisible(true);
     }//GEN-LAST:event_nParamAdd4ActionPerformed
 
@@ -1666,9 +1659,7 @@ private void setAppParmsIni(){
 
     private void NumberRewindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NumberRewindActionPerformed
         // TODO add your handling code here:
-        if (NumberRewind.isSelected()){
 
-        }
     }//GEN-LAST:event_NumberRewindActionPerformed
 
     private void RequestSelectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RequestSelectBtnActionPerformed
@@ -1835,17 +1826,13 @@ private void setAppParmsIni(){
                     value = (String)model.getValueAt(i, 2);
                     break;
             }
-
-
            if(app!=null)rec.addAppValue(app);
         }
         
         if(addrec==null){
-            //更新
+            // update
             rec.clearLastAppValueNOCOUNT();
         }
-        
-        //rec.crtGenFormat(lastEntryNocount);
         
         parentwin.updateRowDisp(addrec);
         
@@ -1857,11 +1844,11 @@ private void setAppParmsIni(){
     private void nParamAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nParamAddActionPerformed
         // TODO add your handling code here:
         if(current_model_selected){
-            if(current_model!=P_NUMBERMODEL){
+            if(current_model!=P_NUMBERMODEL){//
                 return;
             }
         }
-        //セッションクリア
+        //　clear session paramters
         ParmVars.session.clear();
         new ParmGenAddParms(this, false).setVisible(true);
     }//GEN-LAST:event_nParamAddActionPerformed

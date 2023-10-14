@@ -74,9 +74,11 @@ public class SelectRequest extends javax.swing.JDialog {
 
     }
 
-    // Requestをセット
-    // IHttpRequestResponse を引数にとるコンストラクタを作成。
-    // setRequestに引数を渡す。
+    /**
+     * add element of proxy_message to TableModel
+     *
+     * @param proxy_messages
+     */
     public void setRequest(ArrayList <PRequestResponse> proxy_messages){
         
         model = new DefaultTableModel();
@@ -222,7 +224,7 @@ public class SelectRequest extends javax.swing.JDialog {
 
     private void MessageSelectedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MessageSelectedActionPerformed
         // TODO add your handling code here:
-        // 選択メッセージを更新する。
+        // update selected message
         ParmGenGSONSaveV2.selected_messages.clear();
         ParmGenGSONSaveV2.selected_messages.add(ParmGenGSONSaveV2.proxy_messages.get(selected_message_idx));
         pgenwin.updateMessageAreaInSelectedModel(panelno);
