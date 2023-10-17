@@ -19,29 +19,50 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
+import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpSender;
+import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
+import org.zaproxy.zap.extension.forceduser.ExtensionForcedUser;
 import org.zaproxy.zap.network.HttpSenderListener;
 
 public class MyFirstSenderListener implements HttpSenderListener {
 
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
+    public static final int DEFAULT_EXTENSION_LISTENER_ORDER = 10000;// this value must be larger than ExtensionForcedUser.getListenerOrder()==9998
+    private int listerOrder = DEFAULT_EXTENSION_LISTENER_ORDER;
     private StartedActiveScanContainer startedcon = null;
     private BeforeMacroDoActionProvider beforemacroprovider = new BeforeMacroDoActionProvider();
     private PostMacroDoActionProvider postmacroprovider = new PostMacroDoActionProvider();
 
     MyFirstSenderListener(StartedActiveScanContainer startedcon) {
+
         this.startedcon = startedcon;
+        ExtensionForcedUser extensionForcedUser =
+                Control.getSingleton()
+                        .getExtensionLoader()
+                        .getExtension(ExtensionForcedUser.class);
+        if (extensionForcedUser != null) {
+            int forcedUserListenerOrder = extensionForcedUser.getListenerOrder();
+            this.listerOrder = forcedUserListenerOrder + 1;// this value must be larger than current ExtensionForcedUser.getListenerOrder()
+            LOGGER4J.info("listnerOrder["
+                    + this.listerOrder
+                    + "] "
+                    + (this.listerOrder>forcedUserListenerOrder?">":"<=")
+                    + " forcedUserListnerOrder["
+                    + forcedUserListenerOrder
+                    + "]"
+            );
+        }
     }
 
     @Override
     public int getListenerOrder() {
         // TODO Auto-generated method stub
-        // ExtensionForcedUser.getListenerOrder = 9998 + 1
-        return 9999;
+        return this.listerOrder;
     }
 
     @Override

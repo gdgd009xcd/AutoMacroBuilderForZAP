@@ -2,6 +2,11 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## 12 - 2023-10-17
+### ver1.1.6
+- improve: added new feature to "Track" button. this enabled automatically embed tracking value into Path Parameter(URL)
+- bugfix: fixed problem of custom setting which embed tracking value into Path Parameter.
+- maintenance: applied ”spotlessApply" to .kts files
 
 ## 11 - 2023-10-08
 ### ver1.1.5

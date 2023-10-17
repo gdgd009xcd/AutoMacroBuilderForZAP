@@ -97,7 +97,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         Select_ReplaceTargetURL.addItem(newtargetURL);
         String currenturl = parentwin.getTargetURL();
         if ( currenturl != null && !currenturl.isEmpty()){
-            if(currenturl.indexOf(newtargetURL)==-1){// currenturl does not contains newtargetURL, so add it to currenturl.
+            if(currenturl.indexOf(newtargetURL)==-1){// currenturl does not contain newtargetURL, so add it to currenturl.
                 Select_ReplaceTargetURL.addItem(currenturl);
                 Select_ReplaceTargetURL.addItem(currenturl + "|.*" + selected_request.getPath() + ".*");
             }
@@ -458,6 +458,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         }
 
         if(selidx==VT_FIXED ){// use original value as regex pattern
+            // // this choice is nonsense. but later Users could change the value for their own purposes
             String escv = ParmGenUtil.escapeRegexChars(v);
             if(isformdata){
                 return "(" + escv + ")";
@@ -518,7 +519,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         if(isheader) {
             return prefix + "([^\\r\\n\\t ]+)";
         } else if (ispath) {
-            return prefix + "([^\\/\\r\\n\\t ]+)";
+            return prefix + "([^\\r\\n\\t /]+)";
         } else if(iscookie) {
             return prefix + "([^\\r\\n\\t;\\= ]+)";
         }
@@ -568,11 +569,11 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
                 if(reqplace.equals("path")){
                     int pn = Integer.parseInt(pname);
                     if(pn==0) {
-                        iswholepath = true;// this choice is nonsense. but leave it. (replace entire URL to pvalue.)
+                        iswholepath = true;// this choice is nonsense. but later Users could change the value for their own purposes(replace entire URL to pvalue.)
                     } else {
-                        pathpref = "(?:[a-z]+\\://[^\\r\\n/]+/|/)";// URL of request through proxy or direct
+                        pathpref = "(?:[a-z]+\\://[^\\r\\n\\t /]+/|/)";// URL of request through proxy or direct
                         for (int j = 1; j < pn; j++) {
-                            pathpref += "[^/\\r\\n]*?/";
+                            pathpref += "[^\\r\\n\\t /]+?/";
                         }
                     }
                     ispath = true;

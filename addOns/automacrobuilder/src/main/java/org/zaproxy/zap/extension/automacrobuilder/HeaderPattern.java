@@ -33,6 +33,7 @@ public class HeaderPattern {
     private String tkvalue_regexformat;
     private Pattern tkvalue_regpattern = null;
     private String tkvalue_regex = null;
+    private String pathParam_RegexFormat = null;
     private ParmGenRequestTokenKey.RequestParamType rptype;
     private ParmGenRequestTokenKey.RequestParamSubType rpsubtype;
     private ParmGenToken foundResponseToken = null;
@@ -50,6 +51,21 @@ public class HeaderPattern {
         rpsubtype = _subtype;
     }
 
+    HeaderPattern(
+            String uhname,
+            String name_regex,
+            String value_regex,
+            String pathParam_regex,
+            ParmGenRequestTokenKey.RequestParamType _rptype,
+            ParmGenRequestTokenKey.RequestParamSubType _subtype) {
+        upperheadername = uhname.toUpperCase();
+        tkname_regexformat = name_regex;
+        tkvalue_regexformat = value_regex;
+        pathParam_RegexFormat = pathParam_regex;
+        rptype = _rptype;
+        rpsubtype = _subtype;
+    }
+
     HeaderPattern(HeaderPattern src) {
         upperheadername = src.upperheadername;
         tkname_regexformat = src.tkname_regexformat;
@@ -62,6 +78,7 @@ public class HeaderPattern {
         tkvalue_regex = src.tkvalue_regex;
         rptype = src.rptype;
         rpsubtype = src.rpsubtype;
+        pathParam_RegexFormat = src.pathParam_RegexFormat;
         if (src.foundResponseToken != null) {
             foundResponseToken = new ParmGenToken(src.foundResponseToken);
         } else {
@@ -133,6 +150,17 @@ public class HeaderPattern {
     // this hash doesn't care about fcnt. because request has same rptype/subtype/tkname tokens.
     public int getSameTokenHash() {
         return Objects.hash(rptype, rpsubtype, tkname);
+    }
+
+    public String generatePathParamter(int i) {
+        StringBuilder pathParameterValue = new StringBuilder(tkname_regexformat);
+        for (int j = 1; j < i; j++) {
+            pathParameterValue.append(pathParam_RegexFormat);
+        }
+        pathParameterValue.append(tkvalue_regexformat);
+        // update tkvalue_regex to pathParameterValue
+        this.tkvalue_regex = pathParameterValue.toString();
+        return this.tkvalue_regex;
     }
 
     @Override

@@ -33,12 +33,14 @@ public class ParmGenRequestTokenKey {
         Json,
         Form_data,
         Header,
+        Request_Line,
         Nop
     }
 
     public enum RequestParamSubType {
         Default,
         Cookie,
+        PathParameter,
         Bearer,
     }
 
