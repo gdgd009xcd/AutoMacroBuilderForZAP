@@ -8,7 +8,7 @@ val addOnsProjectName = "addOns"
 // Keep the add-ons in alphabetic order.
 var addOns = listOf(
 
-"automacrobuilder"
+    "automacrobuilder",
 
 )
 

@@ -35,9 +35,9 @@ import java.util.regex.Pattern;
 //
 
 class ParseHTTPHeaders implements DeepClone {
-    private static org.apache.logging.log4j.Logger LOGGER4J =
+    final private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
-    private static int MAXLENOFHTTPHEADER = 10000;
+    final private static int MAXLENOFHTTPHEADER = 10000;
     Pattern valueregex;
     // Pattern formdataregex;
     String formdataheader;
@@ -95,21 +95,22 @@ class ParseHTTPHeaders implements DeepClone {
         // Authorization: Bearer token68
         //         token68: alpha,digit, "-._~+/", "=" (RFC 6750 2.1 base64token )
         new HeaderPattern(
-                "Authorization",
-                // String.format("xxxx (Bearer) %s xxxx", tokenvalue)
-                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*([bB][eE][aA][rR][eE][rR])[ ]%s(?:[\\r\\n\\t ])*",
-                // String.format("xxxx %s (value) xxxx", tokenname)
-                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*%s[ ]([a-zA-Z0-9\\-\\._~\\+/]+\\=*)(?:[\\r\\n\\t ])*",
-                ParmGenRequestTokenKey.RequestParamType.Header,
-                ParmGenRequestTokenKey.RequestParamSubType.Bearer),
+            "Authorization",
+            // String.format("xxxx (Bearer) %s xxxx", tokenvalue)
+            "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*([bB][eE][aA][rR][eE][rR])[ ]%s(?:[\\r\\n\\t ])*",
+            // String.format("xxxx %s (value) xxxx", tokenname)
+            "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*%s[ ]([a-zA-Z0-9\\-\\._~\\+/]+\\=*)(?:[\\r\\n\\t ])*",
+            ParmGenRequestTokenKey.RequestParamType.Header,
+            ParmGenRequestTokenKey.RequestParamSubType.Bearer),
         new HeaderPattern(
-                "Authorization",
-                // String.format("xxxx () %s xxxx", tokenvalue)
-                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*()%s(?:[\\r\\n\\t ])*",
-                // String.format("xxxx (Bearer value) xxxx", tokenname)
-                "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*([bB][eE][aA][rR][eE][rR][ ][a-zA-Z0-9\\-\\._~\\+/]+\\=*)(?:[\\r\\n\\t ])*",
-                ParmGenRequestTokenKey.RequestParamType.Header,
-                ParmGenRequestTokenKey.RequestParamSubType.Bearer),
+            "Authorization",
+            // String.format("xxxx () %s xxxx", tokenvalue)
+            "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*()%s(?:[\\r\\n\\t ])*",
+            // String.format("xxxx (Bearer value) xxxx", tokenname)
+            "[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]:[\\r\\n\\t ]*([bB][eE][aA][rR][eE][rR][ ][a-zA-Z0-9\\-\\._~\\+/]+\\=*)(?:[\\r\\n\\t ])*",
+            ParmGenRequestTokenKey.RequestParamType.Header,
+            ParmGenRequestTokenKey.RequestParamSubType.Bearer),
+
         // Cookie: token  =  value
         // token: any char except ctrls and delimiters「"(" | ")" | "<" | ">" | "@" | "," | ";" | ":"
         // | "\" | <">| "/" | "[" | "]" | "?" | "="| "{" | "}" | SP | HT」
@@ -119,13 +120,21 @@ class ParseHTTPHeaders implements DeepClone {
         // [\x21\x23-\x2B\x2D-\x3A\x3C-\x5B\x5D-\x7E]
         // RFC 6265 4.1.1 Set-Cookie header syntax , 4.2.1 Cookie header syntax
         new HeaderPattern(
-                "Cookie",
-                // String.format("xxxx (name)=%s xxxx", tokenvalue)
-                "[cC][oO][oO][kK][iI][eE]:[\\r\\n\\t ]*(?:.*;[ ]+)*([^\\cA-\\cZ()<>@,;:\\\\\"/\\[\\]?={} ]+)[\\r\\n\\t ]*=[\\r\\n\\t ]*\"?%s\"?(?:[\\r\\n\\t ]|;)*",
-                // String.format("xxxx %s=(value) xxxx", tokenname)
-                "[cC][oO][oO][kK][iI][eE]:[\\r\\n\\t ]*(?:.*;[ ]+)*%s[\\r\\n\\t ]*=[\\r\\n\\t ]*\"?([\\x21\\x23-\\x2B\\x2D-\\x3A\\x3C-\\x5B\\x5D-\\x7E]+)\"?(?:[\\r\\n\\t ]|;)*",
-                ParmGenRequestTokenKey.RequestParamType.Header,
-                ParmGenRequestTokenKey.RequestParamSubType.Cookie),
+            "Cookie",
+            // String.format("xxxx (name)=%s xxxx", tokenvalue)
+            "[cC][oO][oO][kK][iI][eE]:[\\r\\n\\t ]*(?:.*;[ ]+)*([^\\cA-\\cZ()<>@,;:\\\\\"/\\[\\]?={} ]+)[\\r\\n\\t ]*=[\\r\\n\\t ]*\"?%s\"?(?:[\\r\\n\\t ]|;)*",
+            // String.format("xxxx %s=(value) xxxx", tokenname)
+            "[cC][oO][oO][kK][iI][eE]:[\\r\\n\\t ]*(?:.*;[ ]+)*%s[\\r\\n\\t ]*=[\\r\\n\\t ]*\"?([\\x21\\x23-\\x2B\\x2D-\\x3A\\x3C-\\x5B\\x5D-\\x7E]+)\"?(?:[\\r\\n\\t ]|;)*",
+            ParmGenRequestTokenKey.RequestParamType.Header,
+            ParmGenRequestTokenKey.RequestParamSubType.Cookie),
+
+        // Request-Line(Path Parameter)
+        new HeaderPattern("Request-Line",
+            "(?:[a-z]+\\://[^\\r\\n\\t /]+/|/)",
+                "([^\\r\\n\\t /]+)",
+                "[^\\r\\n\\t /]+?/",
+            ParmGenRequestTokenKey.RequestParamType.Request_Line,
+            ParmGenRequestTokenKey.RequestParamSubType.PathParameter)
     };
 
     public static final String CUSTOM_THREAD_ID_HEADERNAME = "X-PARMGEN-THREAD-HEADER";
@@ -526,26 +535,8 @@ class ParseHTTPHeaders implements DeepClone {
                         content_length = Integer.parseInt(nv[1]);
                     } else if (nv[0].toLowerCase().startsWith("cookie")) {
                         cookieparams = parseCookieValues(nv[1], null);
-                    } else if (nv[0].toLowerCase().startsWith("set-cookie")) { // レスポンスのSet-Cookie値
+                    } else if (nv[0].toLowerCase().startsWith("set-cookie")) { // is Set-Cookie header in response?
                         setcookieheaders.add(nv[1]);
-                        /**
-                         * ** REMOVE String[] cookies = nv[1].split("[\r\n;]"); String setckey =
-                         * null; String setcval = null; ArrayList<String[]> setclist = new
-                         * ArrayList<String[]>(); for(int ck = 0; ck < cookies.length; ck++){
-                         * String[] cnv = cookies[ck].trim().split("[=]"); String[] nvpair = new
-                         * String[2]; if(cnv.length>1){ nvpair[0] = new String(cnv[0]); nvpair[1] =
-                         * new String(cnv[1]); if(ck==0){//cookie name=value setckey = nvpair[0];
-                         * setcval = nvpair[1]; } setclist.add(nvpair); //ParmVars.plog.debuglog(0,
-                         * "Set-Cookie: K[" + setckey + "] " + nvpair[0] + "=" + nvpair[1]);
-                         *
-                         * <p>}else{ if(cnv[0].toLowerCase().startsWith("httponly")){ nvpair[0] =
-                         * new String("httponly"); nvpair[1] = new String(cnv[0]); }else
-                         * if(cnv[0].toLowerCase().startsWith("secure")){ nvpair[0] = new
-                         * String("secure"); nvpair[1] = new String(cnv[0]); } setclist.add(nvpair);
-                         * //ParmVars.plog.debuglog(0, "Set-Cookie: K[" + setckey + "] " + nvpair[0]
-                         * + "=" + nvpair[1]); } } if(setckey!=null){
-                         * //set_cookieparams.put(setckey, setclist); } **
-                         */
                     } else if (nv[0].toLowerCase()
                             .startsWith("authorization")) { // Authorization header
                         if (nv[1].toLowerCase().startsWith("bearer")
@@ -1177,6 +1168,7 @@ class ParseHTTPHeaders implements DeepClone {
     }
 
     // body parameter same name & value
+    @Deprecated
     public boolean hasBodyParam(String pname, String value) {
         if (getBodyParams() != null) {
             for (String[] pair : bodyparams) { // bodyparams
@@ -1186,6 +1178,7 @@ class ParseHTTPHeaders implements DeepClone {
         return false;
     }
 
+    @Deprecated
     public boolean hasBodyParamName(String pname) {
         if (getBodyParams() != null) {
             for (String[] pair : bodyparams) { // bodyparams
@@ -1195,6 +1188,7 @@ class ParseHTTPHeaders implements DeepClone {
         return false;
     }
 
+    @Deprecated
     public ParmGenRequestToken getRequestBodyToken(String pname) {
         if (getBodyParams() != null) {
             for (String[] pair : bodyparams) { // bodyparams
@@ -1220,6 +1214,7 @@ class ParseHTTPHeaders implements DeepClone {
     }
 
     // query parameter same name & value
+    @Deprecated
     public boolean hasQueryParam(String pname, String value) {
         if (queryparams != null) {
             for (String[] pair : queryparams) { // queryparams
@@ -1229,6 +1224,7 @@ class ParseHTTPHeaders implements DeepClone {
         return false;
     }
 
+    @Deprecated
     public boolean hasQueryParamName(String pname) {
         if (queryparams != null) {
             for (String[] pair : queryparams) { // queryparams
@@ -1238,6 +1234,7 @@ class ParseHTTPHeaders implements DeepClone {
         return false;
     }
 
+    @Deprecated
     public ParmGenRequestToken getRequestQueryToken(String pname) {
         if (queryparams != null) {
             for (String[] pair : queryparams) { // queryparams
@@ -1297,6 +1294,7 @@ class ParseHTTPHeaders implements DeepClone {
         return requestTokens;
     }
 
+    @Deprecated
     public String getQueryParamValue(String _name) {
         if (hashqueryparams != null) {
             return hashqueryparams.get(_name);
@@ -1304,6 +1302,7 @@ class ParseHTTPHeaders implements DeepClone {
         return null;
     }
 
+    @Deprecated
     public String getBodyParamValue(String _name) {
         if (hashbodyparams == null) {
             getBodyParams();
@@ -1311,6 +1310,7 @@ class ParseHTTPHeaders implements DeepClone {
         return hashbodyparams.get(_name);
     }
 
+    @Deprecated
     public String getBoundary() {
         if (boundary == null) {
             ParmGenHeader pgh = getParmGenHeader("Content-Type");
@@ -1513,6 +1513,93 @@ class ParseHTTPHeaders implements DeepClone {
                         }
                     }
                 }
+            }
+        }
+        return alist;
+    }
+
+    public ArrayList<HeaderPattern> hasMatchedValueExistInHeaders(ParmGenResTokenCollections collections) {
+
+        ArrayList<HeaderPattern> alist = new ArrayList<>();
+
+        for (HeaderPattern hpattern : headerpatterns) {
+            if (hpattern.getRequestParamType() != ParmGenRequestTokenKey.RequestParamType.Request_Line) {
+                ParmGenHeader pgh =
+                        getParmGenHeader(hpattern.getUpperHeaderName()); // get same name header
+                if (pgh != null) {
+
+                    // Authorization: Bearer token68
+                    // extract token68, then compare it with tkval
+                    ListIterator<ParmGenBeen> it = pgh.getValuesIter();
+                    while (it.hasNext()) { // access the header list sequentially
+                        HeaderPattern hpattern_copy = new HeaderPattern(hpattern);
+                        ParmGenBeen bn = it.next();
+                        String headerline = pgh.getName() + ": " + bn.v;
+                        ParmGenToken foundResponseToken = null;
+
+                        foundResponseToken =
+                                collections.resTokenUrlDecodedValueHash.get(
+                                        bn.v); // search header's value
+
+                        if (foundResponseToken != null
+                                && foundResponseToken.isEnabled()) { // use valid(Enabled) token only
+                            String tkval = foundResponseToken.getTokenValue().getValue();
+                            Pattern tkname_pattern = hpattern_copy.getTokenName_RegexPattern(tkval);
+                            Matcher tkname_matcher = tkname_pattern.matcher(headerline);
+                            if (tkname_matcher.find()) {
+                                String tokenname = tkname_matcher.group(1);
+                                hpattern_copy.setTkName(tokenname);
+                                Pattern tkvalue_pattern =
+                                        hpattern_copy.getTokenValue_RegexPattern(tokenname);
+                                Matcher tkvalue_matcher = tkvalue_pattern.matcher(headerline);
+                                if (tkvalue_matcher.find()) {
+                                    String matched_tkvalue = tkvalue_matcher.group(1);
+                                    if (matched_tkvalue != null && matched_tkvalue.equals(tkval)) {
+                                        hpattern_copy.setFcnt(0);
+                                        hpattern_copy.setFoundResponseToken(foundResponseToken);
+                                        alist.add(hpattern_copy);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if(alist.isEmpty()){ // Path Parameter
+                //pathpref = "(?:[a-z]+\\://[^\\r\\n/]+/|/)";// URL of request through proxy or direct
+                //                        for (int j = 1; j < pn; j++) {
+                //                            pathpref += "[^/\\r\\n]*?/";
+                //                        }
+                //"([^\\/\\r\\n\\t ]+)";
+                //Iterator<String> pit = selected_request.pathparams.iterator();
+                //int ppos = 1;
+                //while(pit.hasNext()){
+                //    ReqParsedTableModel.addRow(new Object[]{ap.getValPart(AppValue.V_PATH), Integer.toString(ppos), pit.next()});
+                //    ppos++;
+                //}
+
+                if (this.pathparams != null) {
+                    int pos = 1;
+                    for (String pathParamString : this.pathparams) {
+                        ParmGenToken foundResponseToken = null;
+
+                        foundResponseToken =
+                                collections.resTokenUrlDecodedValueHash.get(
+                                        pathParamString); // search Path Paramter string
+
+                        if (foundResponseToken != null
+                                && foundResponseToken.isEnabled()) { // use valid(Enabled) token only
+                            HeaderPattern headerPattern_Copy = new HeaderPattern(hpattern);
+                            String pathParamterRegexString = headerPattern_Copy.generatePathParamter(pos);
+                            LOGGER4J.debug("pathParamterRegex[" + pathParamterRegexString + "]");
+                            headerPattern_Copy.setFcnt(0);
+                            headerPattern_Copy.setFoundResponseToken(foundResponseToken);
+                            alist.add(headerPattern_Copy);
+                            break;
+                        }
+                        pos++;
+                    }
+                }
+
             }
         }
         return alist;

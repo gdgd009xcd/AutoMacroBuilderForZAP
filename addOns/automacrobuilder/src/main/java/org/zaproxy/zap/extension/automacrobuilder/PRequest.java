@@ -125,6 +125,13 @@ public class PRequest extends ParseHTTPHeaders {
         return this.doctext;
     }
 
+    /**
+     * get PrimeHeader except tailing CRLF
+     */
+    public String getPrimeHeaderWithoutCRLF() {
+        return super.getStartline();
+    }
+
     private List<RequestChunk> getRequestChunks(
             String theaders, byte[] tbodies, String tcontent_type) {
         List<RequestChunk> reqchunks = new ArrayList<>();

@@ -23,23 +23,24 @@ import org.zaproxy.zap.extension.automacrobuilder.*;
 
 /**
  *
- * @author tms783
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ParmGenAddParms extends javax.swing.JDialog implements interfaceParmGenWin {
 
-    //起動元ウィンドウ
-    ParmGenNew parentwin;
+    private static org.apache.logging.log4j.Logger LOGGER4J = org.apache.logging.log4j.LogManager.getLogger();
+    ParmGenNew parentwin;// parenrt window which create this dialog.
     PRequest selected_request;
     DefaultTableModel ReqParsedTableModel;
-    boolean wholeval;// == true 全体を置き換える == false 数値のみ置き換える
+    boolean replaceEntireValue;// == true: replace entire value  == false: replace a part of value
     boolean isformdata;// == true form-data == false www-url-encoded
+    String primeHeaderOfRequest = null;
     public static final int VT_DEFAULT=0;
     public static final int VT_NUMBERFIXED=1;
     public static final int VT_ALPHANUMFIXED = 2;
     public static final int VT_NUMBER=3;
     public static final int VT_ALPHANUM=4;
-    public static final int VT_FIXED = 5;
+    public static final int VT_FIXED = 5;// comboModel has selectable values from VT_DEFAULT  until this Value.
     public static final int VT_PARAMVALUE = 6;
     public static final int VT_NUMCOUNTER = 7;
     public static final int VT_VALUE = 8;
@@ -51,12 +52,18 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
     /**
      * Creates new form ParmGenAddParms
      */
-    public ParmGenAddParms(ParmGenNew _parentwin,  boolean _wholeval) {
+    public ParmGenAddParms(ParmGenNew _parentwin,  boolean _replaceEntireValue) {
         parentwin = _parentwin;
         isformdata = false;
-        wholeval = _wholeval;
+        replaceEntireValue = _replaceEntireValue;
         if(comboModel==null){
-            comboModel = new javax.swing.DefaultComboBoxModel<>(new String[] { bundle.getString("ParmGenAddParms.comboModel.Default.text"), bundle.getString("ParmGenAddParms.comboModel.NumberFixedLength.text"), bundle.getString("ParmGenAddParms.comboModel.AlphanumFixedLength.text"), bundle.getString("ParmGenAddParms.comboModel.NumberHasAnyLength.text"), bundle.getString("ParmGenAddParms.comboModel.AlphanumHasAnyLength.text"), bundle.getString("ParmGenAddParms.comboModel.FixedValue.text") });
+            comboModel = new javax.swing.DefaultComboBoxModel<>(new String[] {
+                    bundle.getString("ParmGenAddParms.comboModel.Default.text"),
+                    bundle.getString("ParmGenAddParms.comboModel.NumberFixedLength.text"),
+                    bundle.getString("ParmGenAddParms.comboModel.AlphanumFixedLength.text"),
+                    bundle.getString("ParmGenAddParms.comboModel.NumberHasAnyLength.text"),
+                    bundle.getString("ParmGenAddParms.comboModel.AlphanumHasAnyLength.text"),
+                    bundle.getString("ParmGenAddParms.comboModel.FixedValue.text") });
         }
         //initComponents();
         customInitComponents();
@@ -78,6 +85,8 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         ReqParsedTableModel = (DefaultTableModel)ReqParsedTable.getModel();
         Select_ReplaceTargetURL.removeAllItems();
         PRequestResponse selected_message = ParmGenGSONSaveV2.selected_messages.get(0);
+        // get PrimeHeader within request.
+        this.primeHeaderOfRequest = selected_message.request.getPrimeHeaderWithoutCRLF();
         int mpos = selected_message.getMacroPos();
         if(mpos<0){
             mpos = ParmVars.TOSTEPANY;
@@ -88,7 +97,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         Select_ReplaceTargetURL.addItem(newtargetURL);
         String currenturl = parentwin.getTargetURL();
         if ( currenturl != null && !currenturl.isEmpty()){
-            if(currenturl.indexOf(newtargetURL)==-1){//newtargetURLが部分一致しない
+            if(currenturl.indexOf(newtargetURL)==-1){// currenturl does not contain newtargetURL, so add it to currenturl.
                 Select_ReplaceTargetURL.addItem(currenturl);
                 Select_ReplaceTargetURL.addItem(currenturl + "|.*" + selected_request.getPath() + ".*");
             }
@@ -97,7 +106,7 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
 
         AppValue ap = new AppValue();
 
-        //path全体
+        // entire URL
         String wholepath = selected_request.getURL();
         ReqParsedTableModel.addRow(new Object[]{ap.getValPart(AppValue.V_PATH), Integer.toString(0), wholepath});
 
@@ -141,14 +150,14 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             ReqParsedTableModel.addRow(new Object[]{"body", "null", "null"});
         }
 
-        //クッキー一覧
+        // List cookies
         Iterator<String[]> cit = selected_request.cookieparams.iterator();
         while(cit.hasNext()){
             String[] nv = cit.next();
             ReqParsedTableModel.addRow(new Object[]{"cookie", nv[0], nv[1]});
         }
 
-        //リクエストヘッダー覧
+        // List headers
         ArrayList<String[]> hlist = selected_request.getHeaders();
         Iterator<String[]> hit = hlist.iterator();
         while(hit.hasNext()){
@@ -161,16 +170,15 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
 
         }
         int i = 0;
-        if(wholeval){
-            i = 1;//全体
+        if(replaceEntireValue){
+            i = 1;
         }
         ValReplacePart.setSelectedItem(i);
         if(selected_request.isFormData()){
             isformdata = true;
         }
 
-        //パラメータを選択
-        //追跡パラメータの一覧を取得
+        // List tracking parameters
         int j = 0;
         ArrayList<String> names = new ArrayList<>();
 
@@ -180,20 +188,8 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             names.add(n);
         }
 
-        //追跡パラメータ名,診断対象タイプに一致するテーブルのインデクスを選択
-
-        //診断対象タイプ
         String targetparam = ParmVars.session.get(ParmGenSession.K_TARGETPARAM);
-        int targetpflag = 0;
-        if(targetparam != null){
-            if(targetparam.equals("GET")){
-                targetpflag = 1;
-            }else if(targetparam.equals("POST")){
-                targetpflag = 2;
-            }else if(targetparam.equals("GET/POST")){
-                targetpflag = 3;
-            }
-        }
+
         int rmax = ReqParsedTableModel.getRowCount();
         ListSelectionModel lmodel = ReqParsedTable.getSelectionModel();
         Encode selectedRequestEncode = selected_request.getPageEnc();
@@ -206,35 +202,10 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(ParmGenAddParms.class.getName()).log(Level.SEVERE, null, ex);
             }
-            if(names.contains(namedecoded)){//一致したパラメータを選択
+            if(names.contains(namedecoded)){// select list entry which value matched namedecoded
                 lmodel.addSelectionInterval(j, j);
-            }else if(!namedecoded.equals("null")){
-                switch(targetpflag){
-                    case 1://GET(query)
-                        if(targetptype.equals("query")){
-                            lmodel.addSelectionInterval(j, j);
-                        }
-                        break;
-                    case 2://POST(body, formdata)
-                        if(targetptype.equals("body")||targetptype.equals("formdata")){
-                            lmodel.addSelectionInterval(j, j);
-                        }
-                        break;
-                    case 3://GET/POST (query, body, formdata)
-                        if(targetptype.equals("body")||targetptype.equals("formdata")||targetptype.equals("query")){
-                            lmodel.addSelectionInterval(j, j);
-                        }
-                        break;
-                    default:
-                        break;
-                }
             }
         }
-
-
-
-
-
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -396,35 +367,34 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
     
 
     private String getValueRegex(String v, boolean ispath, boolean iscookie, boolean isheader, boolean isjson, boolean iswholepath){
-        wholeval = false;
+        replaceEntireValue = false;
         boolean fixed = true;
         String regpattern = "";
         String prepostpattern = "";
-        int vlen = v.length();
-        String vreg = ".{" + vlen + "}";
-        
-        int selidx = ValReplacePart.getSelectedIndex();
-        if(selidx==VT_DEFAULT){
+
+        if(iswholepath){
+            return ParmGenUtil.getPathsRegex(v);
+        }
+
+        int selidx = ValReplacePart.getSelectedIndex();// selected type of regular expression
+        if(selidx==VT_DEFAULT){ // when selected Default
             switch(parentwin.getCurrentModel()){
-                    
                 case ParmGenNew.P_NUMBERMODEL:
                     selidx = VT_NUMCOUNTER;
                     break;
                 default:
-                    selidx = VT_VALUE;//追跡のデフォルトは値
+                    selidx = VT_VALUE;
                     break;
-                
             }
-            
         }
         switch(selidx){
             case VT_NUMCOUNTER:
-                fixed = false;
-                regpattern = "\\d";
+                fixed = false;// any number length
+                regpattern = "\\d";// regex type of value is only numbers.
                 prepostpattern = "([^0-9]*)";
                 break;
             case VT_NUMBERFIXED:
-                fixed = true;
+                fixed = true;// fixed number length
                 regpattern = "\\d";
                 prepostpattern = "([^0-9]*)";
                 break;
@@ -473,87 +443,84 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
                 prepostpattern = "([=;]*)";
                 break;
             case VT_VALUE:
+                replaceEntireValue = true;
+                break;
             case VT_FIXED:
-                wholeval = true;
+                replaceEntireValue = true;
                 break;
         }
         String prefix = "";
-        if(ispath){
-            if(iswholepath){
-                prefix = "";
-            }else{
-                prefix = "/[^/\\s]*?";
-            }
-        }else if(iscookie){
+
+        if(iscookie){
             prefix = "[^=]*?";
         }else if(isheader){
             prefix = "";
         }
 
-        if (!wholeval){
-            //Pattern pattern = ParmGenUtil.Pattern_compile("([^0-9]*)(\\d+)([^0-9]*)");
-            Pattern pattern = ParmGenUtil.Pattern_compile(prepostpattern + "(" + regpattern+ "+)" + prepostpattern);
-            Matcher matcher = pattern.matcher(v);
-            if (matcher.find()){
-                    String prestr = null;
-                    String poststr = null;
-                    String numstr = null;
-                    int gcnt = matcher.groupCount();
-                    String chrcnt = "";
-                    for(int n = 0; n < gcnt ; n++){
-                        switch(n){
-                            case 0:
-                                prestr = matcher.group(n+1);
-                                break;
-                            case 1:
-                                numstr = matcher.group(n+1);
-                                int l = numstr.length();
-                                if ( l>0){
-                                    if(fixed){
-                                        chrcnt = "{" +Integer.toString(l) + "})";
-                                    }else{
-                                        chrcnt = "+)";
-                                    }
-                                }else{
-                                    chrcnt = "+)";
-                                }
-                                break;
-                            case 2:
-                                poststr = matcher.group(n+1);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    if (isformdata){
-                        return ParmGenUtil.escapeRegexChars(prestr) + "(" + regpattern + chrcnt + ParmGenUtil.escapeRegexChars(poststr) ;
-                    }else{
-                        return prefix + ParmGenUtil.escapeRegexChars(prestr) + "(" + regpattern + chrcnt+ ParmGenUtil.escapeRegexChars(poststr) ;
-                    }
-            }
-        }
-        if(iswholepath){
-            return ParmGenUtil.getPathsRegex(v);
-        }
-
-        if(selidx==VT_FIXED ){//固定値を返す
+        if(selidx==VT_FIXED ){// use original value as regex pattern
+            // // this choice is nonsense. but later Users could change the value for their own purposes
             String escv = ParmGenUtil.escapeRegexChars(v);
             if(isformdata){
                 return "(" + escv + ")";
             }
             return prefix + "(" + escv + ")";
         }
-        
+
+        if (!replaceEntireValue){
+            //Pattern pattern = ParmGenUtil.Pattern_compile("([^0-9]*)(\\d+)([^0-9]*)");
+            Pattern pattern = ParmGenUtil.Pattern_compile(prepostpattern + "(" + regpattern+ "+)" + prepostpattern);
+            Matcher matcher = pattern.matcher(v);
+            if (matcher.find()){
+                String prestr = null;
+                String poststr = null;
+                String numstr = null;
+                int gcnt = matcher.groupCount();
+                String chrcnt = "";
+                for(int n = 0; n < gcnt ; n++){
+                    switch(n){
+                        case 0:
+                            prestr = matcher.group(n+1);
+                            break;
+                        case 1:
+                            numstr = matcher.group(n+1);
+                            int l = numstr.length();
+                            if ( l>0){
+                                if(fixed){
+                                    chrcnt = "{" +Integer.toString(l) + "})";
+                                }else{
+                                    chrcnt = "+)";
+                                }
+                            }else{
+                                chrcnt = "+)";
+                            }
+                            break;
+                        case 2:
+                            poststr = matcher.group(n+1);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                if (isformdata){
+                    return ParmGenUtil.escapeRegexChars(prestr) + "(" + regpattern + chrcnt + ParmGenUtil.escapeRegexChars(poststr) ;
+                }else{
+                    return prefix + ParmGenUtil.escapeRegexChars(prestr) + "(" + regpattern + chrcnt+ ParmGenUtil.escapeRegexChars(poststr) ;
+                }
+            }
+        }
+
         if(isjson){
-            return v;
+            return v;// use original
         }
         
-        if ( isformdata){
+        if (isformdata){
             return "(.+)";
         }
-        if(isheader || ispath){
+        if(isheader) {
             return prefix + "([^\\r\\n\\t ]+)";
-        }else if(iscookie){
+        } else if (ispath) {
+            return prefix + "([^\\r\\n\\t /]+)";
+        } else if(iscookie) {
             return prefix + "([^\\r\\n\\t;\\= ]+)";
         }
         return prefix + "([^&=\\r\\n\\t ]+)";
@@ -582,8 +549,8 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         
 
         for (int k=0; k<rowsSelected.length; k++){
-            String reqplace = (String)ReqParsedTableModel.getValueAt(rowsSelected[k], 0);//位置
-            String pname = (String)ReqParsedTableModel.getValueAt(rowsSelected[k], 1);//name
+            String reqplace = (String)ReqParsedTableModel.getValueAt(rowsSelected[k], 0);//Position
+            String pname = (String)ReqParsedTableModel.getValueAt(rowsSelected[k], 1);//parameter
             String pvalue = (String)ReqParsedTableModel.getValueAt(rowsSelected[k], 2);//value
             boolean islastparam = false;
             if(k+1==rowsSelected.length){
@@ -600,15 +567,14 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
                 String pathpref = "";
                 String headerpref ="";
                 if(reqplace.equals("path")){
-                    String pathproto = selected_request.getPathPrefURL();
-
-                    //if(!pathproto.isEmpty()){
-                    //    pathpref = pathproto + "://[^/]+";
-                    //}
                     int pn = Integer.parseInt(pname);
-                    if(pn==0)iswholepath = true;
-                    for(int j=1;j<pn;j++){
-                        pathpref += "/[^/]*?";
+                    if(pn==0) {
+                        iswholepath = true;// this choice is nonsense. but later Users could change the value for their own purposes(replace entire URL to pvalue.)
+                    } else {
+                        pathpref = "(?:[a-z]+\\://[^\\r\\n\\t /]+/|/)";// URL of request through proxy or direct
+                        for (int j = 1; j < pn; j++) {
+                            pathpref += "[^\\r\\n\\t /]+?/";
+                        }
                     }
                     ispath = true;
                     pname = null;

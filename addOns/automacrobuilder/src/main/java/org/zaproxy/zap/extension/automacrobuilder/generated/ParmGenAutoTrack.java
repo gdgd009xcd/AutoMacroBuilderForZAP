@@ -16,7 +16,7 @@ import org.zaproxy.zap.extension.automacrobuilder.*;
 
 /**
  *
- * @author tms783
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceRegex, interfaceParmGenWin{
@@ -182,11 +182,10 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
 
             int parsedrespart = AppValue.parseValPartType(respart);
             if (parsedrespart==AppValue.V_AUTOTRACKBODY) {
-                //引き継ぎ元レスポンスのボディを引き継ぐ場合は,リクエストセット時URLENCODEする。
+                //When extracting tracking values from the response body, use URL-encoded values and set them into the request.
                 ParmVars.session.put(i, ParmGenSession.K_URLENCODE, "true");
             }
         }
-        //リクエスト選択へ。
         dispose();
         new SelectRequest(bundle.getString("ParmGenAutoTrack.SelectRequest.text"), parentwin, new ParmGenAddParms(parentwin, true), ParmGenNew.P_REQUESTTAB).setVisible(true);
     }//GEN-LAST:event_NextBtnActionPerformed

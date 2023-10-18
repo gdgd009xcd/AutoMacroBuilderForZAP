@@ -1,5 +1,3 @@
-import java.nio.charset.StandardCharsets
-import java.util.Locale
 import org.zaproxy.gradle.addon.AddOnPlugin
 import org.zaproxy.gradle.addon.AddOnPluginExtension
 import org.zaproxy.gradle.addon.apigen.ApiClientGenExtension
@@ -7,6 +5,8 @@ import org.zaproxy.gradle.addon.manifest.ManifestExtension
 import org.zaproxy.gradle.addon.misc.ConvertMarkdownToHtml
 import org.zaproxy.gradle.addon.misc.CreateGitHubRelease
 import org.zaproxy.gradle.addon.misc.ExtractLatestChangesFromChangelog
+import java.nio.charset.StandardCharsets
+import java.util.Locale
 
 plugins {
     id("org.zaproxy.add-on") version "0.8.0" apply false
@@ -15,10 +15,8 @@ plugins {
 description = "Common configuration of the add-ons."
 
 val parentProjects = listOf(
-        ""
+    "",
 )
-
-
 
 subprojects {
     if (parentProjects.contains(project.name)) {
@@ -32,7 +30,6 @@ subprojects {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
 
     val apiGenClasspath = configurations.detachedConfiguration(dependencies.create("org.zaproxy:zap:2.13.0"))
 
@@ -87,10 +84,6 @@ tasks.register<TestReport>("testReport") {
     }
 }
 
-
-
-
-
 System.getenv("GITHUB_REF")?.let { ref ->
     if ("refs/tags/" !in ref || !ref.contains(Regex(".*-v.*"))) {
         return@let
@@ -136,7 +129,6 @@ fun subproject(addOnId: String): Provider<Project> =
 
 fun Project.java(configure: JavaPluginExtension.() -> Unit): Unit =
     (this as ExtensionAware).extensions.configure("java", configure)
-
 
 fun Project.zapAddOn(configure: AddOnPluginExtension.() -> Unit): Unit =
     (this as ExtensionAware).extensions.configure("zapAddOn", configure)
