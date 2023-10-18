@@ -62,7 +62,6 @@ jobs:
           echo "sha256sum[${{ steps.zapShaHash.outputs.zapshahash }}]"
           echo "Status[${{ steps.zapStatus.outputs.zapstatus }}]"
           echo "RELEASE_TITLE[${{steps.RELEASE_TITLE.outputs.RELEASE_TITLE}}]"
-          echo "DESCRIPTION[${{ env.DESCRIPTION }}]"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
