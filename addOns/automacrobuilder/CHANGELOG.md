@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - improve: added new feature to "Track" button. this enabled automatically embed tracking value into Path Parameter(URL)
 - bugfix: fixed problem of custom setting which embed tracking value into Path Parameter.
 - maintenance: applied ”spotlessApply" to .kts files
+- new feature: added [Github pages](https://gdgd009xcd.github.io/AutoMacroBuilderForZAP)
 
 ## 11 - 2023-10-08
 ### ver1.1.5
