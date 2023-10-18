@@ -1,6 +1,8 @@
 ## AutoMacrobuilder for OWASP ZAPROXY. 
 
-AutoMacro Builder is an extension of ZAPROXY. You can test applications that need to access pages in a specific order, such as shopping carts or registration of member information. This Extension records the http request sequence of the web application, tracks the anti-CSRF token and session cookies, and can tests it by ZAPROXY tools(ActiveScan).
+AutoMacro Builder is an extension of ZAPROXY. You can test applications that need to access pages in a specific order, such as shopping carts or registration of member information. This Extension records the http request sequence of the web application, tracks the anti-CSRF token and session cookies, and can tests it by ZAPROXY tools(ActiveScan).  
+To summarize the above, this addon can build multistep request sequence without scripting,
+and can use them with tool such as scanners or manual request on ZAPROXY.
 
 ![LANG](https://img.shields.io/github/languages/top/gdgd009xcd/AutoMacroBuilderForZAP)
 ![LICENSE](https://img.shields.io/github/license/gdgd009xcd/AutoMacroBuilderForZAP)
@@ -9,7 +11,9 @@ AutoMacro Builder is an extension of ZAPROXY. You can test applications that nee
 
 ## Prerequisite
 
-* OWASP ZAP ver 2.11.0 or later
+* OWASP ZAP ver 2.13.0 or later
+* java ver 11 or later
+
 ## how to use   
 
 Click here below:　<BR>
