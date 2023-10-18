@@ -1,0 +1,19 @@
+---
+---
+
+// my custom variables that architect can use here
+
+@import "{{ site.theme }}";
+
+// my custom css that architect can use here
+
+header h1 {
+  width: 540px;
+  margin-top: 0;
+  margin-bottom: 0.2em;
+  font-size: 50px;
+  font-weight: normal;
+  line-height: 1;
+  color: #0f0;
+  letter-spacing: -1px;
+}
