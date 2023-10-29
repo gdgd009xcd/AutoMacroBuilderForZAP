@@ -53,7 +53,7 @@ public class RequestChunk implements DeepClone {
         return this.data;
     }
 
-    void setByte(byte[] data) {
+    public void setByte(byte[] data) {
         this.data = data;
     }
 

@@ -14,7 +14,7 @@ import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.PResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSaveV2;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
+import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
 /**
@@ -257,8 +257,8 @@ public class SelectRequest extends javax.swing.JDialog {
             selected_message_idx = sidx;
         }
 
-        ParmGenTextDoc reqdoc = new ParmGenTextDoc(RequestEntity);
-        ParmGenTextDoc resdoc = new ParmGenTextDoc(ResponseEntity);
+        JTextPaneContents reqdoc = new JTextPaneContents(RequestEntity);
+        JTextPaneContents resdoc = new JTextPaneContents(ResponseEntity);
 
         reqdoc.setRequestChunks(request);
         resdoc.setResponseChunks(response);
