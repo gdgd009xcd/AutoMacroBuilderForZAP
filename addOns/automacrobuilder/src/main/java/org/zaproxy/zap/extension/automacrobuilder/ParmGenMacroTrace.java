@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientRequest;
+import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 
 /** @author gdgd009xcd */
 public class ParmGenMacroTrace extends ClientDependent {

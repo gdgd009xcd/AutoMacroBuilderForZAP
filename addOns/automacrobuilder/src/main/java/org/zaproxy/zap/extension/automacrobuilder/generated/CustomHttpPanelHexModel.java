@@ -25,7 +25,7 @@ import java.util.List;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 
 /**
- * hex edit table model from HttpPanelHexModel in OWASP ZAP.
+ * hex edit table model from HttpPanelHexModel in ZAP.
  * this model does not rely on ZAP library
  *
  */

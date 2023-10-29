@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.zaproxy.zap.extension.automacrobuilder;
+package org.zaproxy.zap.extension.automacrobuilder.view;
+
+import org.zaproxy.zap.extension.automacrobuilder.*;
 
 import static org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil.ImageIconLoadStatus;
 
@@ -24,14 +26,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 
 @SuppressWarnings({"unchecked", "serial"})
 public class StyledDocumentWithChunk extends DefaultStyledDocument {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    private Style CRstyle = null;
+    private static final String CRSTYLE_NAME = "CRSTYLE_IMAGE";
 
     public static int PARTNO_MAXLEN = 4;
 
@@ -39,10 +40,10 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
             "/org/zaproxy/zap/extension/automacrobuilder/zap/resources";
 
     public static final URL BINICONURL =
-            ParmGenTextDoc.class.getResource(RESOURCES + "/binary.png");
+            JTextPaneContents.class.getResource(RESOURCES + "/binary.png");
 
     public static final URL BRKICONURL =
-            ParmGenTextDoc.class.getResource(RESOURCES + "/broken.png");
+            JTextPaneContents.class.getResource(RESOURCES + "/broken.png");
 
     public static final int MAX_SIZE_REQUEST_PART = 25000;
 
@@ -57,7 +58,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     List<PResponse.ResponseChunk> responseChunks = null;
 
     public StyledDocumentWithChunk(PRequest prequest) {
-        super();
+        super(SwingStyleProvider.createSwingStyle().getStyleContext());
         enc = prequest.getPageEnc();
         host = prequest.getHost();
         port = prequest.getPort();
@@ -66,7 +67,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     public StyledDocumentWithChunk(PResponse presponse) {
-        super();
+        super(SwingStyleProvider.createSwingStyle().getStyleContext());
         enc = presponse.getPageEnc();
         updateResponse(presponse);
     }
@@ -78,7 +79,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
      * @param chunkdoc
      */
     public StyledDocumentWithChunk(StyledDocumentWithChunk chunkdoc) {
-        super();
+        super(SwingStyleProvider.createSwingStyle().getStyleContext());
         if (chunkdoc != null) {
             if (chunkdoc.isRequest()) {
                 LOGGER4J.debug("chunkdoc is REQUEST");
@@ -343,7 +344,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         // display contents. this problem occur only ZAP.
         // Thus you must get original Document from JEditorPane for Setting Text.
 
-        Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+        Style defaultStyle = SwingStyle.getDefaultStyle(this);
 
         List<RequestChunk> chunks = requestChunks;
 
@@ -400,7 +401,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                     icon = new ImageIcon(BRKICONURL, partno);
                                 }
                                 // doc.addStyle(partno, def);
-                                s = makeStyleImageButton(def, icon, partno);
+                                s = makeStyleImageButton(defaultStyle, icon, partno);
                                 LOGGER4J.debug("@CONTENTS length:" + chunk.getBytes().length);
                                 element = partno;
                             } else {
@@ -430,7 +431,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                             + CONTENTS_PLACEHOLDER_SUFFIX;
                             ImageIcon icon = new ImageIcon(BINICONURL, partno);
                             // doc.addStyle(partno, def);
-                            s = makeStyleImageButton(def, icon, partno);
+                            s = makeStyleImageButton(defaultStyle, icon, partno);
                             LOGGER4J.debug("BINICONED @CONTENTS length:" + chunk.getBytes().length);
                             element = partno;
                         } else {
@@ -470,7 +471,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 pos = this.getLength();
             }
         } catch (BadLocationException ex) {
-            Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JTextPaneContents.class.getName()).log(Level.SEVERE, null, ex);
         }
         LOGGER4J.debug("doc.length:" + this.getLength());
     }
@@ -496,10 +497,10 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
             Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+        Style defaultStyle = SwingStyle.getDefaultStyle(this);
 
         String partno = CONTENTS_PLACEHOLDER_PREFIX + "0" + CONTENTS_PLACEHOLDER_SUFFIX;
-        StyleConstants.setAlignment(def, StyleConstants.ALIGN_CENTER);
+        StyleConstants.setAlignment(defaultStyle, StyleConstants.ALIGN_CENTER);
 
         List<PResponse.ResponseChunk> chunks = responseChunks;
 
@@ -515,7 +516,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 switch (chunk.getChunkType()) {
                     case CONTENTSBINARY:
                         icon = new ImageIcon(BINICONURL, partno);
-                        s = makeStyleImageButton(def, icon, partno);
+                        s = makeStyleImageButton(defaultStyle, icon, partno);
                         elem = partno;
                         LOGGER4J.debug("CONTENTSBINARY[" + elem + "]pos:" + pos);
                         break;
@@ -526,7 +527,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                         } catch (Exception e) {
                             icon = new ImageIcon(BRKICONURL, partno);
                         }
-                        s = makeStyleImageButton(def, icon, partno);
+                        s = makeStyleImageButton(defaultStyle, icon, partno);
                         elem = partno;
                         LOGGER4J.debug("CONTENTSIMG[" + elem + "]pos:" + pos);
                         break;
@@ -570,9 +571,13 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     public Style getCRstyle() {
+        Style CRstyle = this.getStyle(CRSTYLE_NAME);
+        if (CRstyle == null) {
+            Style defaultStyle = SwingStyle.getDefaultStyle(this);
+            CRstyle = this.addStyle(CRSTYLE_NAME, defaultStyle);
+        }
 
-        Style defstyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-        // StyleConstants.setAlignment(defstyle, StyleConstants.ALIGN_CENTER);
+        // component must always create per call setComponent.
         JLabel crlabel = new JLabel("CR");
         crlabel.setOpaque(true);
         LineBorder border = new LineBorder(Color.GREEN, 1, true);
@@ -583,7 +588,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         // LOGGER4J.debug("Y=" + avf);
         avf = (float) 0.8;
         crlabel.setAlignmentY(avf);
-        CRstyle = defstyle;
+        // StyleConstants.setAlignment(defstyle, StyleConstants.ALIGN_CENTER);
         StyleConstants.setComponent(CRstyle, crlabel);
         return CRstyle;
     }
@@ -694,10 +699,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                     icon = new ImageIcon(BRKICONURL, partnostr);
                                 }
                             }
-                            // doc.addStyle(partno, def);
-                            Style defstyle =
-                                    StyleContext.getDefaultStyleContext()
-                                            .getStyle(StyleContext.DEFAULT_STYLE);
+                            Style defstyle = SwingStyle.getDefaultStyle(this);
                             s = makeStyleImageButton(defstyle, icon, partnostr);
                         }
                     }

@@ -17,7 +17,7 @@ import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSaveV2;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
+import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 import org.zaproxy.zap.extension.automacrobuilder.StrSelectInfo;
@@ -524,7 +524,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
             PRequestResponse rs = ParmGenGSONSaveV2.selected_messages.get(0);
             currentrequestresponse = rs;
             ResponseURL.setText(rs.request.getURL());
-            ParmGenTextDoc rdoc = new ParmGenTextDoc(ResponseArea);
+            JTextPaneContents rdoc = new JTextPaneContents(ResponseArea);
             rdoc.setResponseChunks(rs.response);
             ResponseArea.setCaretPosition(0);   
             headerlength = Integer.parseInt(ParmVars.session.get(ParmGenSession.K_HEADERLENGTH));

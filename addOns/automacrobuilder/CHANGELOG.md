@@ -2,6 +2,11 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## 13 - 2023-10-29
+### ver1.1.7
+- bugfix: Fix bug in PopUpItemSingleSend which provides manual http send message feature in AutoMacroBuilderForZAP.
+- bugfix: Remove codes that uses the StyleContext.getDefaultStyleContext() method. Using this method incorrectly can have negative effects on other GUIs.
+
 ## 12 - 2023-10-18
 ### ver1.1.6
 - improve: added new feature to "Track" button. this enabled automatically embed tracking value into Path Parameter(URL)
@@ -43,7 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## 6 - 2021-12-15
 ### ver1.0.5
 - maintenance: removed the log4j2 library that this add-on contains
-- maintenance: upgraded OWASP ZAP dependency version  to 2.11.0
+- maintenance: upgraded ZAP dependency version  to 2.11.0
 
 ## 5 - 2021-12-11
 ### ver1.0.4

@@ -17,7 +17,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.zaproxy.zap.extension.automacrobuilder;
+package org.zaproxy.zap.extension.automacrobuilder.view;
+
+import org.zaproxy.zap.extension.automacrobuilder.PRequest;
+import org.zaproxy.zap.extension.automacrobuilder.PResponse;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -33,18 +37,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Style;
-import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 /** @author youtube */
-public class ParmGenTextDoc {
+public class JTextPaneContents {
 
     private JTextPane tcompo;
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    public ParmGenTextDoc(JTextPane tc) {
+    public JTextPaneContents(JTextPane tc) {
         init();
         tcompo = tc;
     }
@@ -131,7 +133,7 @@ public class ParmGenTextDoc {
                 doc.remove(0, doc.getLength());
                 LOGGER4J.debug("done remove text");
             } catch (BadLocationException ex) {
-                Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(JTextPaneContents.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             try {
@@ -139,7 +141,7 @@ public class ParmGenTextDoc {
                 doc.insertString(0, text, null);
                 LOGGER4J.debug("insert  done");
             } catch (BadLocationException ex) {
-                Logger.getLogger(ParmGenTextDoc.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(JTextPaneContents.class.getName()).log(Level.SEVERE, null, ex);
             }
             LOGGER4J.debug("before setDocument");
             tcompo.setDocument(doc);
@@ -162,7 +164,6 @@ public class ParmGenTextDoc {
         // Thus you must get original Document from JEditorPane for Setting Text.
         tcompo.setStyledDocument(blank);
 
-        Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 
         StyledDocumentWithChunk requestdoc = new StyledDocumentWithChunk(prequest);
         StyledDocument doc = requestdoc;
