@@ -106,6 +106,32 @@ public class PopUpItemActiveScan extends JMenuItem {
                         }
 
                         LOGGER4J.debug("sn:" + (sn == null ? "null" : "NO null"));
+                        LOGGER4J.debug("siteNode history id:" + sn.getHistoryReference().getHistoryId());
+                        LOGGER4J.debug("historyReference history id:" + href.getHistoryId());
+                        if (LOGGER4J.isDebugEnabled()) {
+                            String historyTypeString = "";
+                            switch (sn.getHistoryReference().getHistoryType()) {
+                                case HistoryReference.TYPE_SCANNER:
+                                    historyTypeString = "TYPE_SCANNER";
+                                    break;
+                                case HistoryReference.TYPE_AUTHENTICATION:
+                                    historyTypeString = "TYPE_AUTHENTICATION";
+                                    break;
+                                case HistoryReference.TYPE_PROXIED:
+                                    historyTypeString = "TYPE_PROXIED";
+                                    break;
+                                case HistoryReference.TYPE_ACCESS_CONTROL:
+                                    historyTypeString = "TYPE_ACCESS_CONTROL";
+                                    break;
+                                case HistoryReference.TYPE_FUZZER:
+                                    historyTypeString = "TYPE_FUZZER";
+                                    break;
+                                default:
+                                    historyTypeString = Integer.toString(sn.getHistoryReference().getHistoryType());
+                                    break;
+                            }
+                            LOGGER4J.debug("history Type:" + historyTypeString);
+                        }
 
                         if (sn != null) {
                             // set forceUsermode off through API

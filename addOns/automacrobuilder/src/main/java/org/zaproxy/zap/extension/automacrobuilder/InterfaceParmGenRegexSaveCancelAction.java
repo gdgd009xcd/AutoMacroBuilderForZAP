@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
+
 /** @author gdgd009xcd */
 public interface InterfaceParmGenRegexSaveCancelAction {
     public void ParmGenRegexSaveAction(StyledDocumentWithChunk styleddoc);

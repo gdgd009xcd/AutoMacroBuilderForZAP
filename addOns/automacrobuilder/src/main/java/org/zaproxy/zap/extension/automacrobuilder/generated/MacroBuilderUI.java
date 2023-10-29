@@ -34,7 +34,9 @@ import com.google.gson.JsonElement;
 import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.CloseXbtnTabPanel;
+import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
+import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 import org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder;
 
 import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
@@ -1089,7 +1091,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             List<PRequestResponse> prequestResponseList = getPRequestResponseListAtTabIndex(selectedTabIndexOfRequestList);
             PRequestResponse pqr = prequestResponseList.get(displayInfo.selected_request_idx);
 
-            ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
+            JTextPaneContents reqdoc = new JTextPaneContents(MacroRequest);
 
             reqdoc.setRequestChunks(pqr.request);
 
@@ -1102,7 +1104,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             List<PRequestResponse> prequestResponseList = getPRequestResponseListAtTabIndex(selectedTabIndexOfRequestList);
             PRequestResponse pqr = prequestResponseList.get(displayInfo.selected_request_idx);
             
-            ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
+            JTextPaneContents resdoc = new JTextPaneContents(MacroResponse);
             resdoc.setResponseChunks(pqr.response);
             displayInfo.isLoadedMacroResponseContents = true;
         }
@@ -2066,9 +2068,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             if (prr != null) {
                 PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
                 current.updateRequestResponse(prr.request.clone(), prr.response.clone());// clone original PRequestResponse to CurrentList(rlist)
-                ParmGenTextDoc reqdoc = new ParmGenTextDoc(MacroRequest);
+                JTextPaneContents reqdoc = new JTextPaneContents(MacroRequest);
                 reqdoc.setRequestChunks(prr.request);
-                ParmGenTextDoc resdoc = new ParmGenTextDoc(MacroResponse);
+                JTextPaneContents resdoc = new JTextPaneContents(MacroResponse);
                 resdoc.setResponseChunks(prr.response);
                 if (pmt != null) {
                     pmt.nullfetchResValAndCookieMan();
@@ -2200,7 +2202,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();// get edited request
                 if (newrequest != null) {
                     pmt.updateRequestCurrentList(idx, newrequest);// copy edited request to current request
-                    ParmGenTextDoc ndoc = new ParmGenTextDoc(MacroRequest);
+                    JTextPaneContents ndoc = new JTextPaneContents(MacroRequest);
                     ndoc.setRequestChunks(newrequest);
                     pmt.nullfetchResValAndCookieMan();
                 }

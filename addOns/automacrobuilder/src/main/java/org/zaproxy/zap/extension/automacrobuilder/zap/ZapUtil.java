@@ -10,7 +10,7 @@ import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
-import org.zaproxy.zap.extension.automacrobuilder.StyledDocumentWithChunk;
+import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.network.HttpRequestBody;
 import org.zaproxy.zap.network.HttpResponseBody;

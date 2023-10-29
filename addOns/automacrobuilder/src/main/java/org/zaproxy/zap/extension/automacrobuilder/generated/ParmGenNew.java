@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import org.zaproxy.zap.extension.automacrobuilder.*;
+import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 
 /**
  *
@@ -99,7 +100,7 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
         
         SwingUtilities.invokeLater(() -> {
             try {
-                ParmGenTextDoc reqdoc = new ParmGenTextDoc(RequestArea);
+                JTextPaneContents reqdoc = new JTextPaneContents(RequestArea);
                 reqdoc.setRequestChunks(mess.request);
             } catch (Exception ex) {
                 Logger.getLogger(ParmGenNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -285,7 +286,7 @@ private void setAppParmsIni(){
                 selected_requestURL.setText(rs.request.getURL());
                 ParmVars.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.request.getHeaderLength()));
                 // RequestArea.setText(rs.request.getMessage());
-                ParmGenTextDoc reqdoc = new ParmGenTextDoc(RequestArea);
+                JTextPaneContents reqdoc = new JTextPaneContents(RequestArea);
                 reqdoc.setRequestChunks(rs.request);
                 RequestArea.setCaretPosition(0);
                 break;
@@ -294,7 +295,7 @@ private void setAppParmsIni(){
                 ParmVars.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.response.getHeaderLength()));
                 selected_responseURL.setText(rs.request.getURL());
                 // ResponseArea.setText(rs.response.getMessage());
-                ParmGenTextDoc resdoc = new ParmGenTextDoc(ResponseArea);
+                JTextPaneContents resdoc = new JTextPaneContents(ResponseArea);
                 resdoc.setResponseChunks(rs.response);
                 ResponseArea.setCaretPosition(0);
                 break;

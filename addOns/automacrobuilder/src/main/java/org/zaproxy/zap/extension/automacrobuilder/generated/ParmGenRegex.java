@@ -28,10 +28,10 @@ import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCance
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenTextDoc;
+import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
-import org.zaproxy.zap.extension.automacrobuilder.StyledDocumentWithChunk;
+import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 
 /**
  *
@@ -115,7 +115,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         this.setModal(true);
         RegexText.setText(parentwin.getRegex());
         // OriginalText.setText(parentwin.getOriginal());
-        ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
+        JTextPaneContents reqdoc = new JTextPaneContents(OriginalText);
         PRequestResponse ppr = parentwin.getOriginalRequestResponse();
         if (ppr != null) {
             if (showrequest) {

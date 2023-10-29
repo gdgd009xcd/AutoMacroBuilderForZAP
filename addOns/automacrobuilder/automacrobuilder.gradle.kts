@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "1.1.6"
+version = "1.1.7"
 description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {
@@ -61,6 +61,7 @@ zapAddOn {
 
     manifest {
         author.set("gdgd009xcd")
+        url.set("https://gdgd009xcd.github.io/AutoMacroBuilderForZAP/")
         repo.set("https://github.com/gdgd009xcd/AutoMacroBuilderForZAP")
         helpSet {
             baseName.set("help%LC%.helpset")
