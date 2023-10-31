@@ -28,7 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** @author gdgd009xcd */
-public class ParmVars {
+public class EnvironmentVariables {
     // constants , environment params.
 
     /**

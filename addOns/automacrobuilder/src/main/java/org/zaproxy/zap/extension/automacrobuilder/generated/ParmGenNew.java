@@ -170,7 +170,7 @@ private void setAppParmsIni(){
         int tfrom = rec.getTrackFromStep();
         int tto = rec.getSetToStep();
         TrackFrom.setText(tfrom==-1?"*":Integer.toString(tfrom));
-        SetTo.setText(tto==ParmVars.TOSTEPANY?"*":Integer.toString(tto));
+        SetTo.setText(tto== EnvironmentVariables.TOSTEPANY?"*":Integer.toString(tto));
         switch(current_model){
             case P_NUMBERMODEL:
                 numberTargetURL.setText(rec.getUrl());
@@ -282,17 +282,17 @@ private void setAppParmsIni(){
 
         switch(panelno){
             case P_REQUESTTAB:
-                ParmVars.session.put(ParmGenSession.K_REQUESTURLREGEX, TargetURLRegex);
+                EnvironmentVariables.session.put(ParmGenSession.K_REQUESTURLREGEX, TargetURLRegex);
                 selected_requestURL.setText(rs.request.getURL());
-                ParmVars.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.request.getHeaderLength()));
+                EnvironmentVariables.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.request.getHeaderLength()));
                 // RequestArea.setText(rs.request.getMessage());
                 JTextPaneContents reqdoc = new JTextPaneContents(RequestArea);
                 reqdoc.setRequestChunks(rs.request);
                 RequestArea.setCaretPosition(0);
                 break;
             case P_RESPONSETAB:
-                ParmVars.session.put(ParmGenSession.K_RESPONSEURLREGEX, TargetURLRegex);
-                ParmVars.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.response.getHeaderLength()));
+                EnvironmentVariables.session.put(ParmGenSession.K_RESPONSEURLREGEX, TargetURLRegex);
+                EnvironmentVariables.session.put(ParmGenSession.K_HEADERLENGTH, Integer.toString(rs.response.getHeaderLength()));
                 selected_responseURL.setText(rs.request.getURL());
                 // ResponseArea.setText(rs.response.getMessage());
                 JTextPaneContents resdoc = new JTextPaneContents(ResponseArea);
@@ -352,12 +352,12 @@ private void setAppParmsIni(){
         boolean urlencode = false;
         AppValue ap = new AppValue();
 
-        String payloadposition = ParmVars.session.get(ParmGenSession.K_PAYLOADPOSITION);
+        String payloadposition = EnvironmentVariables.session.get(ParmGenSession.K_PAYLOADPOSITION);
         if(payloadposition==null){
             payloadposition = ap.getPayloadPositionName(AppValue.I_APPEND);
         }
         String tkname = "";
-        String responseURLregex = ParmVars.session.get(ParmGenSession.K_RESPONSEURLREGEX);
+        String responseURLregex = EnvironmentVariables.session.get(ParmGenSession.K_RESPONSEURLREGEX);
         String frompos = TrackFrom.getText();
         int fromnum = -1;
         if(frompos!=null&&!frompos.isEmpty()){
@@ -376,50 +376,50 @@ private void setAppParmsIni(){
                 row = new Object[]{_reqplace, false, nval, islastparam};
                 break;
             case P_CSVMODEL:
-                row = new Object[]{_reqplace, false, Integer.parseInt(ParmVars.session.get(ni, ParmGenSession.K_COLUMN)), nval, islastparam};
+                row = new Object[]{_reqplace, false, Integer.parseInt(EnvironmentVariables.session.get(ni, ParmGenSession.K_COLUMN)), nval, islastparam};
                 break;
             case P_TRACKMODEL:
-                if(ParmVars.session.get(0, ParmGenSession.K_TOKEN)==null){
+                if(EnvironmentVariables.session.get(0, ParmGenSession.K_TOKEN)==null){
                     urlencode = false;
                     if(target_req_isformdata!=true){
-                        if(Boolean.parseBoolean(ParmVars.session.get(ParmGenSession.K_URLENCODE))==true){
+                        if(Boolean.parseBoolean(EnvironmentVariables.session.get(ParmGenSession.K_URLENCODE))==true){
                             // target request  which will set tracking parameter is not form-data and source of tracking parameter is request body.
                             urlencode = true;
                         }
                     }
-                    tkname = ParmVars.session.get(ParmGenSession.K_TOKEN);
+                    tkname = EnvironmentVariables.session.get(ParmGenSession.K_TOKEN);
                     if(tkname==null||tkname.isEmpty()){
                         tkname = name;
                     }
                     row = new Object[]{_reqplace, false, nval,
                     responseURLregex,
-                    ParmVars.session.get(ParmGenSession.K_RESPONSEREGEX),
-                    ParmVars.session.get(ParmGenSession.K_RESPONSEPART),
-                    ParmVars.session.get(ParmGenSession.K_RESPONSEPOSITION),
+                    EnvironmentVariables.session.get(ParmGenSession.K_RESPONSEREGEX),
+                    EnvironmentVariables.session.get(ParmGenSession.K_RESPONSEPART),
+                    EnvironmentVariables.session.get(ParmGenSession.K_RESPONSEPOSITION),
                     tkname,
-                    urlencode,"*","*",ParmVars.session.get(ParmGenSession.K_TOKENTYPE),
+                    urlencode,"*","*", EnvironmentVariables.session.get(ParmGenSession.K_TOKENTYPE),
                     "", -1, false, false
                     };
                 }else{
                     String _token;
-                    if((_token=ParmVars.session.get(ni, ParmGenSession.K_TOKEN))!=null){
+                    if((_token= EnvironmentVariables.session.get(ni, ParmGenSession.K_TOKEN))!=null){
                         urlencode = false;
                         if(target_req_isformdata!=true){
-                            if(Boolean.parseBoolean(ParmVars.session.get(ni, ParmGenSession.K_URLENCODE))==true){
+                            if(Boolean.parseBoolean(EnvironmentVariables.session.get(ni, ParmGenSession.K_URLENCODE))==true){
                                 urlencode = true;
                             }
                         }
-                        tkname = ParmVars.session.get(ni, ParmGenSession.K_TOKEN);
+                        tkname = EnvironmentVariables.session.get(ni, ParmGenSession.K_TOKEN);
                         if(tkname==null||tkname.isEmpty()){
                             tkname = name;
                         }
                         row = new Object[]{_reqplace, false, nval,
                         responseURLregex,
-                        ParmVars.session.get(ni, ParmGenSession.K_RESPONSEREGEX),
-                        ParmVars.session.get(ni, ParmGenSession.K_RESPONSEPART),
-                        ParmVars.session.get(ni, ParmGenSession.K_RESPONSEPOSITION),
+                        EnvironmentVariables.session.get(ni, ParmGenSession.K_RESPONSEREGEX),
+                        EnvironmentVariables.session.get(ni, ParmGenSession.K_RESPONSEPART),
+                        EnvironmentVariables.session.get(ni, ParmGenSession.K_RESPONSEPOSITION),
                         tkname,
-                        urlencode,"*","*",ParmVars.session.get(ni, ParmGenSession.K_TOKENTYPE),
+                        urlencode,"*","*", EnvironmentVariables.session.get(ni, ParmGenSession.K_TOKENTYPE),
                         "", -1, false, false
                         };
                     }
@@ -439,7 +439,7 @@ private void setAppParmsIni(){
         }
         TrackFrom.setText(trfromstr);
         String settostr = Integer.toString(topos);
-        if(topos<0||topos==ParmVars.TOSTEPANY){
+        if(topos<0||topos== EnvironmentVariables.TOSTEPANY){
            settostr = "*";
         }
         SetTo.setText(settostr);
@@ -1617,7 +1617,7 @@ private void setAppParmsIni(){
             }
         }
         // clea sessions
-        ParmVars.session.clear();
+        EnvironmentVariables.session.clear();
         ParmGenCSVLoader csvloader = new ParmGenCSVLoader(this,csvFilePath.getText());
         if(csvloader.readOneLine()){
             csvloader.setVisible(true);
@@ -1642,7 +1642,7 @@ private void setAppParmsIni(){
             }
         }
         // clear sessions
-        ParmVars.session.clear();
+        EnvironmentVariables.session.clear();
         new SelectRequest(bundle.getString("ParmGenNew.SelectResponseDialogTitle.text"), this, new ParmGenAutoTrack(this), ParmGenNew.P_RESPONSETAB).setVisible(true);
     }//GEN-LAST:event_nParamAdd4ActionPerformed
 
@@ -1671,14 +1671,14 @@ private void setAppParmsIni(){
     private void SaveParmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveParmActionPerformed
         // TODO add your handling code here:
         // 保存処理実行。
-        int deftoStep = ParmVars.TOSTEPANY;
+        int deftoStep = EnvironmentVariables.TOSTEPANY;
         try{
             deftoStep = Integer.parseInt(SetTo.getText());
         }catch(NumberFormatException e){
-            deftoStep = ParmVars.TOSTEPANY;
+            deftoStep = EnvironmentVariables.TOSTEPANY;
         }
         if(deftoStep<0){
-            deftoStep = ParmVars.TOSTEPANY;
+            deftoStep = EnvironmentVariables.TOSTEPANY;
         }
         rec.setTrackFromStep(-1);
         rec.setSetToStep(deftoStep);
@@ -1716,13 +1716,13 @@ private void setAppParmsIni(){
                 }catch(NumberFormatException e){
                     fromStep = -1;
                 }
-                int toStep = ParmVars.TOSTEPANY;
+                int toStep = EnvironmentVariables.TOSTEPANY;
                 try{
                     toStep = Integer.parseInt(SetTo.getText());
                 }catch(NumberFormatException e){
-                    toStep = ParmVars.TOSTEPANY;
+                    toStep = EnvironmentVariables.TOSTEPANY;
                 }
-                if(toStep<0) toStep = ParmVars.TOSTEPANY;
+                if(toStep<0) toStep = EnvironmentVariables.TOSTEPANY;
                 rec.setTrackFromStep(fromStep);
                 rec.setSetToStep(toStep);
                 break;
@@ -1774,7 +1774,7 @@ private void setAppParmsIni(){
                     }catch(NumberFormatException e){
                         fromStepNo = -1;
                     }
-                    int toStepNo = ParmVars.TOSTEPANY;
+                    int toStepNo = EnvironmentVariables.TOSTEPANY;
                     /***
                     try{
                         toStepNo = (int)model.getValueAt(i, 10);
@@ -1785,9 +1785,9 @@ private void setAppParmsIni(){
                     try{
                         toStepNo = Integer.parseInt((String)model.getValueAt(i, 10));
                     }catch(NumberFormatException e){
-                        toStepNo = ParmVars.TOSTEPANY;
+                        toStepNo = EnvironmentVariables.TOSTEPANY;
                     }
-                    if(toStepNo<0) toStepNo = ParmVars.TOSTEPANY;
+                    if(toStepNo<0) toStepNo = EnvironmentVariables.TOSTEPANY;
                     int tktype;
 
                     String tktypename = (String)model.getValueAt(i, 11);
@@ -1850,7 +1850,7 @@ private void setAppParmsIni(){
             }
         }
         //　clear session paramters
-        ParmVars.session.clear();
+        EnvironmentVariables.session.clear();
         new ParmGenAddParms(this, false).setVisible(true);
     }//GEN-LAST:event_nParamAddActionPerformed
 
@@ -2113,7 +2113,7 @@ private void setAppParmsIni(){
         // TODO add your handling code here:
         //Tamper追加
         //セッションクリア
-        ParmVars.session.clear();
+        EnvironmentVariables.session.clear();
         //new ParmGenAddParms(this, false).setVisible(true);
         new ParmGenTamperOpt(this).setVisible(true);
     }//GEN-LAST:event_addTamperActionPerformed

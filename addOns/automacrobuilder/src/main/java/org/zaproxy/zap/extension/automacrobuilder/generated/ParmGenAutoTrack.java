@@ -174,16 +174,16 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
             String num = (String)model.getValueAt(rowsSelected[i], 2);//出現順序
             String name = (String)model.getValueAt(rowsSelected[i], 3);//name
             String value = (String)model.getValueAt(rowsSelected[i], 4);//value
-            ParmVars.session.put(i, ParmGenSession.K_RESPONSEREGEX, "");
-            ParmVars.session.put(i, ParmGenSession.K_RESPONSEPART, respart);
-            ParmVars.session.put(i, ParmGenSession.K_RESPONSEPOSITION, num);
-            ParmVars.session.put(i, ParmGenSession.K_TOKEN, name);
-            ParmVars.session.put(i, ParmGenSession.K_TOKENTYPE, tktype);
+            EnvironmentVariables.session.put(i, ParmGenSession.K_RESPONSEREGEX, "");
+            EnvironmentVariables.session.put(i, ParmGenSession.K_RESPONSEPART, respart);
+            EnvironmentVariables.session.put(i, ParmGenSession.K_RESPONSEPOSITION, num);
+            EnvironmentVariables.session.put(i, ParmGenSession.K_TOKEN, name);
+            EnvironmentVariables.session.put(i, ParmGenSession.K_TOKENTYPE, tktype);
 
             int parsedrespart = AppValue.parseValPartType(respart);
             if (parsedrespart==AppValue.V_AUTOTRACKBODY) {
                 //When extracting tracking values from the response body, use URL-encoded values and set them into the request.
-                ParmVars.session.put(i, ParmGenSession.K_URLENCODE, "true");
+                EnvironmentVariables.session.put(i, ParmGenSession.K_URLENCODE, "true");
             }
         }
         dispose();
@@ -376,7 +376,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
             if(mpos<-1){
                 mpos = -1;
             }
-            ParmVars.session.put(ParmGenSession.K_FROMPOS, Integer.toString(mpos));
+            EnvironmentVariables.session.put(ParmGenSession.K_FROMPOS, Integer.toString(mpos));
             String body = rs.response.getBodyStringWithoutHeader();
             AppValue ap = new AppValue();
             //Locationパラメータ取得

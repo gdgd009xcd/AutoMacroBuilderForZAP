@@ -20,7 +20,7 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import static org.zaproxy.zap.extension.automacrobuilder.Encode.UTF_8;
-import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.JSONFileIANACharsetName;
 
 import com.google.gson.GsonBuilder;
 import java.io.PrintWriter;
@@ -101,7 +101,7 @@ public class ParmGenGSONSaveV2 {
                 encoded = URLEncoder.encode(_dd, JSONFileIANACharsetName);
             }
         } catch (UnsupportedEncodingException e) {
-            ParmVars.plog.printException(e);
+            EnvironmentVariables.plog.printException(e);
             encoded = _dd;
         }
         return encoded;
@@ -114,10 +114,10 @@ public class ParmGenGSONSaveV2 {
     public void GSONsave() {
         // ファイル初期化
         try {
-            FileInfo finfo = new FileInfo(ParmVars.parmfile);
+            FileInfo finfo = new FileInfo(EnvironmentVariables.parmfile);
             pfile = new ParmGenWriteFile(finfo.getFullFileName());
         } catch (Exception ex) {
-            ParmVars.plog.printException(ex);
+            EnvironmentVariables.plog.printException(ex);
             return;
         }
 
@@ -135,7 +135,7 @@ public class ParmGenGSONSaveV2 {
         // { "ExcludeMimeTypes" : ["image/.*", "application/json"],
         //
 
-        ParmVars.ExcludeMimeTypes.forEach(
+        EnvironmentVariables.ExcludeMimeTypes.forEach(
                 (mtype) -> {
                     gsobject.ExcludeMimeTypes.add(mtype);
                 });
@@ -220,6 +220,6 @@ public class ParmGenGSONSaveV2 {
 
         pfile.close();
         pfile = null;
-        ParmVars.Saved(true);
+        EnvironmentVariables.Saved(true);
     }
 }

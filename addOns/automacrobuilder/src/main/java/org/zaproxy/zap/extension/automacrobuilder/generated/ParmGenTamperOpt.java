@@ -9,7 +9,7 @@ package org.zaproxy.zap.extension.automacrobuilder.generated;
 import java.util.ResourceBundle;
 import org.zaproxy.zap.extension.automacrobuilder.AppValue;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
 
@@ -149,9 +149,9 @@ public class ParmGenTamperOpt extends javax.swing.JDialog implements interfacePa
         // TODO add your handling code here:
         dispose();
         //TargetParam 診断対象パラメータ
-        ParmVars.session.put(ParmGenSession.K_TARGETPARAM, (String) TargetParam.getSelectedItem());
+        EnvironmentVariables.session.put(ParmGenSession.K_TARGETPARAM, (String) TargetParam.getSelectedItem());
         //PayloadPosition パターン埋め込み位置
-        ParmVars.session.put(ParmGenSession.K_PAYLOADPOSITION, (String) PayloadPosition.getSelectedItem());
+        EnvironmentVariables.session.put(ParmGenSession.K_PAYLOADPOSITION, (String) PayloadPosition.getSelectedItem());
         new ParmGenAddParms(parentwin, false).setVisible(true);
     }//GEN-LAST:event_OKActionPerformed
 

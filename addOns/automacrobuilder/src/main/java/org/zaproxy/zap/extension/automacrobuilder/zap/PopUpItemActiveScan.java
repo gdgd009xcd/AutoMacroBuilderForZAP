@@ -19,8 +19,6 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
-import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.PREFIX;
-
 import java.awt.Dimension;
 import javax.swing.JMenuItem;
 import org.parosproxy.paros.Constant;
@@ -54,7 +52,7 @@ public class PopUpItemActiveScan extends JMenuItem {
 
     PopUpItemActiveScan(MacroBuilderUI mbui, ExtensionActiveScanWrapper extension) {
 
-        super(Constant.messages.getString(PREFIX + ".popup.title.PopUpActiveScanForMacroBuilder"));
+        super(Constant.messages.getString("autoMacroBuilder.PopUpItemActiveScan.title.text"));
         this.extension = extension;
         this.mbui = mbui;
 

@@ -30,7 +30,7 @@ import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 
 /**
@@ -276,7 +276,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         String hex = s.replaceAll("\r", "<CR>");
         hex = hex.replaceAll("\n", "<LF>");
         
-        ParmVars.plog.debuglog(1,"["+hex+"]\n");
+        EnvironmentVariables.plog.debuglog(1,"["+hex+"]\n");
     }
     
     /**
@@ -335,7 +335,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
             
             m = compiledregex.matcher(original);
         }catch(Exception e){
-            ParmVars.plog.printException(e);
+            EnvironmentVariables.plog.printException(e);
             JOptionPane.showMessageDialog(this,bundle.getString("ParmGenRegex.OptionPaneErrorMessage_RegexSyntaxError.text")+ e.toString() ,  bundle.getString("ParmGenRegex.ErrorOptionPaneTitle.text"), JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -410,7 +410,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
                                 fidx = 0;
                             }
 			} catch (Exception e) {
-                            ParmVars.plog.printException(e);
+                            EnvironmentVariables.plog.printException(e);
 			}
                 }
         }

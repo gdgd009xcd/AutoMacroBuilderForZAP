@@ -2,10 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-## 13 - 2023-10-29
+## 13 - 2023-10-30
 ### ver1.1.7
-- bugfix: Fix bug in PopUpItemSingleSend which provides manual http send message feature in AutoMacroBuilderForZAP.
-- bugfix: Remove codes that uses the StyleContext.getDefaultStyleContext() method. Using this method incorrectly can have negative effects on other GUIs.
+- bugfix: Fixed bug in PopUpItemSingleSend which provides manual http send message feature in AutoMacroBuilderForZAP.
+- bugfix: Removed codes that uses the StyleContext.getDefaultStyleContext() method. Using this method incorrectly can have negative effects on other GUIs.
+- new feature: Changed default behaviour of "AddToMacroBuilder" button. now you can scan multi-step http sequence without pushing "Track" button.
+- maintenance: Refactored some files.
 
 ## 12 - 2023-10-18
 ### ver1.1.6

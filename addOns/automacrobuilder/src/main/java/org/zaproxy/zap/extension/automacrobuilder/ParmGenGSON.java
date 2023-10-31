@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.JSONFileIANACharsetName;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -343,10 +343,10 @@ public class ParmGenGSON implements GsonParserListener {
                             } else if (name.equalsIgnoreCase("TRACKFROMSTEP")) {
                                 aparms.setTrackFromStep(GetNumber(ev, value, 0));
                             } else if (name.equalsIgnoreCase("SETTOSTEP")) {
-                                int stepno = GetNumber(ev, value, ParmVars.TOSTEPANY);
+                                int stepno = GetNumber(ev, value, EnvironmentVariables.TOSTEPANY);
                                 if (Version.isEmpty()) {
                                     if (stepno <= 0) {
-                                        stepno = ParmVars.TOSTEPANY;
+                                        stepno = EnvironmentVariables.TOSTEPANY;
                                     }
                                 }
                                 aparms.setSetToStep(stepno);
@@ -552,10 +552,10 @@ public class ParmGenGSON implements GsonParserListener {
                             } else if (name.equalsIgnoreCase("FROMSTEPNO")) {
                                 apv.setFromStepNo(GetNumber(ev, value, -1));
                             } else if (name.equalsIgnoreCase("TOSTEPNO")) {
-                                int stepno = GetNumber(ev, value, ParmVars.TOSTEPANY);
+                                int stepno = GetNumber(ev, value, EnvironmentVariables.TOSTEPANY);
                                 if (Version.isEmpty()) {
                                     if (stepno <= 0) {
-                                        stepno = ParmVars.TOSTEPANY;
+                                        stepno = EnvironmentVariables.TOSTEPANY;
                                     }
                                 }
                                 apv.setToStepNo(stepno);
@@ -621,10 +621,10 @@ public class ParmGenGSON implements GsonParserListener {
                                     } else if (name.equalsIgnoreCase("TRACKFROMSTEP")) {
                                         aparms.setTrackFromStep(GetNumber(ev, value, 0));
                                     } else if (name.equalsIgnoreCase("SETTOSTEP")) {
-                                        int stepno = GetNumber(ev, value, ParmVars.TOSTEPANY);
+                                        int stepno = GetNumber(ev, value, EnvironmentVariables.TOSTEPANY);
                                         if (Version.isEmpty()) {
                                             if (stepno <= 0) {
-                                                stepno = ParmVars.TOSTEPANY;
+                                                stepno = EnvironmentVariables.TOSTEPANY;
                                             }
                                         }
                                         aparms.setSetToStep(stepno);
@@ -695,10 +695,10 @@ public class ParmGenGSON implements GsonParserListener {
                             } else if (name.equalsIgnoreCase("FROMSTEPNO")) {
                                 apv.setFromStepNo(GetNumber(ev, value, -1));
                             } else if (name.equalsIgnoreCase("TOSTEPNO")) {
-                                int stepno = GetNumber(ev, value, ParmVars.TOSTEPANY);
+                                int stepno = GetNumber(ev, value, EnvironmentVariables.TOSTEPANY);
                                 if (Version.isEmpty()) {
                                     if (stepno <= 0) {
-                                        stepno = ParmVars.TOSTEPANY;
+                                        stepno = EnvironmentVariables.TOSTEPANY;
                                     }
                                 }
                                 apv.setToStepNo(stepno);

@@ -58,6 +58,7 @@ automacrobuilder-alpha-0.9.7.zap
 $   
 
 * Gradle builds may fail due to network connection timeouts for downloading dependencies. If you have such problems, please retry the gradlew command each time. or you can download addon file from [release page](https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/releases)
+
 ## FAQ
 ### FAQ is [here](https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/9.1.-FAQ)
 

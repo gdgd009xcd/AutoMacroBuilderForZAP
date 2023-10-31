@@ -66,7 +66,7 @@ public class ParmGen {
             ParmGenHashMap errorhash) {
 
         Encode requestBodyEncode = prequest.getPageEnc();
-        if (av.getToStepNo() != ParmVars.TOSTEPANY) {
+        if (av.getToStepNo() != EnvironmentVariables.TOSTEPANY) {
             if (av.getToStepNo() != pmt.getStepNo()) return null;
         }
         // ArrayList<String []> headers = prequest.getHeaders();
@@ -291,7 +291,7 @@ public class ParmGen {
                                     String partcontenttype = null;
                                     try {
                                         partcontenttype =
-                                                new String(partheader, ParmVars.formdataenc);
+                                                new String(partheader, EnvironmentVariables.formdataenc);
                                     } catch (UnsupportedEncodingException ex) {
                                         partcontenttype = "";
                                     }
@@ -305,7 +305,7 @@ public class ParmGen {
                                         if (cstrvalues.length > 0) {
                                             String partcontenttypevalue = cstrvalues[0];
                                             if (!partcontenttypevalue.isEmpty()) {
-                                                partenc = ParmVars.formdataenc;
+                                                partenc = EnvironmentVariables.formdataenc;
                                                 partcontenttypevalue = partcontenttypevalue.trim();
                                                 LOGGER4J.trace(
                                                         "form-data Contentype:["
@@ -682,14 +682,14 @@ public class ParmGen {
                         LOGGER4J.error("prequest.setBody", e);
                     }
                 }
-                if (ParmVars.ProxyAuth.length() > 0) {
+                if (EnvironmentVariables.ProxyAuth.length() > 0) {
                     prequest.setHeader(
-                            "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                            "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 }
                 retval = prequest.getByteMessage();
-            } else if (ParmVars.ProxyAuth.length() > 0) {
+            } else if (EnvironmentVariables.ProxyAuth.length() > 0) {
                 prequest.setHeader(
-                        "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                        "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 retval = prequest.getByteMessage();
             }
 
@@ -882,15 +882,15 @@ public class ParmGen {
                         LOGGER4J.error("prequest.setBody", e);
                     }
                 }
-                if (ParmVars.ProxyAuth.length() > 0) {
+                if (EnvironmentVariables.ProxyAuth.length() > 0) {
                     prequest.setHeader(
-                            "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                            "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 }
                 // retval = prequest.getByteMessage();
                 retval = prequest;
-            } else if (ParmVars.ProxyAuth.length() > 0) {
+            } else if (EnvironmentVariables.ProxyAuth.length() > 0) {
                 prequest.setHeader(
-                        "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                        "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 // retval = prequest.getByteMessage();
                 retval = prequest;
             }
@@ -948,7 +948,7 @@ public class ParmGen {
         String req_contentMimeType = prequest.getContentMimeType();
         String res_contentMimeType = presponse.getContentMimeType();
         // if content_type/subtype matches excludeMimeType regex then skip below codes..
-        if (!ParmVars.isMimeTypeExcluded(res_contentMimeType)) {
+        if (!EnvironmentVariables.isMimeTypeExcluded(res_contentMimeType)) {
             // ### skip start
             if (url != null && appParmsIniList != null) {
 
@@ -998,10 +998,10 @@ public class ParmGen {
                                 boolean isRequest = av.requestIsCondRegexTarget();
                                 String mess = null;
                                 if (isRequest && prequest != null) {
-                                    if (!ParmVars.isMimeTypeExcluded(req_contentMimeType)) {
+                                    if (!EnvironmentVariables.isMimeTypeExcluded(req_contentMimeType)) {
                                         mess = prequest.getMessage();
                                     }
-                                } else if (!ParmVars.isMimeTypeExcluded(res_contentMimeType)) {
+                                } else if (!EnvironmentVariables.isMimeTypeExcluded(res_contentMimeType)) {
                                     mess = presponse.getMessage();
                                 }
                                 if (mess != null) {

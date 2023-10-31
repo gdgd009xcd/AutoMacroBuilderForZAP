@@ -5,6 +5,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +34,8 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
     /**
      * Creates new form ParmGenTokenJDialog
      */
-    public ParmGenTokenJDialog(ParmGenMacroTraceProvider pmtProvider, boolean modal, List<AppParmsIni> _newparms, ParmGenMacroTrace _pmt) {
-        super((java.awt.Frame)null, modal);
+    public ParmGenTokenJDialog(Window window, ParmGenMacroTraceProvider pmtProvider, ModalityType modal, List<AppParmsIni> _newparms, ParmGenMacroTrace _pmt) {
+        super(window, bundle.getString("ParmGenTokenJDialog.DialogTitle.text"), modal);
         this.pmtProvider = pmtProvider;
         initComponents();
         newparms = _newparms;
@@ -66,7 +67,8 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
             model.addRow(rec);
         }
 
-        
+        pack();
+        setLocationRelativeTo(getOwner());
     }
 
     /**

@@ -5,11 +5,11 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
+import java.awt.*;
 import java.util.ResourceBundle;
 import javax.swing.DefaultComboBoxModel;
 import org.zaproxy.zap.extension.automacrobuilder.Encode;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceLangOKNG;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 
 /**
  *
@@ -18,14 +18,14 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
 @SuppressWarnings("serial")
 public class LangSelectDialog extends javax.swing.JDialog {
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
-    
+
     InterfaceLangOKNG LangOKNG = null;
     Encode selected_lang ;
     /**
      * Creates new form LangSelectDialog
      */
-    public LangSelectDialog(java.awt.Frame parent, InterfaceLangOKNG _lokng, Encode lang, boolean modal) {
-        super(parent, modal);
+    public LangSelectDialog(Window window, InterfaceLangOKNG _lokng, Encode lang, Dialog.ModalityType modal) {
+        super(window, bundle.getString("LangSelectDialog.Title.text"), modal);
         initComponents();
         LangOKNG = _lokng;
         selected_lang = lang;
@@ -36,6 +36,8 @@ public class LangSelectDialog extends javax.swing.JDialog {
         }
         LANGUAGE.setModel(cbmodel);
         LANGUAGE.setSelectedItem(lang.getIANACharsetName());
+        pack();
+        setLocationRelativeTo(getOwner());
     }
     
     public void setLang(Encode lang){

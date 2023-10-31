@@ -120,7 +120,7 @@ class FetchResponseVal implements DeepClone {
             if (toStepNo >= 0) {
                 if (currentStepNo == toStepNo) {
                     rval = v;
-                } else if (toStepNo == ParmVars.TOSTEPANY) {
+                } else if (toStepNo == EnvironmentVariables.TOSTEPANY) {
                     rval = v;
                 }
             }

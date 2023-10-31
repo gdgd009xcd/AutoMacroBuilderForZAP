@@ -712,14 +712,14 @@ public class ParmGenMacroTrace extends ClientDependent {
         return null;
     }
 
-    public byte[] getPostMacroResponse() {
+    public byte[] getPostMessageResponse() {
         if (postmacro_RequestResponse != null) {
             return postmacro_RequestResponse.response.getByteMessage();
         }
         return null;
     }
 
-    public PResponse getPostMacroPResponse() {
+    public PResponse getPostMessagePResponse() {
         if (postmacro_RequestResponse != null) {
             return postmacro_RequestResponse.response;
         }
@@ -751,7 +751,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     boolean CurrentRequestIsSetToTarget(AppParmsIni pini) {
         int ToStepNo = pini.getSetToStep();
-        int ToStepBase = ParmVars.TOSTEPANY;
+        int ToStepBase = EnvironmentVariables.TOSTEPANY;
 
         if (ToStepNo == ToStepBase) {
             return true;
@@ -926,7 +926,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void sendToRepeater(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
-            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
                 if (prequest != null) {
@@ -955,7 +955,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void sendToScanner(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
-            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
                 if (prequest != null) {
@@ -980,7 +980,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void sendToIntruder(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
-            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
                 if (prequest != null) {
@@ -1248,7 +1248,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                             pini -> {
                                 if (pini.getTrackFromStep() >= stepno
                                         || (pini.getSetToStep() >= stepno
-                                                && pini.getSetToStep() != ParmVars.TOSTEPANY)) {
+                                                && pini.getSetToStep() != EnvironmentVariables.TOSTEPANY)) {
                                     return true;
                                 }
                                 return false;

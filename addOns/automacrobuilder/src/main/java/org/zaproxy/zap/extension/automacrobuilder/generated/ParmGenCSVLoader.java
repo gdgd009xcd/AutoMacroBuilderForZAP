@@ -11,7 +11,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.zaproxy.zap.extension.automacrobuilder.FileReadLine;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
 /**
@@ -171,7 +171,7 @@ public class ParmGenCSVLoader extends javax.swing.JFrame {
         if(rowsSelected.length> 0){
             for (int i = 0;i < rowsSelected.length;i++ ){
                 int colpos = (int)model.getValueAt(rowsSelected[i], 0);//カラム一
-                ParmVars.session.put(i, ParmGenSession.K_COLUMN, Integer.toString(colpos));
+                EnvironmentVariables.session.put(i, ParmGenSession.K_COLUMN, Integer.toString(colpos));
             }
             dispose();
             new ParmGenAddParms((ParmGenNew)parentwin, true).setVisible(true);
