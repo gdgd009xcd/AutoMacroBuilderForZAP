@@ -277,7 +277,7 @@ private void setAppParmsIni(){
         if(panelno==-1){
             panelno = current_reqrespanel;
         }
-        String TargetURLRegex = ".*" + rs.request.getPath() + ".*";
+        String TargetURLRegex = ".*" + rs.request.getURIWithoutQueryPart() + ".*";
 
 
         switch(panelno){

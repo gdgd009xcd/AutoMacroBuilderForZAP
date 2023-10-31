@@ -20,6 +20,7 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -931,6 +932,8 @@ public class ParmGen {
         return null;
     }
 
+
+
     /**
      * Parse response and extract tracking tokens
      *
@@ -1028,5 +1031,26 @@ public class ParmGen {
         }
 
         return updtcnt;
+    }
+
+    /**
+     * check URI of prequest is modified by ActiveScan
+     *
+     * @param prequest
+     * @return true - modified. false - original
+     */
+    private boolean isURIOfRequestIsModified(PRequest prequest) {
+        PRequestResponse original = pmt.getCurrentOriginalRequest();
+        PRequest originalPRequest =  original.request;
+
+        String URI_no_query = prequest.getURIWithoutQueryPart();
+        String originalURI_no_query = originalPRequest.getURIWithoutQueryPart();
+        LOGGER4J.debug("URI[" + URI_no_query + "] original URI[" + originalURI_no_query + "]");
+        if (URI_no_query != null) {
+            if (URI_no_query.equals(originalURI_no_query)) {
+                return false;
+            }
+        } else return URI_no_query != originalURI_no_query;
+        return true;
     }
 }

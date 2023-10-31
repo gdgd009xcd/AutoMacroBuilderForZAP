@@ -110,6 +110,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private Encode lastResponseEncode = null; // last executed response encoding
 
+    private boolean isURIOfRequestIsModified = false;
+
     public String state_debugprint() {
         String msg = "PMT_UNKNOWN";
         switch (state) {
@@ -217,6 +219,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.lastResponseEncode = this.lastResponseEncode;
 
+        nobj.isURIOfRequestIsModified = this.isURIOfRequestIsModified;
+
         return nobj;
     }
 
@@ -291,6 +295,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         postmacro_RequestResponse = null;
         sequenceEncode = defaultEncode;
         lastResponseEncode = null;
+        isURIOfRequestIsModified = false;
         nullfetchResValAndCookieMan();
     }
 
@@ -459,13 +464,15 @@ public class ParmGenMacroTrace extends ClientDependent {
         return null;
     }
 
-    PRequestResponse getCurrentOriginalRequest() {
+    public PRequestResponse getCurrentOriginalRequest() {
         return getOriginalRequest(getCurrentRequestPos());
     }
 
     // 1) Start Pre Macros
     public void startBeforePreMacro(OneThreadProcessor otp) {
         macroStarted();
+
+        isURIOfRequestIsModified = false;
 
         lastResponseEncode = null;
 
@@ -588,7 +595,7 @@ public class ParmGenMacroTrace extends ClientDependent {
             setUUID2CustomHeader(preq);
             // ここでリクエストのCookieをCookie.jarで更新する。
             String domain_req = preq.getHost().toLowerCase();
-            String path_req = preq.getPath();
+            String path_req = preq.getURIWithoutQueryPart();
             boolean isSSL_req = preq.isSSL();
             List<HttpCookie> cklist = cookieMan.get(domain_req, path_req, isSSL_req);
             HashMap<CookieKey, ArrayList<CookiePathValue>> cookiemap =
@@ -1300,5 +1307,13 @@ public class ParmGenMacroTrace extends ClientDependent {
             return sequenceEncode;
         }
         return lastResponseEncode;
+    }
+
+    public boolean isURIOfRequestIsModified() {
+        return isURIOfRequestIsModified;
+    }
+
+    public void setURIOfRequestIsModified(boolean b) {
+        this.isURIOfRequestIsModified = b;
     }
 }

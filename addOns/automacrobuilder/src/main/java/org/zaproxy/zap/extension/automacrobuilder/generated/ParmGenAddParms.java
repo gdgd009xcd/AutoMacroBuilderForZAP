@@ -93,13 +93,13 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         }
         EnvironmentVariables.session.put(ParmGenSession.K_TOPOS, Integer.toString(mpos));
         selected_request = selected_message.request;
-        String newtargetURL = ".*" + selected_request.getPath() + ".*";
+        String newtargetURL = ".*" + selected_request.getURIWithoutQueryPart() + ".*";
         Select_ReplaceTargetURL.addItem(newtargetURL);
         String currenturl = parentwin.getTargetURL();
         if ( currenturl != null && !currenturl.isEmpty()){
             if(currenturl.indexOf(newtargetURL)==-1){// currenturl does not contain newtargetURL, so add it to currenturl.
                 Select_ReplaceTargetURL.addItem(currenturl);
-                Select_ReplaceTargetURL.addItem(currenturl + "|.*" + selected_request.getPath() + ".*");
+                Select_ReplaceTargetURL.addItem(currenturl + "|.*" + selected_request.getURIWithoutQueryPart() + ".*");
             }
         }
         deleteRows();

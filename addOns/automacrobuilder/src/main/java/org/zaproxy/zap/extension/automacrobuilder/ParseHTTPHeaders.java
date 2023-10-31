@@ -923,7 +923,14 @@ class ParseHTTPHeaders implements DeepClone {
         return url;
     }
 
-    public String getPath() {
+    /**
+     * get URI without query part<BR>
+     * e.g. http://abc.com/data?search=apple<BR>
+     * &nbsp;&nbsp;&nbsp;&nbsp;getURIWithoutQueryPart() returns "http://abc.com/data"<BR>
+     * &nbsp;&nbsp;&nbsp;&nbsp;query part == "search=apple"
+     * @return
+     */
+    public String getURIWithoutQueryPart() {
         return path;
     }
 
