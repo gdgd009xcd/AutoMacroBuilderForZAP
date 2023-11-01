@@ -32,6 +32,7 @@ import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
 import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
+import org.zaproxy.zap.extension.automacrobuilder.view.SwingStyle;
 
 /**
  *
@@ -42,6 +43,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
+
+    private final static String GROUP_OUTER_STYLENAME = "ParmGenRegex.OUTER_STYLE";
+    private final static String GROUP_INNER_STYLENAME = "ParmGenRegex.INNER_STYLE";
+
+    private final String[] styleNames = {
+            GROUP_OUTER_STYLENAME,
+            GROUP_INNER_STYLENAME
+    };
+
     UndoManager um;
     UndoManager original_um;
     int fidx;
@@ -99,7 +109,40 @@ public class ParmGenRegex extends javax.swing.JDialog {
             });
         }
     }
-    
+
+    private void createStyles(StyledDocument doc) {
+        Style defaultStyle = SwingStyle.getDefaultStyle(doc);
+        if (defaultStyle == null) {
+            defaultStyle = doc.getStyle(StyleContext.DEFAULT_STYLE);
+        }
+        for(String styleName: styleNames) {
+            Style style = doc.getStyle(styleName);
+            if (style == null) {
+                Style newStyle = doc.addStyle(styleName, defaultStyle);
+                switch (styleName) {
+                    case GROUP_OUTER_STYLENAME:
+                        StyleConstants.setForeground(newStyle, Color.BLUE);
+                        StyleConstants.setBackground(newStyle, Color.RED);
+                        break;
+                    case GROUP_INNER_STYLENAME:
+                        StyleConstants.setForeground(newStyle, Color.WHITE);
+                        StyleConstants.setBackground(newStyle, Color.RED);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    private void removeStyles(StyledDocument doc) {
+        for(String styleName: styleNames) {
+            Style style = doc.getStyle(styleName);
+            if (style != null) {
+                doc.removeStyle(styleName);
+            }
+        }
+    }
     /**
      * Creates new form sampleFrame
      */
@@ -132,15 +175,19 @@ public class ParmGenRegex extends javax.swing.JDialog {
         //RegexTextのUndo/Redo
         rexdoc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
-				//行われた編集(文字の追加や削除)をUndoManagerに登録
+                //add edit actions to UndoManager
 				um.addEdit(e.getEdit());
 			}
 		});
-        Document origdoc = OriginalText.getDocument();
+        StyledDocument origdoc = OriginalText.getStyledDocument();
+        createStyles(origdoc);
+
+        SwingStyle.clearAllCharacterAttributes(origdoc);
+
         //RegexTextのUndo/Redo
         origdoc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
-				//行われた編集(文字の追加や削除)をUndoManagerに登録
+                //add edit actions to UndoManager
 				original_um.addEdit(e.getEdit());
 			}
 		});
@@ -158,10 +205,12 @@ public class ParmGenRegex extends javax.swing.JDialog {
         init(null, null);
         this.setModal(true);
         RegexText.setText(_reg);
-        // OriginalText.setText(_Original);
-        // ParmGenTextDoc reqdoc = new ParmGenTextDoc(OriginalText);
+
         OriginalText.setStyledDocument(doc);
-        // reqdoc.setRequestChunks(prequest);
+        createStyles(doc);
+
+        SwingStyle.clearAllCharacterAttributes(doc);
+
         OriginalText.setCaretPosition(0);
         
         isLabelSaveBtn = false;
@@ -204,15 +253,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
         Document rexdoc = RegexText.getDocument();
         rexdoc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
-				//行われた編集(文字の追加や削除)をUndoManagerに登録
+				//add edit actions to UndoManager
 				um.addEdit(e.getEdit());
 			}
 		});
-        //RegexTextのUndo/Redo
-        Document origdoc = OriginalText.getDocument();
-        origdoc.addUndoableEditListener(new UndoableEditListener() {
+        //RegexText Undo/Redo
+
+        doc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
-				//行われた編集(文字の追加や削除)をUndoManagerに登録
+				//add edit actions to UndoManager
 				original_um.addEdit(e.getEdit());
 			}
 		});
@@ -286,8 +335,6 @@ public class ParmGenRegex extends javax.swing.JDialog {
      */
     private void NewSearch(){
         // TODO add your handling code here:
-        SimpleAttributeSet attr = new SimpleAttributeSet();
-
         if (foundTextAttrPos == null) {
             foundTextAttrPos = new ArrayList<>();
         }
@@ -296,18 +343,11 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
         //String original = OriginalText.getText();
         StyledDocument doc = OriginalText.getStyledDocument();
-       
-        if (foundTextAttrPos.size() > 0) {
-            StyleConstants.setForeground(attr, Color.BLACK);
-            StyleConstants.setBackground(attr, Color.WHITE);
-            
-            foundTextAttrPos.forEach(rpos -> {
-                doc.setCharacterAttributes(rpos.getStartPos(), rpos.getEndPos() - rpos.getStartPos(), attr, false);
-            });
-            
-            foundTextAttrPos.clear();
-        }
-        
+
+        SwingStyle.clearAllCharacterAttributes(doc);
+
+        foundTextAttrPos.clear();
+
         if (regex == null || regex.isEmpty()) { // if you do it, Too many patterns matched.
             return;
         }
@@ -388,17 +428,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
                             // spt0--->spt<matchval>ept-->ept0
 
                             if (ept0 > spt0) {
-                                StyleConstants.setForeground(attr, Color.BLUE);
-                                StyleConstants.setBackground(attr, Color.RED);
-                                doc.setCharacterAttributes(spt0, ept0-spt0, attr, false);
+                                Style outerStyle = doc.getStyle(GROUP_OUTER_STYLENAME);
+                                doc.setCharacterAttributes(spt0, ept0-spt0, outerStyle, false);
                                 RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt0, ept0);
                                 foundTextAttrPos.add(rpos);
                             }
                             
                             if (ept > spt) {
-                                StyleConstants.setForeground(attr, Color.WHITE);
-                                StyleConstants.setBackground(attr, Color.RED);
-                                doc.setCharacterAttributes(spt, ept-spt, attr, false);
+                                Style innerStyle = doc.getStyle(GROUP_INNER_STYLENAME);
+                                doc.setCharacterAttributes(spt, ept-spt, innerStyle, false);
                                 RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt, ept);
                                 foundTextAttrPos.add(rpos);
                             }

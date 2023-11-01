@@ -73,6 +73,13 @@ public class ParmGenTrackKeyPerThread implements DeepClone {
         }
     }
 
+    public boolean isCleared() {
+        if (trackjar != null){
+            return trackjar.isEmpty();
+        }
+        return true;
+    }
+
     @Override
     public ParmGenTrackKeyPerThread clone() {
         try {
