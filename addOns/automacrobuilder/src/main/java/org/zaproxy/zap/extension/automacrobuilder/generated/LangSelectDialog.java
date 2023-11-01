@@ -7,7 +7,8 @@ package org.zaproxy.zap.extension.automacrobuilder.generated;
 
 import java.awt.*;
 import java.util.ResourceBundle;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.*;
+
 import org.zaproxy.zap.extension.automacrobuilder.Encode;
 import org.zaproxy.zap.extension.automacrobuilder.InterfaceLangOKNG;
 
@@ -19,13 +20,15 @@ import org.zaproxy.zap.extension.automacrobuilder.InterfaceLangOKNG;
 public class LangSelectDialog extends javax.swing.JDialog {
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
+    MacroBuilderUI mbui = null;
     InterfaceLangOKNG LangOKNG = null;
     Encode selected_lang ;
     /**
      * Creates new form LangSelectDialog
      */
-    public LangSelectDialog(Window window, InterfaceLangOKNG _lokng, Encode lang, Dialog.ModalityType modal) {
-        super(window, bundle.getString("LangSelectDialog.Title.text"), modal);
+    public LangSelectDialog(MacroBuilderUI mbui, InterfaceLangOKNG _lokng, Encode lang, Dialog.ModalityType modal) {
+        super(SwingUtilities.windowForComponent(mbui), bundle.getString("LangSelectDialog.Title.text"), modal);
+        this.mbui = mbui;
         initComponents();
         LangOKNG = _lokng;
         selected_lang = lang;
@@ -132,6 +135,7 @@ public class LangSelectDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
         LangOKNG.LangOK(selected_lang);
         dispose();
+        this.mbui.ParamTrackingActionPerformed(null);
     }//GEN-LAST:event_OkActionPerformed
 
     private void NGActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NGActionPerformed
@@ -142,7 +146,7 @@ public class LangSelectDialog extends javax.swing.JDialog {
     private void LANGUAGEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LANGUAGEActionPerformed
         // TODO add your handling code here:
         int idx = LANGUAGE.getSelectedIndex();
-        String str = (String)LANGUAGE.getSelectedItem();  //Object型で返された値をString型にｷｬｽﾄ
+        String str = (String)LANGUAGE.getSelectedItem();  // cast Object to String
         selected_lang = Encode.getEnum(str);
     }//GEN-LAST:event_LANGUAGEActionPerformed
 

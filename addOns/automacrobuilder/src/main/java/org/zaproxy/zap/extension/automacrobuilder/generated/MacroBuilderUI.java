@@ -1266,7 +1266,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }//GEN-LAST:event_RequestListMouseReleased
 
     @SuppressWarnings("serial")
-    private void ParamTrackingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParamTrackingActionPerformed
+    public void ParamTrackingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParamTrackingActionPerformed
         // TODO add your handling code here:
         //fileChooser起動
     	File cfile = new File(EnvironmentVariables.getParmFile());
@@ -1654,8 +1654,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
 
             LOGGER4J.debug("newparms.size=" + newparms.size());
-            Window window =  SwingUtilities.windowForComponent(this);
-            new ParmGenTokenJDialog(window, pmtProvider, Dialog.ModalityType.DOCUMENT_MODAL, newparms, pmt).setVisible(true);
+            new ParmGenTokenJDialog(this, pmtProvider, Dialog.ModalityType.DOCUMENT_MODAL, newparms, pmt).setVisible(true);
         }
     }//GEN-LAST:event_ParamTrackingActionPerformed
 
@@ -2604,6 +2603,37 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         && tabIndex < this.messageView.getTabCount()
         && tabIndex > -1) {
             this.messageView.setSelectedIndex(tabIndex);
+        }
+    }
+
+    /**
+     * restore current selected current ReqeustResponse List with originalRequestResponse List.
+     */
+    public void restoreAllCurrentSelectedMacroRequestFromOriginal() {
+        int selectedTabIndex = getMacroRequestListTabsCurrentIndex();// return 0 or actually selected tab index
+        // int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();// may return -1 so no usable.
+        ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(selectedTabIndex);
+        if (pmt == null) return;
+        List<PRequestResponse> prequestResponseList = pmt.getPRequestResponseList();
+        JList<String> requestJList = getRequestJListAtTabIndex(selectedTabIndex);
+        if (requestJList == null || prequestResponseList == null) return;
+
+        int selectedIndex = requestJList.getSelectedIndex();
+
+        for (int index = 0; index < prequestResponseList.size(); index++) {
+            PRequestResponse prr = pmt.getOriginalRequest(index);// get original PRequestResponse in original
+            PRequestResponse current = pmt.getRequestResponseCurrentList(index);
+            current.updateRequestResponse(prr.request.clone(), prr.response.clone());// clone original PRequestResponse to CurrentList(rlist)
+
+            if (selectedIndex == index) {
+                JTextPaneContents reqdoc = new JTextPaneContents(messageRequest);
+                reqdoc.setRequestChunks(prr.request);
+                JTextPaneContents resdoc = new JTextPaneContents(messageResponse);
+                resdoc.setResponseChunks(prr.response);
+                if (pmt != null) {
+                    pmt.nullfetchResValAndCookieMan();
+                }
+            }
         }
     }
 

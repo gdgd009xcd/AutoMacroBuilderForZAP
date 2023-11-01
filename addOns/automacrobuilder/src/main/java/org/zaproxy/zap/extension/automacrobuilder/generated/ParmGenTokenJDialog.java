@@ -29,6 +29,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
             org.apache.logging.log4j.LogManager.getLogger();
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
+    MacroBuilderUI mbui = null;
     List<AppParmsIni> newparms = null;
     ParmGenMacroTrace pmt = null;
     ParmGenMacroTraceProvider pmtProvider = null;
@@ -36,8 +37,9 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
     /**
      * Creates new form ParmGenTokenJDialog
      */
-    public ParmGenTokenJDialog(Window window, ParmGenMacroTraceProvider pmtProvider, ModalityType modal, List<AppParmsIni> _newparms, ParmGenMacroTrace _pmt) {
-        super(window, bundle.getString("ParmGenTokenJDialog.DialogTitle.text"), modal);
+    public ParmGenTokenJDialog(MacroBuilderUI mbui, ParmGenMacroTraceProvider pmtProvider, ModalityType modal, List<AppParmsIni> _newparms, ParmGenMacroTrace _pmt) {
+        super(SwingUtilities.windowForComponent(mbui), bundle.getString("ParmGenTokenJDialog.DialogTitle.text"), modal);
+        this.mbui = mbui;
         this.pmtProvider = pmtProvider;
         initComponents();
         newparms = _newparms;
@@ -87,7 +89,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
         OK = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         descriptionLabel = new javax.swing.JLabel();
-        autoTrackCheckBox = new javax.swing.JCheckBox();
+        initTrackCheckBox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -131,10 +133,11 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
 
         descriptionLabel.setText(bundle.getString("ParmGenTokenJDialog.SelectParamLabel1.text")); // NOI18N
 
-        LineBorder border = new LineBorder(Color.RED, 2, false);
-        autoTrackCheckBox.setBorder(border);
-        autoTrackCheckBox.setText("AutoTracking");
-        autoTrackCheckBox.setBorderPainted(true);
+        LineBorder border = new LineBorder(Color.green, 1, true);
+        initTrackCheckBox.setBorder(border);
+        initTrackCheckBox.setText(bundle.getString("ParmGenTokenJDialog.initTrackCheckBox.text"));
+        initTrackCheckBox.setToolTipText(bundle.getString("ParmGenTokenJDialog.initTrackCheckBox.toolTip.text"));
+        initTrackCheckBox.setBorderPainted(true);
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -164,7 +167,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(descriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 1, Short.MAX_VALUE)
-                        .addComponent(autoTrackCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(initTrackCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 2, 2))
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(trackTkScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
@@ -182,7 +185,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(descriptionLabel)
-                        .addComponent(autoTrackCheckBox))
+                        .addComponent(initTrackCheckBox))
                 .addGap(29, 29, 29)
                 .addComponent(trackTkScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -276,7 +279,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
         List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
         List<AppParmsIni> resultlist = null;
 
-        if ( appParmsIniList!= null && newparms != null) {
+        if ( appParmsIniList!= null && newparms != null && !initTrackCheckBox.isSelected()) {// merge newparms to existing one.
             List<AppParmsIni> merged = new ArrayList<>();
             newparms.stream().forEach(newpini -> {
                 long samecnt = appParmsIniList.stream().filter(oldpini ->
@@ -293,10 +296,10 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
         }
 
         pmt.updateAppParmsIniAndClearCache(resultlist);
-        /**
-        ParmGenGSONSave csv = new ParmGenGSONSave(resultlist, pmt);
-        csv.GSONsave();
-         **/
+
+        // restore all current requestresponse list with original requestresponse list.
+        this.mbui.restoreAllCurrentSelectedMacroRequestFromOriginal();
+
         ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
         gson.GSONsave();
         dispose();
@@ -322,6 +325,6 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
     private javax.swing.JScrollPane trackTkScrollPane;
     private javax.swing.JSeparator jSeparator1;
 
-    private javax.swing.JCheckBox autoTrackCheckBox;
+    private javax.swing.JCheckBox initTrackCheckBox;
     // End of variables declaration//GEN-END:variables
 }

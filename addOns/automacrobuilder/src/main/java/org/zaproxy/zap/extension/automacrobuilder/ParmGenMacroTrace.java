@@ -112,6 +112,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private boolean isURIOfRequestIsModified = false;
 
+    private boolean isCacheNull = false;
+
     public String state_debugprint() {
         String msg = "PMT_UNKNOWN";
         switch (state) {
@@ -221,6 +223,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.isURIOfRequestIsModified = this.isURIOfRequestIsModified;
 
+        nobj.isCacheNull = this.isCacheNull;
+
         return nobj;
     }
 
@@ -274,6 +278,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.lastResponseEncode = this.lastResponseEncode;
 
+        nobj.isCacheNull = this.isCacheNull;
+
         return nobj;
     }
 
@@ -296,6 +302,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         sequenceEncode = defaultEncode;
         lastResponseEncode = null;
         isURIOfRequestIsModified = false;
+        isCacheNull = false;
         nullfetchResValAndCookieMan();
     }
 
@@ -484,8 +491,9 @@ public class ParmGenMacroTrace extends ClientDependent {
             TWaiter = null;
         }
 
-        initFetchResponseVal();
-        initCookieManager();
+        boolean fetchResponseValIsNull = initFetchResponseVal();
+        boolean cookieManagerIsNull = initCookieManager();
+        this.isCacheNull = fetchResponseValIsNull && cookieManagerIsNull;
 
         if (!CBInheritFromCache) {
             if (fetchResVal != null) {
@@ -502,6 +510,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         if (fetchResVal != null) {
             fetchResVal.clearDistances();
         }
+
+
         state = PMT_PREMACRO_BEGIN;
         LOGGER4J.debug("BEGIN PreMacro X-THREAD:" + threadid);
 
@@ -1129,10 +1139,12 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
-    public void initFetchResponseVal() {
+    public boolean initFetchResponseVal() {
         if (fetchResVal == null) {
             fetchResVal = new FetchResponseVal();
+            return true;
         }
+        return false;
     }
 
     public FetchResponseVal getFetchResponseVal() {
@@ -1146,10 +1158,12 @@ public class ParmGenMacroTrace extends ClientDependent {
         myPageResponseCache = null;
     }
 
-    public void initCookieManager() {
+    public boolean initCookieManager() {
         if (cookieMan == null) {
             cookieMan = new ParmGenCookieManager();
+            return true;
         }
+        return false;
     }
 
     public void parseSetCookie(PRequestResponse pqrs) {
@@ -1315,5 +1329,9 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     public void setURIOfRequestIsModified(boolean b) {
         this.isURIOfRequestIsModified = b;
+    }
+
+    public boolean isCacheNull() {
+        return this.isCacheNull;
     }
 }

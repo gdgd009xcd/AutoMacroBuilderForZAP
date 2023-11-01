@@ -32,7 +32,13 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    private static final String CRSTYLE_NAME = "CRSTYLE_IMAGE";
+    private static final String CHUNK_STYLENAME = "StyledDocumentWithChunk.STYLE";
+    private static final String CRIMAGE_STYLENAME = "StyledDocumentWithChunk.CRSTYLE_IMAGE";
+
+    private final String[] styleNames = {
+            CHUNK_STYLENAME,
+            CRIMAGE_STYLENAME
+    };
 
     public static int PARTNO_MAXLEN = 4;
 
@@ -59,6 +65,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
     public StyledDocumentWithChunk(PRequest prequest) {
         super(SwingStyleProvider.createSwingStyle().getStyleContext());
+        createStyles();
         enc = prequest.getPageEnc();
         host = prequest.getHost();
         port = prequest.getPort();
@@ -68,6 +75,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
     public StyledDocumentWithChunk(PResponse presponse) {
         super(SwingStyleProvider.createSwingStyle().getStyleContext());
+        createStyles();
         enc = presponse.getPageEnc();
         updateResponse(presponse);
     }
@@ -80,6 +88,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
      */
     public StyledDocumentWithChunk(StyledDocumentWithChunk chunkdoc) {
         super(SwingStyleProvider.createSwingStyle().getStyleContext());
+        createStyles();
         if (chunkdoc != null) {
             if (chunkdoc.isRequest()) {
                 LOGGER4J.debug("chunkdoc is REQUEST");
@@ -105,6 +114,17 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
             }
         }
     }
+
+    private void createStyles() {
+        for(String name: styleNames) {
+            Style style = this.getStyle(name);
+            if (style == null) {
+                Style defaultStyle = SwingStyle.getDefaultStyle(this);
+                this.addStyle(name, defaultStyle);
+            }
+        }
+    }
+
     /**
      * this document for Prequest or not.
      *
@@ -571,12 +591,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     public Style getCRstyle() {
-        Style CRstyle = this.getStyle(CRSTYLE_NAME);
-        if (CRstyle == null) {
-            Style defaultStyle = SwingStyle.getDefaultStyle(this);
-            CRstyle = this.addStyle(CRSTYLE_NAME, defaultStyle);
-        }
-
+        Style CRstyle = this.getStyle(CRIMAGE_STYLENAME);
         // component must always create per call setComponent.
         JLabel crlabel = new JLabel("CR");
         crlabel.setOpaque(true);

@@ -38,6 +38,8 @@ public class ClientRequest implements InterfaceClientRequest {
             pmt.clearComments();
             pmt.setError(false);
 
+            int currentStepNo = pmt.getStepNo();
+
             // set cookies & tokens in request
             PRequest updatedrequest = pgen.RunPRequest(request);
             if (updatedrequest != null) {
@@ -101,9 +103,10 @@ public class ClientRequest implements InterfaceClientRequest {
                         noresponse = "\nNo Response(NULL)";
                     }
                     pqrs.setComments(pmt.getComments() + noresponse);
-                    pqrs.setError(pmt.isError());
+                    if (currentStepNo != 0 || !pmt.isCacheNull()) {
+                        pqrs.setError(pmt.isError());
+                    }
                 }
-
             } catch (IOException e) {
                 LOGGER4J.error("", e);
             }

@@ -56,8 +56,7 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
         super(label, true);
         this.pmt = null;
         this.mbui = mbui;
-        Window window =  SwingUtilities.windowForComponent(mbui);
-        langdialog = new LangSelectDialog(window, this, Encode.ISO_8859_1, Dialog.ModalityType.DOCUMENT_MODAL);
+        langdialog = new LangSelectDialog(this.mbui, this, Encode.ISO_8859_1, Dialog.ModalityType.DOCUMENT_MODAL);
     }
 
     private String getIndentString(int i) {

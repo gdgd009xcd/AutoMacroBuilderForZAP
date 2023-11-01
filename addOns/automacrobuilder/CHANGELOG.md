@@ -2,7 +2,7 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-## [v1.1.7] - 2023-10-30
+## [v1.1.7] - 2023-11-02
 ### Changed
 - bugfix: Fixed bug in PopUpItemSingleSend which provides manual http send message feature in AutoMacroBuilderForZAP.
 - bugfix: Removed codes that uses the StyleContext.getDefaultStyleContext() method. Using this method incorrectly can have negative effects on other GUIs.

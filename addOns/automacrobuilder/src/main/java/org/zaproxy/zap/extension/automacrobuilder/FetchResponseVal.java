@@ -90,6 +90,11 @@ class FetchResponseVal implements DeepClone {
         if (trackkeys != null) trackkeys.clear();
     }
 
+    public boolean isCachedLocValCleared() {
+        if (trackkeys != null) return trackkeys.isCleared();
+        return true;
+    }
+
     public void clearDistances() {
         if (distances != null) {
             distances.clear();

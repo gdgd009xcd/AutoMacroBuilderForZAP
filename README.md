@@ -8,7 +8,7 @@ and can use them with tool such as scanners or manual request on ZAPROXY.
 ![LANG](https://img.shields.io/github/languages/top/gdgd009xcd/AutoMacroBuilderForZAP)
 ![LICENSE](https://img.shields.io/github/license/gdgd009xcd/AutoMacroBuilderForZAP)
 
-![screenshot](https://raw.githubusercontent.com/gdgd009xcd/RELEASES/master/IMG/ZAP/AutoMacroBuilderForZAPMain.png)
+![typical usage](assets/images/typical.gif)
 
 ## Prerequisite
 
