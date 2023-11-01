@@ -89,17 +89,17 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         this.primeHeaderOfRequest = selected_message.request.getPrimeHeaderWithoutCRLF();
         int mpos = selected_message.getMacroPos();
         if(mpos<0){
-            mpos = ParmVars.TOSTEPANY;
+            mpos = EnvironmentVariables.TOSTEPANY;
         }
-        ParmVars.session.put(ParmGenSession.K_TOPOS, Integer.toString(mpos));
+        EnvironmentVariables.session.put(ParmGenSession.K_TOPOS, Integer.toString(mpos));
         selected_request = selected_message.request;
-        String newtargetURL = ".*" + selected_request.getPath() + ".*";
+        String newtargetURL = ".*" + selected_request.getURIWithoutQueryPart() + ".*";
         Select_ReplaceTargetURL.addItem(newtargetURL);
         String currenturl = parentwin.getTargetURL();
         if ( currenturl != null && !currenturl.isEmpty()){
             if(currenturl.indexOf(newtargetURL)==-1){// currenturl does not contain newtargetURL, so add it to currenturl.
                 Select_ReplaceTargetURL.addItem(currenturl);
-                Select_ReplaceTargetURL.addItem(currenturl + "|.*" + selected_request.getPath() + ".*");
+                Select_ReplaceTargetURL.addItem(currenturl + "|.*" + selected_request.getURIWithoutQueryPart() + ".*");
             }
         }
         deleteRows();
@@ -183,12 +183,12 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         ArrayList<String> names = new ArrayList<>();
 
         for(j=0; j<1000; j++){
-            String n = ParmVars.session.get(j, ParmGenSession.K_TOKEN);
+            String n = EnvironmentVariables.session.get(j, ParmGenSession.K_TOKEN);
             if(n==null)break;
             names.add(n);
         }
 
-        String targetparam = ParmVars.session.get(ParmGenSession.K_TARGETPARAM);
+        String targetparam = EnvironmentVariables.session.get(ParmGenSession.K_TARGETPARAM);
 
         int rmax = ReqParsedTableModel.getRowCount();
         ListSelectionModel lmodel = ReqParsedTable.getSelectionModel();
@@ -530,13 +530,13 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
         // TODO add your handling code here:
         int[] rowsSelected = ReqParsedTable.getSelectedRows();
         String url = (String)Select_ReplaceTargetURL.getSelectedItem();
-        String fromstr = ParmVars.session.get(ParmGenSession.K_FROMPOS);
+        String fromstr = EnvironmentVariables.session.get(ParmGenSession.K_FROMPOS);
         int frompos = -1;
         if(fromstr!=null){
             frompos = Integer.parseInt(fromstr);
         }
-        String tostr = ParmVars.session.get(ParmGenSession.K_TOPOS);
-        int topos = ParmVars.TOSTEPANY;
+        String tostr = EnvironmentVariables.session.get(ParmGenSession.K_TOPOS);
+        int topos = EnvironmentVariables.TOSTEPANY;
         if(tostr!=null){
             topos = Integer.parseInt(tostr);
         }

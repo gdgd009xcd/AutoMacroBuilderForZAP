@@ -54,7 +54,7 @@ public class RightClickMsgMenu extends PopupMenuItemHttpMessageContainer {
         View.getSingleton()
                 .showMessageDialog(
                         Constant.messages.getString(
-                                ExtensionAutoMacroBuilder.PREFIX + ".popup.msg",
+                                "autoMacroBuilder.popup.msg",
                                 msg.getRequestHeader().getURI().toString()));
     }
 

@@ -90,6 +90,11 @@ class FetchResponseVal implements DeepClone {
         if (trackkeys != null) trackkeys.clear();
     }
 
+    public boolean isCachedLocValCleared() {
+        if (trackkeys != null) return trackkeys.isCleared();
+        return true;
+    }
+
     public void clearDistances() {
         if (distances != null) {
             distances.clear();
@@ -120,7 +125,7 @@ class FetchResponseVal implements DeepClone {
             if (toStepNo >= 0) {
                 if (currentStepNo == toStepNo) {
                     rval = v;
-                } else if (toStepNo == ParmVars.TOSTEPANY) {
+                } else if (toStepNo == EnvironmentVariables.TOSTEPANY) {
                     rval = v;
                 }
             }

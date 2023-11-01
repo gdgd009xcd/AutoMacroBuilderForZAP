@@ -59,7 +59,7 @@ public class PLog {
 
     PLog(String projectdir) {
 
-        logname = projectdir + ParmVars.getFileSep() + "AppScanPermGen.log";
+        logname = projectdir + EnvironmentVariables.getFileSep() + "AppScanPermGen.log";
         LogfileOn = false; // default disable file output
         File logfile = new File(logname);
         if (!logfile.exists()) {

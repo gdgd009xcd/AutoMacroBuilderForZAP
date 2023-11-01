@@ -38,6 +38,8 @@ public class ClientRequest implements InterfaceClientRequest {
             pmt.clearComments();
             pmt.setError(false);
 
+            int currentStepNo = pmt.getStepNo();
+
             // set cookies & tokens in request
             PRequest updatedrequest = pgen.RunPRequest(request);
             if (updatedrequest != null) {
@@ -101,9 +103,10 @@ public class ClientRequest implements InterfaceClientRequest {
                         noresponse = "\nNo Response(NULL)";
                     }
                     pqrs.setComments(pmt.getComments() + noresponse);
-                    pqrs.setError(pmt.isError());
+                    if (currentStepNo != 0 || !pmt.isCacheNull()) {
+                        pqrs.setError(pmt.isError());
+                    }
                 }
-
             } catch (IOException e) {
                 LOGGER4J.error("", e);
             }
@@ -131,10 +134,12 @@ public class ClientRequest implements InterfaceClientRequest {
 
         PRequest prequest = ZapUtil.getPRequest(currentmessage, pmt.getLastResponseEncode());
 
+        pmt.setURIOfRequestIsModified(isURIOfRequestIsModified(pmt, prequest));
         PRequest retval = pgen.RunPRequest(prequest);
 
         if (retval != null) {
             HttpMessage newmessage = ZapUtil.getHttpMessage(retval);
+            LOGGER4J.debug("ZapUtil.getHttpMessage URL[" + newmessage.getRequestHeader().getURI().toString() + "]");
             // update currentmessage contents
             currentmessage.setRequestHeader(newmessage.getRequestHeader());
             currentmessage.setRequestBody(newmessage.getRequestBody());
@@ -172,10 +177,10 @@ public class ClientRequest implements InterfaceClientRequest {
      */
     public void updateCurrentResponseWithFinalResponse(
             ParmGenMacroTrace pmt, HttpMessage currentmessage) {
-        if (pmt.isCBFinalResponse()) {
-            PResponse finalresponse = pmt.getPostMacroPResponse();
+        LOGGER4J.debug("isURIOfRequestIsModified:"+ (pmt.isURIOfRequestIsModified()?"true":"false"));
+        if (pmt.isCBFinalResponse() && !pmt.isURIOfRequestIsModified()) {
+            PResponse finalresponse = pmt.getPostMessagePResponse();
             if (finalresponse != null) {
-
                 try {
                     // update currentmessage's response
                     String responseheaders = finalresponse.getHeaderOnly();
@@ -191,5 +196,26 @@ public class ClientRequest implements InterfaceClientRequest {
             }
         }
         pmt.macroEnded(); // all done.
+    }
+
+    /**
+     * check URI of prequest is modified by ActiveScan
+     *
+     * @param prequest
+     * @return true - modified. false - original
+     */
+    private boolean isURIOfRequestIsModified(ParmGenMacroTrace pmt, PRequest prequest) {
+        PRequestResponse original = pmt.getCurrentOriginalRequest();
+        PRequest originalPRequest =  original.request;
+
+        String URI_no_query = prequest.getURIWithoutQueryPart();
+        String originalURI_no_query = originalPRequest.getURIWithoutQueryPart();
+        LOGGER4J.debug("URI[" + URI_no_query + "] original URI[" + originalURI_no_query + "]");
+        if (URI_no_query != null) {
+            if (URI_no_query.equals(originalURI_no_query)) {
+                return false;
+            }
+        } else return URI_no_query != originalURI_no_query;
+        return true;
     }
 }

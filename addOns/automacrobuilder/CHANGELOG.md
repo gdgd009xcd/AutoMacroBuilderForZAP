@@ -2,10 +2,13 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-## 13 - 2023-10-29
-### ver1.1.7
-- bugfix: Fix bug in PopUpItemSingleSend which provides manual http send message feature in AutoMacroBuilderForZAP.
-- bugfix: Remove codes that uses the StyleContext.getDefaultStyleContext() method. Using this method incorrectly can have negative effects on other GUIs.
+## [v1.1.7] - 2023-11-02
+### Changed
+- bugfix: Fixed bug in PopUpItemSingleSend which provides manual http send message feature in AutoMacroBuilderForZAP.
+- bugfix: Removed codes that uses the StyleContext.getDefaultStyleContext() method. Using this method incorrectly can have negative effects on other GUIs.
+- new feature: Changed default behaviour of "AddToMacroBuilder" button. now you can scan multi-step http sequence without pushing "Track" button.
+- maintenance: Refactored some files.
+- bugfix: Fixed a bug in autoMacroBuilder that caused false positives in path traversal (well known path attack) checks in other scanners.
 
 ## 12 - 2023-10-18
 ### ver1.1.6
@@ -72,5 +75,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - new feature: Conditional Parameter for detecting the completion of processing.  
   See: [1.5. Conditional Parameter(ValidCondRegex).](https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/1.5.-Conditional-Parameter(ValidCondRegex))
+
+## [v0.0.0] - 1970-0101
+### Added
+- xxxx...xx
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+### Sorry..
 
 

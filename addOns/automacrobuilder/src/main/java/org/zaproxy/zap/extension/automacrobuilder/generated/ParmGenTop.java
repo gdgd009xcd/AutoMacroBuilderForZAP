@@ -47,9 +47,9 @@ public class ParmGenTop extends javax.swing.JFrame {
             pini = it.next();
             int FromStep = pini.getTrackFromStep();
             int ToStep = pini.getSetToStep();
-            FromTo = (FromStep>-1?Integer.toString(FromStep):"*") + "->" + (ToStep!=ParmVars.TOSTEPANY?Integer.toString(ToStep):"*");
+            FromTo = (FromStep>-1?Integer.toString(FromStep):"*") + "->" + (ToStep!= EnvironmentVariables.TOSTEPANY?Integer.toString(ToStep):"*");
             if(pini.getTypeVal()!=AppParmsIni.T_TRACK){
-                if(ToStep<0||ToStep==ParmVars.TOSTEPANY){
+                if(ToStep<0||ToStep== EnvironmentVariables.TOSTEPANY){
                     FromTo = "*";
                 }else{
                     FromTo = Integer.toString(ToStep);
@@ -204,8 +204,8 @@ public class ParmGenTop extends javax.swing.JFrame {
      * @param dialogparent 
      */
     public void VisibleWhenJSONSaved(Component dialogparent){
-        if(!ParmVars.isSaved()){
-            File cfile = new File(ParmVars.parmfile);
+        if(!EnvironmentVariables.isSaved()){
+            File cfile = new File(EnvironmentVariables.parmfile);
             String dirname = cfile.getParent();
             JFileChooser jfc = new JFileChooser(dirname);
             jfc.setSelectedFile(cfile);
@@ -218,12 +218,12 @@ public class ParmGenTop extends javax.swing.JFrame {
                 if(!pFilter.accept(file)){// add extension string if the file name has no extension string
                     name += ".json";
                 }
-                ParmVars.parmfile = name;
+                EnvironmentVariables.parmfile = name;
                 gson.GSONsave();
 
             }
         }
-        if(ParmVars.isSaved()){
+        if(EnvironmentVariables.isSaved()){
             this.setVisible(true);
         }
     }

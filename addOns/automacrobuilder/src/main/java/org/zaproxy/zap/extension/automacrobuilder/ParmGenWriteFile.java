@@ -57,7 +57,7 @@ public class ParmGenWriteFile {
         try {
             open();
         } catch (Exception ex) {
-            ParmVars.plog.printException(ex);
+            EnvironmentVariables.plog.printException(ex);
         }
     }
 

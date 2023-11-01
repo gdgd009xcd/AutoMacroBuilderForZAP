@@ -17,7 +17,7 @@ import javax.swing.ListModel;
 import org.zaproxy.zap.extension.automacrobuilder.ParmFileFilter;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenReadFile;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenWriteFile;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 
 /**
  *
@@ -50,7 +50,7 @@ public class ParmGenAttackListDialog extends javax.swing.JDialog {
         if(currentFile != null && !currentFile.isEmpty()){
             currentAtkListFile = currentFile;
         }else{
-            currentAtkListFile = ParmVars.projectdir + "\\" + defaultAtkListFileName;
+            currentAtkListFile = EnvironmentVariables.projectdir + "\\" + defaultAtkListFileName;
         }
     }
 
@@ -303,7 +303,7 @@ public class ParmGenAttackListDialog extends javax.swing.JDialog {
                 PatternModel.addElement(" ");
                 rfile.close();
             } catch (FileNotFoundException ex) {
-                ParmVars.plog.printException(ex);
+                EnvironmentVariables.plog.printException(ex);
                 JOptionPane.showMessageDialog(this,"パターンファイル読み込みエラー\n"+ ex.toString() ,  "パターンファイルエラー", JOptionPane.ERROR_MESSAGE);
             }
             
@@ -334,7 +334,7 @@ public class ParmGenAttackListDialog extends javax.swing.JDialog {
                 }
                 wfile.close();
             }catch(Exception ex){
-                ParmVars.plog.printException(ex);
+                EnvironmentVariables.plog.printException(ex);
                 JOptionPane.showMessageDialog(this,"パターンファイル書き込みエラー\n"+ ex.toString() ,  "パターンファイルエラー", JOptionPane.ERROR_MESSAGE);
             }
             

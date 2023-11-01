@@ -19,7 +19,7 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenGSONSaveV2;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenSession;
 import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.StrSelectInfo;
 import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
@@ -122,7 +122,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
                 }
                 lbgn = offs;
             }catch(BadLocationException e){
-                ParmVars.plog.printException(e);
+                EnvironmentVariables.plog.printException(e);
             }
         }
         
@@ -187,7 +187,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
                 }
                 lend = offs;
             }catch(BadLocationException e){
-                ParmVars.plog.printException(e);
+                EnvironmentVariables.plog.printException(e);
             }
         }
         
@@ -527,7 +527,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
             JTextPaneContents rdoc = new JTextPaneContents(ResponseArea);
             rdoc.setResponseChunks(rs.response);
             ResponseArea.setCaretPosition(0);   
-            headerlength = Integer.parseInt(ParmVars.session.get(ParmGenSession.K_HEADERLENGTH));
+            headerlength = Integer.parseInt(EnvironmentVariables.session.get(ParmGenSession.K_HEADERLENGTH));
         }
     }
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
@@ -555,11 +555,11 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
         }
         // headerlength == until response... headersCRLF...CRLFCRLF
         if (endpos > headerlength){
-            ParmVars.plog.AppendPrint("body endpos:" + Integer.toString(endpos) + " hlen:" + Integer.toString(headerlength));
+            EnvironmentVariables.plog.AppendPrint("body endpos:" + Integer.toString(endpos) + " hlen:" + Integer.toString(headerlength));
             respart = "responsebody";
             isheader = false;
         }else{
-            ParmVars.plog.AppendPrint("header endpos:" + Integer.toString(endpos) + " hlen:" + Integer.toString(headerlength));
+            EnvironmentVariables.plog.AppendPrint("header endpos:" + Integer.toString(endpos) + " hlen:" + Integer.toString(headerlength));
             respart ="header";
             isheader = true;
         }
@@ -580,10 +580,10 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
         boolean hasHREF = false;
         ArrayList<String> groupvalues = new ArrayList<String>();
         while((inputtagregex = getInputTagRegex(REXSEQ[i], nameval, optiontitle, regex, realval))!=null){
-            ParmVars.plog.AppendPrint(Integer.toString(REXSEQ[i]) +":[" + inputtagregex + "]");
+            EnvironmentVariables.plog.AppendPrint(Integer.toString(REXSEQ[i]) +":[" + inputtagregex + "]");
             groupvalues.clear();
             if (isMatched(REXSEQ[i],startpos, endpos, inputtagregex, reqstr, groupvalues, false)){
-                ParmVars.plog.AppendPrint("matched...");
+                EnvironmentVariables.plog.AppendPrint("matched...");
                 Iterator<String> it = groupvalues.iterator();
                 if(it.hasNext()){
                     String rawnameval = groupvalues.get(ResponseTracker.T_NAME);
@@ -597,12 +597,12 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
                     rawoptiontitle = ParmGenRegex.EscapeSpecials(rawoptiontitle);
                     String rawval = groupvalues.get(ResponseTracker.T_VALUE);
                     String parsedregex = ParmGenRegex.getParsedRegexGroup(rawval, quant);
-                    ParmVars.plog.AppendPrint("rawnameval[" + rawnameval + "] rawoptiontitle[" + rawoptiontitle + "] rawval[" + rawval + "] regex[" + parsedregex + "]");
+                    EnvironmentVariables.plog.AppendPrint("rawnameval[" + rawnameval + "] rawoptiontitle[" + rawoptiontitle + "] rawval[" + rawval + "] regex[" + parsedregex + "]");
                     groupvalues.clear();
                     inputtagregex = getInputTagRegex(REXSEQ[i], rawnameval, rawoptiontitle, regex, parsedregex);
-                    ParmVars.plog.AppendPrint(inputtagregex);
+                    EnvironmentVariables.plog.AppendPrint(inputtagregex);
                     if (isMatched(REXSEQ[i],startpos, endpos, inputtagregex, reqstr, groupvalues, false)){
-                        ParmVars.plog.AppendPrint("matched validregex[" + inputtagregex + "]");
+                        EnvironmentVariables.plog.AppendPrint("matched validregex[" + inputtagregex + "]");
                         regexpattern = inputtagregex;
                         RegexPattern.setText(regexpattern);
                         break;
@@ -631,9 +631,9 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
             }
             //inputtagregex = "(" + EscapeSpecials(selected_value) + ")";
             
-            ParmVars.plog.AppendPrint("any tag[" + inputtagregex + "]");
+            EnvironmentVariables.plog.AppendPrint("any tag[" + inputtagregex + "]");
             if (isMatched(99,startpos, endpos, inputtagregex, reqstr, groupvalues, false)){
-                ParmVars.plog.AppendPrint("matched any pattern validregex[" + inputtagregex + "]");
+                EnvironmentVariables.plog.AppendPrint("matched any pattern validregex[" + inputtagregex + "]");
                 regexpattern = inputtagregex;
                 RegexPattern.setText(regexpattern);
             }else{
@@ -654,8 +654,8 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
         if ( currentrequestresponse == null ) return;
-        ParmVars.session.put(ParmGenSession.K_RESPONSEREGEX, regexpattern);
-        ParmVars.session.put(ParmGenSession.K_RESPONSEPART, respart);
+        EnvironmentVariables.session.put(ParmGenSession.K_RESPONSEREGEX, regexpattern);
+        EnvironmentVariables.session.put(ParmGenSession.K_RESPONSEPART, respart);
        
         int mcnt = ParmGenUtil.getRegexMatchpos(getRegex(), currentrequestresponse.response.getMessage());
         String poscnt = null;
@@ -664,7 +664,7 @@ public class ResponseTracker extends javax.swing.JFrame implements InterfaceRege
             poscnt = Integer.toString(mcnt-1);
         }
         if(poscnt!=null){
-            ParmVars.session.put(ParmGenSession.K_RESPONSEPOSITION, poscnt);
+            EnvironmentVariables.session.put(ParmGenSession.K_RESPONSEPOSITION, poscnt);
             dispose();
             new SelectRequest(bundle.getString("ResponseTracker.SelectRequestTitle.text"), parentwin, new ParmGenAddParms(parentwin, true), ParmGenNew.P_REQUESTTAB).setVisible(true);
         }else{

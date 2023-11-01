@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.JSONFileIANACharsetName;
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.JSONFileIANACharsetName;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -103,7 +103,7 @@ public class AppValue {
     // Line number of response from which  getting tracking parameter  in RequestList sequence
     // < 0: get tracking value from any response
     // >=0: get tracking value from specified request line number's response
-    private int toStepNo = ParmVars.TOSTEPANY; // TRACK:更新先
+    private int toStepNo = EnvironmentVariables.TOSTEPANY; // TRACK:更新先
     // 　>0:指定したStepNoのリクエスト更新
     // Line number of request to which setting tracking paramter  in RequestList sequence
     //  <0 : No Operation.
@@ -808,7 +808,7 @@ public class AppValue {
         if (valueregex == null) return null;
         ParmGenTokenKey tk = null;
         if (toStepNo >= 0) {
-            if (toStepNo != ParmVars.TOSTEPANY) {
+            if (toStepNo != EnvironmentVariables.TOSTEPANY) {
                 if (currentStepNo != toStepNo) {
                     return null; //
                 }

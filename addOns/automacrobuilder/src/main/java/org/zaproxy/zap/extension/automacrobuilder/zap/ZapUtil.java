@@ -106,7 +106,7 @@ public class ZapUtil {
 
             pmt.setCurrentRequest(pos);
 
-            StyledDocumentWithChunk doc = mbui.getMacroRequestStyledDocument();
+            StyledDocumentWithChunk doc = mbui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
                 PRequestResponse prr = pmt.getRequestResponseCurrentList(pos);
                 PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();

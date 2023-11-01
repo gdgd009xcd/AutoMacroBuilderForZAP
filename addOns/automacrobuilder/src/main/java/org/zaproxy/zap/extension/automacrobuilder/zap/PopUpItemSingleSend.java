@@ -1,7 +1,5 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
-import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.PREFIX;
-
 import java.io.IOException;
 import javax.swing.*;
 import org.apache.commons.httpclient.HttpMethod;
@@ -41,9 +39,10 @@ public class PopUpItemSingleSend extends JMenuItem {
             StartedActiveScanContainer acon,
             BeforeMacroDoActionProvider beforemacroprovider,
             PostMacroDoActionProvider postmacroprovider) {
-        super(Constant.messages.getString(PREFIX + ".popup.title.PopUpSingleSendForMacroBuilder"));
+        super(Constant.messages.getString("autoMacroBuilder.PopUpItemSingleSend.title.text"));
         this.beforemacroprovider = beforemacroprovider;
         this.postmacroprovider = postmacroprovider;
+        this.setToolTipText(Constant.messages.getString("autoMacroBuilder.PopUpItemSingleSend.Tooltip.text"));
 
         final StartedActiveScanContainer f_acon = acon;
         final MacroBuilderUI f_mbui = mbui;
@@ -53,6 +52,7 @@ public class PopUpItemSingleSend extends JMenuItem {
                     PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
 
                     if (newrequest != null) {
+                        f_mbui.clearMessageResponse();
                         int selectedTabIndex = f_mbui.getSelectedTabIndexOfMacroRequestList();
                         int currentSelectedPos =
                                 f_mbui.getRequestJListSelectedIndexAtTabIndex(selectedTabIndex);
@@ -115,6 +115,7 @@ public class PopUpItemSingleSend extends JMenuItem {
                         SwingUtilities.invokeLater(
                                 () -> {
                                     f_mbui.updateCurrentSelectedRequestListDisplayContents();
+                                    f_mbui.showMessageViewOnWorkBench(1);
                                 });
                     }
                 });

@@ -48,7 +48,7 @@ public class ParmGenReadFile {
                 }
             }
         } catch (IOException ex) {
-            ParmVars.plog.printException(ex);
+            EnvironmentVariables.plog.printException(ex);
         }
         return alldata;
     }
@@ -58,13 +58,13 @@ public class ParmGenReadFile {
             try {
                 br.close();
             } catch (IOException ex) {
-                ParmVars.plog.printException(ex);
+                EnvironmentVariables.plog.printException(ex);
             }
         if (fr != null)
             try {
                 fr.close();
             } catch (IOException ex) {
-                ParmVars.plog.printException(ex);
+                EnvironmentVariables.plog.printException(ex);
             }
     }
 }

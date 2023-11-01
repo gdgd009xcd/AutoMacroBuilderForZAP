@@ -328,7 +328,7 @@ class ParseHTTPHeaders implements DeepClone {
                 int blen = bodystring.getBytes(pageenc.getIANACharset()).length;
                 return blen;
             } catch (Exception e) {
-                ParmVars.plog.printException(e);
+                EnvironmentVariables.plog.printException(e);
             }
         }
         return 0;
@@ -341,7 +341,7 @@ class ParseHTTPHeaders implements DeepClone {
                 int blen = h.getBytes(pageenc.getIANACharset()).length;
                 return blen;
             } catch (Exception e) {
-                ParmVars.plog.printException(e);
+                EnvironmentVariables.plog.printException(e);
             }
         }
         return 0;
@@ -598,14 +598,14 @@ class ParseHTTPHeaders implements DeepClone {
                     } else {
                         epos = fm.start();
                         nextbpos = fm.end();
-                        ParmVars.plog.debuglog(1, "bpos=" + Integer.toString(bpos));
-                        ParmVars.plog.debuglog(1, "epos=" + Integer.toString(epos));
-                        ParmVars.plog.debuglog(1, "nextbpos=" + Integer.toString(nextbpos));
+                        EnvironmentVariables.plog.debuglog(1, "bpos=" + Integer.toString(bpos));
+                        EnvironmentVariables.plog.debuglog(1, "epos=" + Integer.toString(epos));
+                        EnvironmentVariables.plog.debuglog(1, "nextbpos=" + Integer.toString(nextbpos));
                     }
                     formvalue = parsebody.substring(bpos, epos); // セパレータ間のデータ（header含む）
                     String dv = formvalue.replaceAll("\r", "<CR>");
                     dv = dv.replaceAll("\n", "<LF>");
-                    ParmVars.plog.debuglog(1, dv);
+                    EnvironmentVariables.plog.debuglog(1, dv);
                     Matcher fn = formdataheaderregex.matcher(formvalue);
                     Matcher contentfn = formdatacontenttyperegex.matcher(formvalue);
                     boolean isbinarycontents = false;
@@ -634,13 +634,13 @@ class ParseHTTPHeaders implements DeepClone {
                             nvpair[1] = nvpair[1].replaceAll("\r\n", "(?:\\\\r\\\\n|\\\\n)");
                             nvpair[1] = nvpair[1].replaceAll("\r", "(?:\\\\r|\\\\n)");
                             nvpair[1] = nvpair[1].replaceAll("\n", "(?:\\\\r|\\\\n)");
-                            ParmVars.plog.debuglog(1, "name[" + nvpair[0] + "]");
+                            EnvironmentVariables.plog.debuglog(1, "name[" + nvpair[0] + "]");
                             if (fgcnt > 0) {
                                 bodyparams.add(nvpair);
                                 hashbodyparams.put(decodedParamName(nvpair[0], pageenc), nvpair[1]);
                             }
                         } catch (Exception e) {
-                            ParmVars.plog.printException(e);
+                            EnvironmentVariables.plog.printException(e);
                         }
                     }
                     bpos = nextbpos;
@@ -715,7 +715,7 @@ class ParseHTTPHeaders implements DeepClone {
         try {
             bodystring = new String(bytebody, pageenc.getIANACharset());
         } catch (Exception ex) {
-            ParmVars.plog.printException(ex);
+            EnvironmentVariables.plog.printException(ex);
         }
         binbody = null;
         message = null;
@@ -923,7 +923,14 @@ class ParseHTTPHeaders implements DeepClone {
         return url;
     }
 
-    public String getPath() {
+    /**
+     * get URI without query part<BR>
+     * e.g. http://abc.com/data?search=apple<BR>
+     * &nbsp;&nbsp;&nbsp;&nbsp;getURIWithoutQueryPart() returns "http://abc.com/data"<BR>
+     * &nbsp;&nbsp;&nbsp;&nbsp;query part == "search=apple"
+     * @return
+     */
+    public String getURIWithoutQueryPart() {
         return path;
     }
 
@@ -1012,7 +1019,7 @@ class ParseHTTPHeaders implements DeepClone {
                     rawmessage.concat(bytebody);
                 }
             } catch (Exception ex) {
-                ParmVars.plog.printException(ex);
+                EnvironmentVariables.plog.printException(ex);
             }
 
             return rawmessage.getBytes();
@@ -1022,7 +1029,7 @@ class ParseHTTPHeaders implements DeepClone {
                 byte[] binmess = strmess.getBytes(pageenc.getIANACharset());
                 return binmess;
             } catch (Exception e) {
-                ParmVars.plog.printException(e);
+                EnvironmentVariables.plog.printException(e);
             }
         }
         return null;

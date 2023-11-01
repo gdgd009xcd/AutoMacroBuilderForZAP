@@ -20,6 +20,7 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -66,7 +67,7 @@ public class ParmGen {
             ParmGenHashMap errorhash) {
 
         Encode requestBodyEncode = prequest.getPageEnc();
-        if (av.getToStepNo() != ParmVars.TOSTEPANY) {
+        if (av.getToStepNo() != EnvironmentVariables.TOSTEPANY) {
             if (av.getToStepNo() != pmt.getStepNo()) return null;
         }
         // ArrayList<String []> headers = prequest.getHeaders();
@@ -291,7 +292,7 @@ public class ParmGen {
                                     String partcontenttype = null;
                                     try {
                                         partcontenttype =
-                                                new String(partheader, ParmVars.formdataenc);
+                                                new String(partheader, EnvironmentVariables.formdataenc);
                                     } catch (UnsupportedEncodingException ex) {
                                         partcontenttype = "";
                                     }
@@ -305,7 +306,7 @@ public class ParmGen {
                                         if (cstrvalues.length > 0) {
                                             String partcontenttypevalue = cstrvalues[0];
                                             if (!partcontenttypevalue.isEmpty()) {
-                                                partenc = ParmVars.formdataenc;
+                                                partenc = EnvironmentVariables.formdataenc;
                                                 partcontenttypevalue = partcontenttypevalue.trim();
                                                 LOGGER4J.trace(
                                                         "form-data Contentype:["
@@ -682,14 +683,14 @@ public class ParmGen {
                         LOGGER4J.error("prequest.setBody", e);
                     }
                 }
-                if (ParmVars.ProxyAuth.length() > 0) {
+                if (EnvironmentVariables.ProxyAuth.length() > 0) {
                     prequest.setHeader(
-                            "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                            "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 }
                 retval = prequest.getByteMessage();
-            } else if (ParmVars.ProxyAuth.length() > 0) {
+            } else if (EnvironmentVariables.ProxyAuth.length() > 0) {
                 prequest.setHeader(
-                        "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                        "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 retval = prequest.getByteMessage();
             }
 
@@ -882,15 +883,15 @@ public class ParmGen {
                         LOGGER4J.error("prequest.setBody", e);
                     }
                 }
-                if (ParmVars.ProxyAuth.length() > 0) {
+                if (EnvironmentVariables.ProxyAuth.length() > 0) {
                     prequest.setHeader(
-                            "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                            "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 }
                 // retval = prequest.getByteMessage();
                 retval = prequest;
-            } else if (ParmVars.ProxyAuth.length() > 0) {
+            } else if (EnvironmentVariables.ProxyAuth.length() > 0) {
                 prequest.setHeader(
-                        "Proxy-Authorization", ParmVars.ProxyAuth); // username:passwd => base64
+                        "Proxy-Authorization", EnvironmentVariables.ProxyAuth); // username:passwd => base64
                 // retval = prequest.getByteMessage();
                 retval = prequest;
             }
@@ -931,6 +932,8 @@ public class ParmGen {
         return null;
     }
 
+
+
     /**
      * Parse response and extract tracking tokens
      *
@@ -948,7 +951,7 @@ public class ParmGen {
         String req_contentMimeType = prequest.getContentMimeType();
         String res_contentMimeType = presponse.getContentMimeType();
         // if content_type/subtype matches excludeMimeType regex then skip below codes..
-        if (!ParmVars.isMimeTypeExcluded(res_contentMimeType)) {
+        if (!EnvironmentVariables.isMimeTypeExcluded(res_contentMimeType)) {
             // ### skip start
             if (url != null && appParmsIniList != null) {
 
@@ -998,10 +1001,10 @@ public class ParmGen {
                                 boolean isRequest = av.requestIsCondRegexTarget();
                                 String mess = null;
                                 if (isRequest && prequest != null) {
-                                    if (!ParmVars.isMimeTypeExcluded(req_contentMimeType)) {
+                                    if (!EnvironmentVariables.isMimeTypeExcluded(req_contentMimeType)) {
                                         mess = prequest.getMessage();
                                     }
-                                } else if (!ParmVars.isMimeTypeExcluded(res_contentMimeType)) {
+                                } else if (!EnvironmentVariables.isMimeTypeExcluded(res_contentMimeType)) {
                                     mess = presponse.getMessage();
                                 }
                                 if (mess != null) {
@@ -1028,5 +1031,26 @@ public class ParmGen {
         }
 
         return updtcnt;
+    }
+
+    /**
+     * check URI of prequest is modified by ActiveScan
+     *
+     * @param prequest
+     * @return true - modified. false - original
+     */
+    private boolean isURIOfRequestIsModified(PRequest prequest) {
+        PRequestResponse original = pmt.getCurrentOriginalRequest();
+        PRequest originalPRequest =  original.request;
+
+        String URI_no_query = prequest.getURIWithoutQueryPart();
+        String originalURI_no_query = originalPRequest.getURIWithoutQueryPart();
+        LOGGER4J.debug("URI[" + URI_no_query + "] original URI[" + originalURI_no_query + "]");
+        if (URI_no_query != null) {
+            if (URI_no_query.equals(originalURI_no_query)) {
+                return false;
+            }
+        } else return URI_no_query != originalURI_no_query;
+        return true;
     }
 }

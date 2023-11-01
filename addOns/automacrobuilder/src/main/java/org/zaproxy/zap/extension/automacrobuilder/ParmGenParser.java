@@ -68,7 +68,7 @@ public class ParmGenParser implements DeepClone {
             // elemsprint(htmltext);
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            ParmVars.plog.printException(e);
+            EnvironmentVariables.plog.printException(e);
             doc = null;
             elems = null;
         }
@@ -83,12 +83,12 @@ public class ParmGenParser implements DeepClone {
             String v = vtag.attr("value");
             String h = vtag.attr("href");
             if (vtag.tagName().toLowerCase().indexOf("input") != -1) { // <input
-                ParmVars.plog.AppendPrint(
+                EnvironmentVariables.plog.AppendPrint(
                         "<" + vtag.tagName() + " name=\"" + n + "\" value=\"" + v + "\">");
             } else if (vtag.tagName().toLowerCase().indexOf("a") != -1) { // <A
-                ParmVars.plog.AppendPrint("<" + vtag.tagName() + " href=\"" + h + "\">");
+                EnvironmentVariables.plog.AppendPrint("<" + vtag.tagName() + " href=\"" + h + "\">");
             } else {
-                ParmVars.plog.AppendPrint("<" + vtag.tagName() + "\">");
+                EnvironmentVariables.plog.AppendPrint("<" + vtag.tagName() + "\">");
             }
         }
     }
@@ -245,7 +245,7 @@ public class ParmGenParser implements DeepClone {
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            ParmVars.plog.printException(e);
+            EnvironmentVariables.plog.printException(e);
         }
 
         return lst;

@@ -19,6 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -35,6 +36,8 @@ import org.zaproxy.zap.model.StructuralNode;
 import org.zaproxy.zap.model.StructuralSiteNode;
 import org.zaproxy.zap.model.Target;
 import org.zaproxy.zap.view.popup.PopupMenuItemSiteNodeContainer;
+
+import javax.swing.*;
 
 public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
         implements InterfaceLangOKNG {
@@ -53,7 +56,7 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
         super(label, true);
         this.pmt = null;
         this.mbui = mbui;
-        langdialog = new LangSelectDialog(null, this, Encode.ISO_8859_1, true);
+        langdialog = new LangSelectDialog(this.mbui, this, Encode.ISO_8859_1, Dialog.ModalityType.DOCUMENT_MODAL);
     }
 
     private String getIndentString(int i) {

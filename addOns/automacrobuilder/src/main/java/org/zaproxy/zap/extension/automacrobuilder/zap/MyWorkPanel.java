@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
-import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.ZAP_ICONS;
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
 
 import java.awt.*;
 import javax.swing.*;
@@ -27,7 +27,6 @@ import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionHook;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
-import org.zaproxy.zap.extension.tab.Tab;
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")

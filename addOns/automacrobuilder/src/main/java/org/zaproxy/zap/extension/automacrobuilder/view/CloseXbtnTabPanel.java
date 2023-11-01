@@ -1,11 +1,11 @@
 package org.zaproxy.zap.extension.automacrobuilder.view;
 
-import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.ZAP_ICONS;
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 
 @SuppressWarnings("serial")
@@ -27,7 +27,7 @@ public class CloseXbtnTabPanel extends JPanel {
         this.add(tabtitleJLabel);
 
         closeJButton.setToolTipText(
-                ParmVars.getZapResourceString("CloseXbtnTabPanel.closeJButtonToolTip.text"));
+                EnvironmentVariables.getZapResourceString("autoMacroBuilder.CloseXbtnTabPanel.closeJButtonToolTip.text"));
         closeJButton.setIcon(CLOSE_BUTTON_ICON);
         closeJButton.setBorderPainted(false);
         closeJButton.setBorder(new EmptyBorder(4, 4, 4, 4));

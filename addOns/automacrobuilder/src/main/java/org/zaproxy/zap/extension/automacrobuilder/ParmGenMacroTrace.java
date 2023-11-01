@@ -110,6 +110,10 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private Encode lastResponseEncode = null; // last executed response encoding
 
+    private boolean isURIOfRequestIsModified = false;
+
+    private boolean isCacheNull = false;
+
     public String state_debugprint() {
         String msg = "PMT_UNKNOWN";
         switch (state) {
@@ -217,6 +221,10 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.lastResponseEncode = this.lastResponseEncode;
 
+        nobj.isURIOfRequestIsModified = this.isURIOfRequestIsModified;
+
+        nobj.isCacheNull = this.isCacheNull;
+
         return nobj;
     }
 
@@ -270,6 +278,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.lastResponseEncode = this.lastResponseEncode;
 
+        nobj.isCacheNull = this.isCacheNull;
+
         return nobj;
     }
 
@@ -291,6 +301,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         postmacro_RequestResponse = null;
         sequenceEncode = defaultEncode;
         lastResponseEncode = null;
+        isURIOfRequestIsModified = false;
+        isCacheNull = false;
         nullfetchResValAndCookieMan();
     }
 
@@ -459,13 +471,15 @@ public class ParmGenMacroTrace extends ClientDependent {
         return null;
     }
 
-    PRequestResponse getCurrentOriginalRequest() {
+    public PRequestResponse getCurrentOriginalRequest() {
         return getOriginalRequest(getCurrentRequestPos());
     }
 
     // 1) Start Pre Macros
     public void startBeforePreMacro(OneThreadProcessor otp) {
         macroStarted();
+
+        isURIOfRequestIsModified = false;
 
         lastResponseEncode = null;
 
@@ -477,8 +491,9 @@ public class ParmGenMacroTrace extends ClientDependent {
             TWaiter = null;
         }
 
-        initFetchResponseVal();
-        initCookieManager();
+        boolean fetchResponseValIsNull = initFetchResponseVal();
+        boolean cookieManagerIsNull = initCookieManager();
+        this.isCacheNull = fetchResponseValIsNull && cookieManagerIsNull;
 
         if (!CBInheritFromCache) {
             if (fetchResVal != null) {
@@ -495,6 +510,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         if (fetchResVal != null) {
             fetchResVal.clearDistances();
         }
+
+
         state = PMT_PREMACRO_BEGIN;
         LOGGER4J.debug("BEGIN PreMacro X-THREAD:" + threadid);
 
@@ -588,7 +605,7 @@ public class ParmGenMacroTrace extends ClientDependent {
             setUUID2CustomHeader(preq);
             // ここでリクエストのCookieをCookie.jarで更新する。
             String domain_req = preq.getHost().toLowerCase();
-            String path_req = preq.getPath();
+            String path_req = preq.getURIWithoutQueryPart();
             boolean isSSL_req = preq.isSSL();
             List<HttpCookie> cklist = cookieMan.get(domain_req, path_req, isSSL_req);
             HashMap<CookieKey, ArrayList<CookiePathValue>> cookiemap =
@@ -712,14 +729,14 @@ public class ParmGenMacroTrace extends ClientDependent {
         return null;
     }
 
-    public byte[] getPostMacroResponse() {
+    public byte[] getPostMessageResponse() {
         if (postmacro_RequestResponse != null) {
             return postmacro_RequestResponse.response.getByteMessage();
         }
         return null;
     }
 
-    public PResponse getPostMacroPResponse() {
+    public PResponse getPostMessagePResponse() {
         if (postmacro_RequestResponse != null) {
             return postmacro_RequestResponse.response;
         }
@@ -751,7 +768,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     boolean CurrentRequestIsSetToTarget(AppParmsIni pini) {
         int ToStepNo = pini.getSetToStep();
-        int ToStepBase = ParmVars.TOSTEPANY;
+        int ToStepBase = EnvironmentVariables.TOSTEPANY;
 
         if (ToStepNo == ToStepBase) {
             return true;
@@ -926,7 +943,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void sendToRepeater(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
-            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
                 if (prequest != null) {
@@ -955,7 +972,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void sendToScanner(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
-            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
                 if (prequest != null) {
@@ -980,7 +997,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     public void sendToIntruder(int currentSelectedPos, int tabIndex) {
         PRequestResponse pqr = null;
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
-            StyledDocumentWithChunk doc = ui.getMacroRequestStyledDocument();
+            StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
                 PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
                 if (prequest != null) {
@@ -1122,10 +1139,12 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
-    public void initFetchResponseVal() {
+    public boolean initFetchResponseVal() {
         if (fetchResVal == null) {
             fetchResVal = new FetchResponseVal();
+            return true;
         }
+        return false;
     }
 
     public FetchResponseVal getFetchResponseVal() {
@@ -1139,10 +1158,12 @@ public class ParmGenMacroTrace extends ClientDependent {
         myPageResponseCache = null;
     }
 
-    public void initCookieManager() {
+    public boolean initCookieManager() {
         if (cookieMan == null) {
             cookieMan = new ParmGenCookieManager();
+            return true;
         }
+        return false;
     }
 
     public void parseSetCookie(PRequestResponse pqrs) {
@@ -1248,7 +1269,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                             pini -> {
                                 if (pini.getTrackFromStep() >= stepno
                                         || (pini.getSetToStep() >= stepno
-                                                && pini.getSetToStep() != ParmVars.TOSTEPANY)) {
+                                                && pini.getSetToStep() != EnvironmentVariables.TOSTEPANY)) {
                                     return true;
                                 }
                                 return false;
@@ -1300,5 +1321,17 @@ public class ParmGenMacroTrace extends ClientDependent {
             return sequenceEncode;
         }
         return lastResponseEncode;
+    }
+
+    public boolean isURIOfRequestIsModified() {
+        return isURIOfRequestIsModified;
+    }
+
+    public void setURIOfRequestIsModified(boolean b) {
+        this.isURIOfRequestIsModified = b;
+    }
+
+    public boolean isCacheNull() {
+        return this.isCacheNull;
     }
 }

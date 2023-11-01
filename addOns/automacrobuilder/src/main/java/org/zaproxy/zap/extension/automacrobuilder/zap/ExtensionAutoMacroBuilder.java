@@ -34,9 +34,9 @@ import org.zaproxy.zap.authentication.AuthenticationMethodType;
 import org.zaproxy.zap.extension.authentication.ExtensionAuthentication;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
-import org.zaproxy.zap.extension.automacrobuilder.zap.view.MessageVIewStatusPanel;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.MessageViewStatusPanel;
 import org.zaproxy.zap.extension.sessions.ExtensionSessionManagement;
 import org.zaproxy.zap.session.SessionManagementMethodType;
 import org.zaproxy.zap.utils.FontUtils;
@@ -60,7 +60,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     public static final String PREFIX = "autoMacroBuilder";
 
     // URL for AutoMacroBuilder
-    private String AMBURL = "https://github.com/gdgd009xcd/AutoMacroBuilderForZAP";
+    private String AMBURL = "https://gdgd009xcd.github.io/AutoMacroBuilderForZAP/";
 
     // private static final ImageIcon ICON =
     //        new ImageIcon(ExtensionAutoMacroBuilder.class.getResource(RESOURCES + "/cake.png"));
@@ -74,7 +74,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     private ParmGenMacroTraceProvider pmtProvider = null;
     private ParmGenMacroTrace pmt = null;
     private MacroBuilderUI mbui = null;
-    private MessageVIewStatusPanel messageViewStatusPanel = null;
+    private MessageViewStatusPanel messageViewStatusPanel = null;
 
     // private SimpleExampleAPI api;
 
@@ -84,7 +84,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     public ExtensionAutoMacroBuilder() {
         super(NAME);
         setI18nPrefix(PREFIX);
-        ParmVars.isSaved();
+        EnvironmentVariables.isSaved();
         this.pmtProvider = new ParmGenMacroTraceProvider();
         this.pmt = pmtProvider.getBaseInstance(0);
 
@@ -109,8 +109,8 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuAdd2MacroBuilder());
             // extensionHook.getHookView().addStatusPanel(getStatusPanel());
 
-            this.messageViewStatusPanel = new MessageVIewStatusPanel(extwrapper,
-                    this.mbui, "messageView", extensionHook);
+            this.messageViewStatusPanel = new MessageViewStatusPanel(extwrapper,
+                    this.mbui,  extensionHook);
             extensionHook.getHookView().addStatusPanel(this.messageViewStatusPanel);
             extensionHook
                     .getHookView()
@@ -149,7 +149,8 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         LOGGER4J.debug("succeeded getting methodTypes: size=" + methodTypes.size());
     }
 
-    public MessageVIewStatusPanel getMessageViewStatusPanel() {
+    public MessageViewStatusPanel getMessageViewStatusPanel(int tabIndex) {
+        this.mbui.setTabIndexOnMesssageViewTabbedPane(tabIndex);
         return this.messageViewStatusPanel;
     }
 
@@ -190,15 +191,14 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         if (statusPanel == null) {
             statusPanel = new AbstractPanel();
             statusPanel.setLayout(new CardLayout());
-            statusPanel.setName(ParmVars.getZapResourceString(PREFIX + ".panel.title"));
-            // System.out.println("getString():" + Constant.messages.getString(PREFIX + ".gorua"));
+            statusPanel.setName(EnvironmentVariables.getZapResourceString("autoMacroBuilder.panel.title"));
             // statusPanel.setIcon(ICON);
             JTextPane pane = new JTextPane();
             pane.setEditable(false);
             // Obtain (and set) a font with the size defined in the options
             pane.setFont(FontUtils.getFont("Dialog", Font.PLAIN));
             pane.setContentType("text/html");
-            pane.setText(ParmVars.getZapResourceString(PREFIX + ".panel.msg"));
+            pane.setText(EnvironmentVariables.getZapResourceString("autoMacroBuilder.panel.msg"));
             statusPanel.add(pane);
         }
         return statusPanel;
@@ -206,7 +206,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
     private ZapMenuItem getMenuExample() {
         if (menuExample == null) {
-            menuExample = new ZapMenuItem(PREFIX + ".topmenu.tools.title");
+            menuExample = new ZapMenuItem("autoMacroBuilder.topmenu.tools.title");
 
             menuExample.addActionListener(
                     new java.awt.event.ActionListener() {
@@ -216,8 +216,8 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
                             // In this case we'll just show a popup message.
                             View.getSingleton()
                                     .showMessageDialog(
-                                            ParmVars.getZapResourceString(
-                                                    PREFIX + ".topmenu.tools.msg"));
+                                            EnvironmentVariables.getZapResourceString(
+                                                    "autoMacroBuilder.topmenu.tools.msg"));
                             // And display a file included with the add-on in the Output tab
                             displayFile("");
                         }
@@ -232,18 +232,6 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             return;
         }
         try {
-            /*
-            File f = new File(Constant.getZapHome(), file);
-            if (!f.exists()) {
-                // This is something the user should know, so show a warning dialog
-                View.getSingleton()
-                        .showWarningDialog(
-                                Constant.messages.getString(
-                                        ExtensionSimpleExample.PREFIX + ".error.nofile",
-                                        f.getAbsolutePath()));
-                return;
-            }
-            */
             // Quick way to read a small text file
             String contents = new String("brah Brah ...");
             // Write to the output panel
@@ -260,7 +248,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         if (popupMsgMenuExample == null) {
             popupMsgMenuExample =
                     new RightClickMsgMenu(
-                            this, ParmVars.getZapResourceString(PREFIX + ".popup.title"));
+                            this, EnvironmentVariables.getZapResourceString("autoMacroBuilder.popup.title"));
         }
         return popupMsgMenuExample;
     }
@@ -270,8 +258,8 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             popupadd2MacroBuilder =
                     new PopupMenuAdd2MacroBuilder(
                             this.mbui,
-                            ParmVars.getZapResourceString(
-                                    PREFIX + ".popup.title.PopupMenuAdd2MacroBuilder"));
+                            EnvironmentVariables.getZapResourceString(
+                                    "autoMacroBuilder.popup.title.PopupMenuAdd2MacroBuilder"));
         }
         return popupadd2MacroBuilder;
     }
@@ -283,7 +271,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
     @Override
     public String getDescription() {
-        return ParmVars.getZapResourceString(PREFIX + ".desc");
+        return EnvironmentVariables.getZapResourceString("autoMacroBuilder.desc");
     }
 
     @Override

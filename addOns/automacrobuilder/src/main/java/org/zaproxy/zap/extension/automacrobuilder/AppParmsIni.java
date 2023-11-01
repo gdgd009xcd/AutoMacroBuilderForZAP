@@ -54,7 +54,7 @@ public class AppParmsIni {
     private Boolean pause = false;
     private int TrackFromStep = -1; // StepNo== -1:any  >0:TrackingFrom
     private int SetToStep =
-            ParmVars.TOSTEPANY; // == TOSTEPANY:any   0<= SetToStep < TOSTEPANY:SetTo
+            EnvironmentVariables.TOSTEPANY; // == TOSTEPANY:any   0<= SetToStep < TOSTEPANY:SetTo
 
     public static final int T_NUMBER = 0; // 数値昇順
     public static final int T_RANDOM = 1; // 乱数
@@ -356,7 +356,7 @@ public class AppParmsIni {
     }
 
     private String getCurrentSaveDir() {
-        File cfile = new File(ParmVars.parmfile);
+        File cfile = new File(EnvironmentVariables.parmfile);
         String dirname = cfile.getParent();
         return dirname;
     }
@@ -372,7 +372,7 @@ public class AppParmsIni {
 
     private String getCntFullPathName() {
         String fname = null;
-        File cfile = new File(ParmVars.parmfile);
+        File cfile = new File(EnvironmentVariables.parmfile);
         String dirname = getCurrentSaveDir();
         String filename = cfile.getName();
 
@@ -385,7 +385,7 @@ public class AppParmsIni {
             name = prefix;
         }
 
-        fname = dirname + ParmVars.fileSep + name + "_" + relativecntfile;
+        fname = dirname + EnvironmentVariables.fileSep + name + "_" + relativecntfile;
         return fname;
     }
 
@@ -676,7 +676,7 @@ public class AppParmsIni {
                         app.getToken(),
                         app.isUrlEncode(),
                         app.getFromStepNo() == -1 ? "*" : Integer.toString(app.getFromStepNo()),
-                        app.getToStepNo() == ParmVars.TOSTEPANY
+                        app.getToStepNo() == EnvironmentVariables.TOSTEPANY
                                 ? "*"
                                 : Integer.toString(app.getToStepNo()),
                         app.getTokenType().name(),

@@ -14,7 +14,6 @@ import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.db.DatabaseException;
 import org.parosproxy.paros.db.RecordContext;
 import org.parosproxy.paros.extension.ExtensionHook;
-import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.Session;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpSender;
@@ -29,7 +28,7 @@ import org.zaproxy.zap.extension.api.ApiResponseSet;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
-import org.zaproxy.zap.extension.automacrobuilder.ParmVars;
+import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.zap.view.RequestListJDialog;
@@ -366,12 +365,12 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             this.add(this.projectLoad, LayoutHelper.getGBC(0, rowy, 1, 0.0d, 0.0d));
 
             this.projectFileName = new JTextField();
-            this.projectFileName.setText(ParmVars.getParmFile());
+            this.projectFileName.setText(EnvironmentVariables.getParmFile());
             this.add(this.projectFileName, LayoutHelper.getGBC(1, rowy, 4, 1.0d, 0.0d));
             this.projectLoad.addActionListener(
                     e -> {
                         if (this.mbUI.loadProject()) {
-                            this.projectFileName.setText(ParmVars.getParmFile());
+                            this.projectFileName.setText(EnvironmentVariables.getParmFile());
                             int currentTabIndexVal =
                                     this.mbUI.getMacroRequestListTabsCurrentIndex();
                             this.tabIndex.setText(Integer.toString(currentTabIndexVal));
@@ -433,8 +432,8 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 throw new IllegalStateException(
                         "projectFileName is empty or null. please load it.");
             } else {
-                String loadedProjectFileName = ParmVars.getParmFile();
-                if (!loadedProjectFileName.equals(projectFileName) || !ParmVars.isSaved()) {
+                String loadedProjectFileName = EnvironmentVariables.getParmFile();
+                if (!loadedProjectFileName.equals(projectFileName) || !EnvironmentVariables.isSaved()) {
                     throw new IllegalStateException("No loaded projectFileName:" + projectFileName);
                 }
             }
@@ -544,8 +543,8 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
         String projectFileName = "";
         int currentTabIndexVal = -1;
         int currentTargetStepNo = -1;
-        if (ParmVars.isSaved()) {
-            projectFileName = ParmVars.getParmFile();
+        if (EnvironmentVariables.isSaved()) {
+            projectFileName = EnvironmentVariables.getParmFile();
             currentTabIndexVal = this.mbUI.getMacroRequestListTabsCurrentIndex();
             ParmGenMacroTrace pmt = this.mbUI.getParmGenMacroTraceAtTabIndex(currentTabIndexVal);
             if (pmt != null) {

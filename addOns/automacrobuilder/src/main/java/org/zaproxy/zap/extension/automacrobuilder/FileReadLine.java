@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import static org.zaproxy.zap.extension.automacrobuilder.ParmVars.DefaultCSVFileIANACharsetName;
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.DefaultCSVFileIANACharsetName;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
