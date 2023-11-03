@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - bugfix: Fixed strange behaviour in file load/save actions.
 ### Changed
 - maintenance: Refactored strange coding in some files.
+- maintenance: updated typical.gif
 
 ## [v1.1.8] - 2023-11-02
 ### Changed
