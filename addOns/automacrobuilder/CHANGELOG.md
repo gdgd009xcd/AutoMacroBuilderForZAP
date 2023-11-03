@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.9] - 2023-11-03
+### Sorry..
+- bugfix: Fixed strange behaviour in file load/save actions.
+### Changed
+- maintenance: Refactored strange coding in some files.
+
 ## [v1.1.8] - 2023-11-02
 ### Changed
 - new feature: Changed default behaviour of "AddToMacroBuilder" button. now you can scan multi-step http sequence without pushing "Track" button.

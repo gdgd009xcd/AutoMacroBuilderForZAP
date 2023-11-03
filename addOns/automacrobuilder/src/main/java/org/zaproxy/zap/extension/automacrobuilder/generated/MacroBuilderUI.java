@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -41,6 +40,7 @@ import org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder;
 
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.JSONFileIANACharsetName;
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
+import static org.zaproxy.zap.extension.automacrobuilder.ListDeepCopy.listDeepCopyPRequestResponse;
 
 /**
  *
@@ -668,7 +668,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         ParamTracking.setText(bundle.getString("MacroBuilderUI.ParamTrackingBtn.text")); // NOI18N
         ParamTracking.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ParamTrackingActionPerformed(evt);
+                ParamTrackingActionPerformed(null, evt);
             }
         });
 
@@ -1072,14 +1072,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         }
             
-        if(ParmGen.twin==null){
-            pmt.updateAppParmsIniAndClearCache(null);
-            ParmGen.twin = new ParmGenTop(pmt, new ParmGenGSONSaveV2(this.getParmGenMacroTraceProvider(),
+
+        pmt.updateAppParmsIniAndClearCache(null);
+        CustomTrackingParamterConfigMain top = new CustomTrackingParamterConfigMain(this, Dialog.ModalityType.DOCUMENT_MODAL ,pmt, new ParmGenGSONSaveV2(this.getParmGenMacroTraceProvider(),
                     messages)
                     );
-        }
 
-        ParmGen.twin.VisibleWhenJSONSaved(this);
+
+        top.VisibleWhenJSONSaved(this);
         updateSelectedTabIndex();
 
 
@@ -1266,62 +1266,50 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }//GEN-LAST:event_RequestListMouseReleased
 
     @SuppressWarnings("serial")
-    public void ParamTrackingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParamTrackingActionPerformed
+    public void ParamTrackingActionPerformed(List<PRequestResponse> newPRequestResposeList, java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParamTrackingActionPerformed
         // TODO add your handling code here:
-        //fileChooser起動
-    	File cfile = new File(EnvironmentVariables.getParmFile());
-        String dirname = cfile.getParent();
-        JFileChooser jfc = new JFileChooser(dirname) {
-
-            @Override
-            public void approveSelection() {
-                File f = getSelectedFile();
-                if (f.exists() && getDialogType() == SAVE_DIALOG) {
-                    String m = String.format(
-                            "<html>%s already exists.<br>Do you want to replace it?",
-                            f.getAbsolutePath());
-                    int rv = JOptionPane.showConfirmDialog(
-                            this, m, "Save As", JOptionPane.YES_NO_OPTION);
-                    if (rv != JOptionPane.YES_OPTION) {
-                        return;
-                    }
-                }
-                super.approveSelection();
-            }
-        };
         ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
         if (pmt == null) return;
-        ParmFileFilter pFilter = new ParmFileFilter();
-        jfc.setFileFilter(pFilter);
-        List<PRequestResponse> orglist = pmt.getOriginalPRequestResponseList();
-        if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION && orglist!=null) {
 
-            //code to handle choosed file here.
-            File file = jfc.getSelectedFile();
-            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
-            if(!pFilter.accept(file)){// add file suffix if it is not already added.
-                name += ".json";
+        List<PRequestResponse> originalList = pmt.getOriginalPRequestResponseList();
+        List<PRequestResponse> mergedPRequestResponseList = originalList;;
+        if (newPRequestResposeList != null) {
+            mergedPRequestResponseList = listDeepCopyPRequestResponse(originalList);// copy original
+            if (mergedPRequestResponseList != null) {
+                mergedPRequestResponseList.addAll(newPRequestResposeList);// merge copied original with new one
+            } else {
+                mergedPRequestResponseList = newPRequestResposeList;// original is null , so choice new one.
             }
-            EnvironmentVariables.setParmFile(name);
+        }
+
+
+        String choosedFileName = null;
+        if (mergedPRequestResponseList != null && !mergedPRequestResponseList.isEmpty()) {
+            if (!EnvironmentVariables.isFileHasBeenSavedOnce()) {
+                if ((choosedFileName = EnvironmentVariables.saveMacroBuilderJSONFileChooser(this)) == null){
+                    return;
+                }
+            }
+
             // setting page encoding
             // detemination of web page encoding.
             // extract page encoding from first web page response.
-            PRequestResponse toppage = orglist.get(0);
+            PRequestResponse toppage = mergedPRequestResponseList.get(0);
             String tcharset = toppage.response.getCharset();
 
             String tknames[] = {// list of reserved token names
-                "PHPSESSID",
-                "JSESSIONID",
-                "SESID",
-                "TOKEN",
-                "_CSRF_TOKEN",
-                "authenticity_token",
-                "NONCE",
-                "access_id",
-                "fid",
-                "ethna_csrf",
-                "uniqid",
-                "oauth"
+                    "PHPSESSID",
+                    "JSESSIONID",
+                    "SESID",
+                    "TOKEN",
+                    "_CSRF_TOKEN",
+                    "authenticity_token",
+                    "NONCE",
+                    "access_id",
+                    "fid",
+                    "ethna_csrf",
+                    "uniqid",
+                    "oauth"
             };
 
             ArrayList<ParmGenResTokenCollections> urltokens = new ArrayList<>();// extracted token parameter from Responses.
@@ -1332,9 +1320,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             //int row = 0;
             int pos = 0;
 
-            for (PRequestResponse pqrs : orglist) {
+            for (PRequestResponse pqrs : mergedPRequestResponseList) {
                 HashMap<ParmGenTrackingToken, String> addedtokens = new HashMap<ParmGenTrackingToken, String>();// tokens already extracted from urltokens
-                for(ListIterator<ParmGenResTokenCollections> it = urltokens.listIterator(urltokens.size()); it.hasPrevious();){//urltokens: extracted tokenHashMap from Response.
+                for (ListIterator<ParmGenResTokenCollections> it = urltokens.listIterator(urltokens.size()); it.hasPrevious(); ) {//urltokens: extracted tokenHashMap from Response.
                     //for loop order: fromStepno in descending order(hasPrevious)
 
                     ParmGenResTokenCollections resTokenCollections = it.previous();
@@ -1351,17 +1339,17 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     ParmGenToken _RToken = null;
 
                     // searching for JSON token within request body
-                    for(ParmGenToken reqtkn : reqjtklist){
+                    for (ParmGenToken reqtkn : reqjtklist) {
 
                         ParmGenToken foundResToken = resTokenCollections.findResponseToken(reqtkn);
 
-                        if(foundResToken != null){
+                        if (foundResToken != null) {
                             //We found json tracking parameter in request.
                             _RToken = foundResToken;
                             _QToken = new ParmGenRequestToken(reqtkn);
 
                             ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, null);
-                            if(!addedtokens.containsKey(tracktoken)){
+                            if (!addedtokens.containsKey(tracktoken)) {
                                 requesttokenlist.add(tracktoken);
                                 addedtokens.put(tracktoken, "");
                             }
@@ -1369,7 +1357,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     }
 
                     // searching for token within body or query in request.
-                    for(ParmGenRequestToken requestToken: pqrs.request.getRequestTokens()) {
+                    for (ParmGenRequestToken requestToken : pqrs.request.getRequestTokens()) {
                         ParmGenToken foundResToken = resTokenCollections.findResponseToken(requestToken);
 
                         if (foundResToken != null) {
@@ -1415,8 +1403,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
                     //searching for token within Request-Line/bearer/cookie in request headers
                     ArrayList<HeaderPattern> hlist = pqrs.request.hasMatchedValueExistInHeaders(resTokenCollections);
-                    if(hlist!=null&&hlist.size()>0){
-                        for(HeaderPattern hpattern: hlist){
+                    if (hlist != null && hlist.size() > 0) {
+                        for (HeaderPattern hpattern : hlist) {
                             _QToken = hpattern.getQToken();
                             _RToken = hpattern.getFoundResponseToken();
                             ParmGenTrackingToken tracktoken = new ParmGenTrackingToken(_QToken, _RToken, hpattern.getTokenValueRegex());
@@ -1427,7 +1415,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         }
                     }
 
-                    if (requesttokenlist.size()>0) {//tracking parameters are generated from requesttokenlist.
+                    if (requesttokenlist.size() > 0) {//tracking parameters are generated from requesttokenlist.
                         // construct tracking parameter configrations.
                         AppParmsIni aparms = new AppParmsIni();//add new record
                         //request URL
@@ -1442,15 +1430,15 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         aparms.setCsvName("");
                         aparms.initPause(false);
                         // aparms.parmlist = new ArrayList<AppValue>();
-                        if(MBfromStepNo.isSelected()){
+                        if (MBfromStepNo.isSelected()) {
                             aparms.setTrackFromStep(fromStepNo);
-                        }else{
+                        } else {
                             aparms.setTrackFromStep(-1);
                         }
 
-                        if(MBtoStepNo.isSelected()){
+                        if (MBtoStepNo.isSelected()) {
                             aparms.setSetToStep(pos);
-                        }else{
+                        } else {
                             aparms.setSetToStep(EnvironmentVariables.TOSTEPANY);
                         }
 
@@ -1464,7 +1452,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             //body/query/header
                             String valtype = "query";
 
-                            switch(rptype){
+                            switch (rptype) {
                                 case Query:
                                     break;
                                 case Header:
@@ -1487,16 +1475,16 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             apv.setResFetchedValue(value);
                             int len = value.length();// For Future use. len is currently No Used. len: token value length. May be,we should be specified len into regex's token value length
                             String paramname = token;
-                            if(_QToken!=null){// May be Request Token name(_QToken's Name) != Response Token name(_RToken's name)
+                            if (_QToken != null) {// May be Request Token name(_QToken's Name) != Response Token name(_RToken's name)
                                 int rlen = _QToken.getValue().length();
-                                if(len<rlen) len = rlen;
+                                if (len < rlen) len = rlen;
                                 paramname = _QToken.getKey().getName();
                             }
 
                             apv.setUrlEncode(true);//www-form-urlencoded default
 
                             String regex = "(?:[&=?]|^)" + ParmGenUtil.escapeRegexChars(paramname) + "=([^&=\\r\\n ;#]+)";//default regex. It may be necessary to set the embedding token value length.
-                            switch(rptype){
+                            switch (rptype) {
                                 case Form_data:
                                     regex = "(?:[A-Z].* name=\"" + ParmGenUtil.escapeRegexChars(paramname) + "\".*(?:\\r|\\n|\\r\\n))(?:[A-Z].*(?:\\r|\\n|\\r\\n)){0,}(?:\\r|\\n|\\r\\n)(?:.*?)(.+)";
                                     apv.setUrlEncode(false);
@@ -1507,14 +1495,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                     boolean jsonmatched = false;
                                     String jsonvalue = _QToken.getValue();
 
-                                    if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
+                                    if (jsonmatchlist != null && jsonmatchlist.size() > 0) {
                                         jsonmatched = true;
                                     }
-                                    if(!jsonmatched){// "key": value
-                                        regex ="\"" + ParmGenUtil.escapeRegexChars(paramname) + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)([^,:{}\\\"]+?)(?:[\\t \\]\\r\\n]*)(?:,|})";
+                                    if (!jsonmatched) {// "key": value
+                                        regex = "\"" + ParmGenUtil.escapeRegexChars(paramname) + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)([^,:{}\\\"]+?)(?:[\\t \\]\\r\\n]*)(?:,|})";
                                         jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, pqrs.request.getBodyStringWithoutHeader());
 
-                                        if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
+                                        if (jsonmatchlist != null && jsonmatchlist.size() > 0) {
                                             jsonmatched = true;
                                         }
                                     }
@@ -1534,7 +1522,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             }
 
 
-
                             String encodedregex = regex;
                             try {
                                 encodedregex = URLEncoder.encode(regex, JSONFileIANACharsetName);
@@ -1548,13 +1535,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             apv.setresRegexURLencoded("");
                             int resvalpart = AppValue.V_AUTOTRACKBODY;
                             switch (_RToken.getTokenKey().GetTokenType()) {
-                            case LOCATION:
-                                resvalpart = AppValue.V_HEADER;
-                                break;
-                            case XCSRF:
-                                break;
-                            default:
-                                break;
+                                case LOCATION:
+                                    resvalpart = AppValue.V_HEADER;
+                                    break;
+                                case XCSRF:
+                                    break;
+                                default:
+                                    break;
 
                             }
                             apv.setresPartType(apv.getValPart(resvalpart));
@@ -1584,7 +1571,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 String res_contentMimeType = pqrs.response.getContentMimeType();// Content-Type's Mimetype: ex. "text/html"
 
                 // Content-Type/subtype matched excludeMimeType then skip below codes..
-                if(!EnvironmentVariables.isMimeTypeExcluded(res_contentMimeType)){
+                if (!EnvironmentVariables.isMimeTypeExcluded(res_contentMimeType)) {
                     //### skip start
                     // extract parameter and it's value from response body.
                     ParmGenParser pgparser = new ParmGenParser(body);
@@ -1641,11 +1628,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
                     }
 
-                    if(!trackurltoken.resTokenUrlDecodedNameSlashValueHash.isEmpty()){
+                    if (!trackurltoken.resTokenUrlDecodedNameSlashValueHash.isEmpty()) {
                         urltokens.add(trackurltoken);
                     }
                     //### skip end
-                }else{
+                } else {
                     LOGGER4J.debug("automacro:Response analysis skipped stepno:" + pos + " MIMEtype:" + res_contentMimeType);
                 }
 
@@ -1654,7 +1641,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
 
             LOGGER4J.debug("newparms.size=" + newparms.size());
-            new ParmGenTokenJDialog(this, pmtProvider, Dialog.ModalityType.DOCUMENT_MODAL, newparms, pmt).setVisible(true);
+            new ParmGenTokenJDialog(this,
+                    choosedFileName,
+                    pmtProvider,
+                    Dialog.ModalityType.DOCUMENT_MODAL,
+                    newPRequestResposeList,
+                    newparms,
+                    pmt).setVisible(true);
         }
     }//GEN-LAST:event_ParamTrackingActionPerformed
 
@@ -1717,36 +1710,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
         // TODO add your handling code here:
-        
-        
-        File cfile = new File(EnvironmentVariables.getParmFile());
-        String dirname = cfile.getParent();
-        JFileChooser jfc = new JFileChooser(dirname);
-        jfc.setSelectedFile(cfile);
-        ParmFileFilter pFilter=new ParmFileFilter();
-        jfc.setFileFilter(pFilter);
-        if(jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            //code to handle choosed file here.
-            File file = jfc.getSelectedFile();
-            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
-            if(!pFilter.accept(file)){//拡張子無しの場合は付与
-                name += ".json";
-            }
-            // boolean filenamechanged = false;
-            // if(ParmVars.getParmFile()==null||!ParmVars.getParmFile().equals(name)){
-            //    filenamechanged = true;
-            // }
-            EnvironmentVariables.setParmFile(name);
-
-            /**
-            ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
-            if (pmt != null) {
-                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
-                csv.GSONsave();
-            }
-             **/
+        String fileName;
+        if ((fileName=EnvironmentVariables.saveMacroBuilderJSONFileChooser(this)) != null){
             ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
-            gson.GSONsave();
+            gson.GSONsave(fileName);
             updateSelectedTabIndex();
         }
     }//GEN-LAST:event_SaveActionPerformed
@@ -1868,12 +1835,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             pmt.exchangeStepNo(pos-1, pos);
 
             if (EnvironmentVariables.isSaved()) { // if you have been saved params. then overwrite.
-                /**
-                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
-                csv.GSONsave();
-                 **/
                 ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
-                gson.GSONsave();
+                gson.GSONsave(null);
             }
 
             requestJList.setSelectedIndex(pos-1);
@@ -1915,12 +1878,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             pmt.exchangeStepNo(pos, pos+1);
 
             if (EnvironmentVariables.isSaved()) { // if you have been saved params. then overwrite.
-                /**
-                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
-                csv.GSONsave();
-                 **/
                 ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
-                gson.GSONsave();
+                gson.GSONsave(null);
             }
 
             requestJList.setSelectedIndex(pos+1);
@@ -1982,12 +1941,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 }
             });
             if (EnvironmentVariables.isSaved()) {
-                /**
-                ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
-                csv.GSONsave();
-                 **/
                 ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
-                gson.GSONsave();
+                gson.GSONsave(null);
             } else if (pmt != null) {
                 pmt.nullfetchResValAndCookieMan();
             }
@@ -2101,12 +2056,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 PRequestResponse original = pmt.getOriginalRequest(idx);
                 original.updateRequestResponse(current.request, current.response);// copy current PRequestResponse to original list(originalrlist)
                 if (EnvironmentVariables.isSaved()) { // if you have been saved params. then overwrite.
-                    /**
-                    ParmGenGSONSave csv = new ParmGenGSONSave(null, pmt);
-                    csv.GSONsave();
-                     **/
                     ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
-                    gson.GSONsave();
+                    gson.GSONsave(null);
                 } else {
                     pmt.nullfetchResValAndCookieMan();
                 }
@@ -2320,18 +2271,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      */
     public boolean loadProject() {
         // TODO add your handling code here:
-        File cfile = new File(EnvironmentVariables.getParmFile());
-        String dirname = cfile.getParent();
-        JFileChooser jfc = new JFileChooser(dirname);
-        jfc.setSelectedFile(cfile);
-        ParmFileFilter pFilter=new ParmFileFilter();
-        jfc.setFileFilter(pFilter);
-        if(jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            //code to handle choosed file here.
-            File file = jfc.getSelectedFile();
-            String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
 
-            return loadProjectFromFile(name);
+        String pathName;
+        if((pathName=EnvironmentVariables.loadMacroBuilderJSONFileChooser(this)) != null) {
+            //code to handle choosed file here.
+            return loadProjectFromFile(pathName);
         }
         return false;
     }
@@ -2344,6 +2288,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
      */
     public boolean loadProjectFromFile(String filename) {
         if(checkAndLoadFile(filename)){
+            EnvironmentVariables.commitChoosedFile(filename);
             //load succeeded..
             updateSelectedTabIndex();
             return true;
@@ -2403,7 +2348,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 if (appParmAndSequenceList != null
                     && appParmAndSequenceList.size() > 0) { // v2 format JSON file
                     clear();
-                    EnvironmentVariables.parmfile = filename;
                     EnvironmentVariables.Version = gjson.getVersion();
                     EnvironmentVariables.setExcludeMimeTypes(gjson.getExcludeMimeTypes());
                     appParmAndSequenceList.forEach(
@@ -2424,7 +2368,6 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     if (pmt != null) {
                         int creq = gjson.getCurrentRequest();
                         pmt.setCurrentRequest(creq);
-                        EnvironmentVariables.parmfile = filename;
                         EnvironmentVariables.Version = gjson.getVersion();
                         Encode firstRequestEncode = requestList.get(0).request.getPageEnc();
                         pmt.setSequenceEncode(firstRequestEncode);

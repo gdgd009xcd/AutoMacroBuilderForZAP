@@ -135,7 +135,6 @@ public class LangSelectDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
         LangOKNG.LangOK(selected_lang);
         dispose();
-        this.mbui.ParamTrackingActionPerformed(null);
     }//GEN-LAST:event_OkActionPerformed
 
     private void NGActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NGActionPerformed

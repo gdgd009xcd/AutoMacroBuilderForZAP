@@ -365,12 +365,12 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
             this.add(this.projectLoad, LayoutHelper.getGBC(0, rowy, 1, 0.0d, 0.0d));
 
             this.projectFileName = new JTextField();
-            this.projectFileName.setText(EnvironmentVariables.getParmFile());
+            this.projectFileName.setText(EnvironmentVariables.getSaveFilePathName());
             this.add(this.projectFileName, LayoutHelper.getGBC(1, rowy, 4, 1.0d, 0.0d));
             this.projectLoad.addActionListener(
                     e -> {
                         if (this.mbUI.loadProject()) {
-                            this.projectFileName.setText(EnvironmentVariables.getParmFile());
+                            this.projectFileName.setText(EnvironmentVariables.getSaveFilePathName());
                             int currentTabIndexVal =
                                     this.mbUI.getMacroRequestListTabsCurrentIndex();
                             this.tabIndex.setText(Integer.toString(currentTabIndexVal));
@@ -432,7 +432,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
                 throw new IllegalStateException(
                         "projectFileName is empty or null. please load it.");
             } else {
-                String loadedProjectFileName = EnvironmentVariables.getParmFile();
+                String loadedProjectFileName = EnvironmentVariables.getSaveFilePathName();
                 if (!loadedProjectFileName.equals(projectFileName) || !EnvironmentVariables.isSaved()) {
                     throw new IllegalStateException("No loaded projectFileName:" + projectFileName);
                 }
@@ -544,7 +544,7 @@ public class AutoMacroBuilderAuthenticationMethodType extends AuthenticationMeth
         int currentTabIndexVal = -1;
         int currentTargetStepNo = -1;
         if (EnvironmentVariables.isSaved()) {
-            projectFileName = EnvironmentVariables.getParmFile();
+            projectFileName = EnvironmentVariables.getSaveFilePathName();
             currentTabIndexVal = this.mbUI.getMacroRequestListTabsCurrentIndex();
             ParmGenMacroTrace pmt = this.mbUI.getParmGenMacroTraceAtTabIndex(currentTabIndexVal);
             if (pmt != null) {
