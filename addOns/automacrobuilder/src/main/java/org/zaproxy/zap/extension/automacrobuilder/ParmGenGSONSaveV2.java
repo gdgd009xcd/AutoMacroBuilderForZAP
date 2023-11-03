@@ -111,14 +111,26 @@ public class ParmGenGSONSaveV2 {
         return "\"" + (val == null ? "" : val) + "\"" + (comma ? "," : "");
     }
 
-    public void GSONsave() {
+    /**
+     * save tracking parameter and RequestResponseList to file.
+     *
+     * @param choosedFileName if null then overwrite existing saved file(saveFilePathName).<BR>
+     *                        if choosedFileName is not empty then saved to it.
+     *
+     * @return true-succeed false-failed
+     */
+    public boolean GSONsave(String choosedFileName) {
         // ファイル初期化
         try {
-            FileInfo finfo = new FileInfo(EnvironmentVariables.parmfile);
+            String fileName = EnvironmentVariables.getSaveFilePathName();
+            if (choosedFileName != null && !choosedFileName.isEmpty()) {
+                fileName = choosedFileName;
+            }
+            FileInfo finfo = new FileInfo(fileName);
             pfile = new ParmGenWriteFile(finfo.getFullFileName());
         } catch (Exception ex) {
             EnvironmentVariables.plog.printException(ex);
-            return;
+            return false;
         }
 
         pfile.truncate();
@@ -220,6 +232,8 @@ public class ParmGenGSONSaveV2 {
 
         pfile.close();
         pfile = null;
+        EnvironmentVariables.commitChoosedFile(choosedFileName);
         EnvironmentVariables.Saved(true);
+        return true;
     }
 }

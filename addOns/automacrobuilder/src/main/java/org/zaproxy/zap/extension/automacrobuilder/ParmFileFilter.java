@@ -28,6 +28,8 @@ public class ParmFileFilter extends FileFilter {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
+    private static final String fileExtName = "json";
+
     public boolean accept(File f) {
         /* ディレクトリなら無条件で表示する */
         if (f.isDirectory()) {
@@ -37,7 +39,7 @@ public class ParmFileFilter extends FileFilter {
         /* 拡張子を取り出し、jsonだったら表示する */
         String ext = getExtension(f);
         if (ext != null) {
-            if (ext.equals("json")) {
+            if (ext.equals(fileExtName)) {
                 return true;
             } else {
                 return false;
@@ -62,5 +64,15 @@ public class ParmFileFilter extends FileFilter {
         }
 
         return ext;
+    }
+
+    /**
+     * get String = "." + fileExtName
+     *
+     * @return "." + fileExtName
+     */
+    @Override
+    public String toString() {
+        return "." + fileExtName;
     }
 }

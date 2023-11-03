@@ -287,7 +287,6 @@ public class ParmGenMacroTrace extends ClientDependent {
     // setter
     //
     public void clear() {
-        ParmGen.clearTwin();
         this.cachedAppValues = null;
         this.appParmsIniList = null;
         macroEnded();

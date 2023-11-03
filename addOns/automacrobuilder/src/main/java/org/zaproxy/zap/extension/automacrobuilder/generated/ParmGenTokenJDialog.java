@@ -31,19 +31,30 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
     MacroBuilderUI mbui = null;
     List<AppParmsIni> newparms = null;
+    List<PRequestResponse> newPRequestResponseList = null;
     ParmGenMacroTrace pmt = null;
     ParmGenMacroTraceProvider pmtProvider = null;
+
+    private String choosedFileName = null;
 
     /**
      * Creates new form ParmGenTokenJDialog
      */
-    public ParmGenTokenJDialog(MacroBuilderUI mbui, ParmGenMacroTraceProvider pmtProvider, ModalityType modal, List<AppParmsIni> _newparms, ParmGenMacroTrace _pmt) {
+    public ParmGenTokenJDialog(MacroBuilderUI mbui,
+                               String choosedFileName,
+                               ParmGenMacroTraceProvider pmtProvider,
+                               ModalityType modal,
+                               List<PRequestResponse> newPRequestResponseList,
+                               List<AppParmsIni> _newparms,
+                               ParmGenMacroTrace _pmt) {
         super(SwingUtilities.windowForComponent(mbui), bundle.getString("ParmGenTokenJDialog.DialogTitle.text"), modal);
         this.mbui = mbui;
+        this.choosedFileName = choosedFileName;
         this.pmtProvider = pmtProvider;
         initComponents();
-        newparms = _newparms;
-        pmt = _pmt;
+        this.newPRequestResponseList = newPRequestResponseList;
+        this.newparms = _newparms;
+        this.pmt = _pmt;
         //　Display the list of tracking tokens extracted from newparms
         HashMap<ParmGenTokenKey, ParmGenTokenValue> map = new HashMap<ParmGenTokenKey, ParmGenTokenValue>();
         ParmGenTokenKey tkey = null;
@@ -279,6 +290,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
         List<AppParmsIni> appParmsIniList = pmt.getAppParmsIniList();
         List<AppParmsIni> resultlist = null;
 
+        LOGGER4J.debug("newparms size=" + (newparms!=null?newparms.size():"null"));
         if ( appParmsIniList!= null && newparms != null && !initTrackCheckBox.isSelected()) {// merge newparms to existing one.
             List<AppParmsIni> merged = new ArrayList<>();
             newparms.stream().forEach(newpini -> {
@@ -295,13 +307,16 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
             resultlist = newparms;
         }
 
+        // add new PRequestResponseList.
+        this.mbui.addNewRequests(newPRequestResponseList);
+
         pmt.updateAppParmsIniAndClearCache(resultlist);
 
         // restore all current requestresponse list with original requestresponse list.
         this.mbui.restoreAllCurrentSelectedMacroRequestFromOriginal();
 
         ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
-        gson.GSONsave();
+        gson.GSONsave(this.choosedFileName);
         dispose();
 
     }//GEN-LAST:event_OKActionPerformed

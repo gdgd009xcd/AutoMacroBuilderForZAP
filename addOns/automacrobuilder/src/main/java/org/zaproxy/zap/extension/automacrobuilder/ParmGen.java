@@ -20,7 +20,6 @@
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.zaproxy.zap.extension.automacrobuilder.generated.ParmGenTop;
 
 // main class
 public class ParmGen {
@@ -43,19 +41,11 @@ public class ParmGen {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    public static ParmGenTop twin = null;
     public static boolean ProxyInScope = false;
     public static boolean IntruderInScope = true;
     public static boolean RepeaterInScope = true;
     public static boolean ScannerInScope = true;
     ParmGenMacroTrace pmt;
-
-    public void disposeTop() {
-        if (twin != null) {
-            twin.dispose();
-        }
-        twin = null;
-    }
 
     PRequest ParseRequest(
             PRequest prequest,
@@ -516,11 +506,6 @@ public class ParmGen {
     public ParmGen(ParmGenMacroTrace _pmt, List<AppParmsIni> _parmcsv) {
         pmt = _pmt;
         pmt.updateAppParmsIniAndClearCache(_parmcsv);
-    }
-
-    public static void clearTwin() {
-        LOGGER4J.debug("clearTwin.");
-        twin = null;
     }
 
     /**

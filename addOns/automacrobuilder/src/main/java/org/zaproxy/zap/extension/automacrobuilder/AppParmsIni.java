@@ -356,7 +356,7 @@ public class AppParmsIni {
     }
 
     private String getCurrentSaveDir() {
-        File cfile = new File(EnvironmentVariables.parmfile);
+        File cfile = new File(EnvironmentVariables.getSaveFilePathName());
         String dirname = cfile.getParent();
         return dirname;
     }
@@ -372,7 +372,7 @@ public class AppParmsIni {
 
     private String getCntFullPathName() {
         String fname = null;
-        File cfile = new File(EnvironmentVariables.parmfile);
+        File cfile = new File(EnvironmentVariables.getSaveFilePathName());
         String dirname = getCurrentSaveDir();
         String filename = cfile.getName();
 

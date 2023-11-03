@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +50,13 @@ public class EnvironmentVariables {
     private static final ResourceBundle bundle_zap = ResourceBundle.getBundle(ZAP_MESSAGES);
 
     public static String projectdir;
-    public static String parmfile = "";
+
+    // current file name which actually saved parameters and requests
+    private static String saveFilePathName = null;
+    // file chooser approved file name
+    private static String choosedFilePathName = null;
+    // default file name
+    private static String defaultSaveFilePath = "";
     public static PLog plog;
     static String
             formdataenc; // iso8859-1 encoding is fully  mapped binaries for form-data binaries.
@@ -58,13 +66,13 @@ public class EnvironmentVariables {
     static String ProxyAuth;
     public static ParmGenSession session;
     static int displaylength = 10000; // displayable length in JTextArea/JTextPane
-    private static boolean issaved = false;
+    private static boolean isSaved = false;
     static String fileSep = "/"; // maybe unix filesystem.
     public static String Version = ""; // loaded JSON format version
     public static final int TOSTEPANY = 2147483647; // StepTo number means any value
     static List<String> ExcludeMimeTypes = null;
     private static List<Pattern> ExcludeMimeTypesPatterns = null;
-    private static org.apache.logging.log4j.Logger logger4j;
+    private static org.apache.logging.log4j.Logger LOGGER4J;
 
     public static String JSONFileIANACharsetName =
             Encode.UTF_8.getIANACharsetName(); // JSON file IN/OUT encoding
@@ -75,7 +83,7 @@ public class EnvironmentVariables {
     // static: Runs only once at startup
     //
     static {
-        logger4j = org.apache.logging.log4j.LogManager.getLogger();
+        LOGGER4J = org.apache.logging.log4j.LogManager.getLogger();
 
         setExcludeMimeTypes(
                 Arrays.asList(
@@ -108,18 +116,18 @@ public class EnvironmentVariables {
         }
         desktop = null;
 
-        parmfile = projectdir + fileSep + "MacroBuilder.json";
+        defaultSaveFilePath = projectdir + fileSep + "MacroBuilder.json";
         plog = new PLog(projectdir);
         ProxyAuth = "";
         session = new ParmGenSession();
     }
 
     public static boolean isSaved() {
-        return issaved;
+        return isSaved;
     }
 
     public static void Saved(boolean b) {
-        issaved = b;
+        isSaved = b;
     }
 
     private static void setRegexPatternExcludeMimeType(List<String> excludeMimeTypes) {
@@ -136,7 +144,7 @@ public class EnvironmentVariables {
             try {
                 ExcludeMimeTypesPatterns.add(ParmGenUtil.Pattern_compile(regex, flags));
             } catch (Exception e) {
-
+                LOGGER4J.error(e.getMessage(), e);
             }
         }
     }
@@ -175,12 +183,21 @@ public class EnvironmentVariables {
         return displaylength;
     }
 
-    public static String getParmFile() {
-        return parmfile;
+    public static String getSaveFilePathName() {
+        if (saveFilePathName == null || saveFilePathName.isEmpty()) {
+            return defaultSaveFilePath;
+        }
+        return saveFilePathName;
     }
 
-    public static void setParmFile(String v) {
-        parmfile = v;
+
+
+    /**
+     * Returns true if the file has been saved once.
+     * @return
+     */
+    public static boolean isFileHasBeenSavedOnce() {
+        return saveFilePathName !=null && !saveFilePathName.isEmpty();
     }
 
     /**
@@ -191,5 +208,156 @@ public class EnvironmentVariables {
      */
     public static String getZapResourceString(String key) {
         return bundle_zap.getString(key);
+    }
+
+    /**
+     * update value of savePathName with choosedFilePathName
+     * @param filePath
+     */
+    public static void commitChoosedFile(String filePath) {
+        if (EnvironmentVariables.choosedFilePathName != null
+                && !EnvironmentVariables.choosedFilePathName.isEmpty()
+                && EnvironmentVariables.choosedFilePathName.equals(filePath)) {
+            LOGGER4J.debug("commit ChoosedFile[" + choosedFilePathName + "]->[" + saveFilePathName + "]");
+            EnvironmentVariables.saveFilePathName = EnvironmentVariables.choosedFilePathName;
+            EnvironmentVariables.choosedFilePathName = null;
+        }
+    }
+
+
+
+    /**
+     *  popup load MacroBuilderJSON file chooser
+     * @param parent
+     * @return  choosed file name and  stored it to choosedFilePathName<BR><BR>
+     */
+    public static String loadMacroBuilderJSONFileChooser(Component parent) {
+        File cfile = new File(getSaveFilePathName());
+        String dirname = cfile.getParent();
+        ParmFileFilter pFilter = new ParmFileFilter();
+        JFileChooser jfc = new JFileChooser(dirname) {
+
+            @Override
+            public void approveSelection() {
+                File f = getSelectedFile();
+                if (getDialogType() == OPEN_DIALOG) {
+                    if (!f.exists()) {
+                        String m = String.format(
+                                getZapResourceString(
+                                        "EnvironmentVariables.loadMacroBuilderJSONFileChooser.filenotfound.message.text"),
+                                f.getName());
+                        JOptionPane.showMessageDialog(
+                                this,
+                                m,
+                                getZapResourceString("EnvironmentVariables.loadMacroBuilderJSONFileChooser.filenotfound.title.text"),
+                                JOptionPane.ERROR_MESSAGE);
+                        LOGGER4J.debug("loadMacroBuilderJSONFileChooser !f.exists:" +m);
+                        super.cancelSelection();
+                        return;
+                    } else if(!getFileFilter().accept(f)) {
+                        String m = String.format(getZapResourceString(
+                                "EnvironmentVariables.loadMacroBuilderJSONFileChooser.noaccept.message.text"),
+                                f.getName(), getFileFilter().toString());
+                        JOptionPane.showMessageDialog(this, m, getZapResourceString(
+                                "EnvironmentVariables.loadMacroBuilderJSONFileChooser.noaccept.title.text"),
+                                JOptionPane.ERROR_MESSAGE);
+                        LOGGER4J.debug("loadMacroBuilderJSONFileChooser !getFileFilter().accept(f):" +m);
+                        super.cancelSelection();
+                        return;
+                    }
+                }
+                super.approveSelection();
+            }
+        };
+
+
+        jfc.setFileFilter(pFilter);
+
+        int fileChooserSelection = jfc.showOpenDialog(parent);// OPEN_DIALOG
+
+        EnvironmentVariables.choosedFilePathName = null;
+
+        switch (fileChooserSelection) {
+            case JFileChooser.APPROVE_OPTION:
+                //code to handle choosed file here.
+                File file = jfc.getSelectedFile();
+                String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
+                LOGGER4J.debug("loadMacroBuilderJSONFileChooser APPROVED[" + name +"]");
+                EnvironmentVariables.choosedFilePathName = name;
+                break;
+            default:
+                break;
+        }
+        return EnvironmentVariables.choosedFilePathName;
+    }
+
+    /**
+     * popup save MacroBuilderJSON file chooser
+     * @param parent
+     * @return  choosed file name and  stored it to choosedFilePathName<BR><BR>
+     */
+    public static String saveMacroBuilderJSONFileChooser(Component parent) {
+        File cfile = new File(getSaveFilePathName());
+        String dirname = cfile.getParent();
+        JFileChooser jfc = new JFileChooser(dirname){
+            @Override
+            public void approveSelection() {
+                File f = getSelectedFile();
+                if (getDialogType() == SAVE_DIALOG) {
+                    if (f.exists()){
+                        if(f.isFile() && getFileFilter().accept(f)) {// overwrite warning
+                            String m = String.format(getZapResourceString(
+                                    "EnvironmentVariables.saveMacroBuilderJSONFileChooser.confirm.message.text"),
+                                    f.getName());
+                            LOGGER4J.debug("[" + m + "]");
+                            int rv = JOptionPane.showConfirmDialog(
+                                    this, m, getZapResourceString(
+                                            "EnvironmentVariables.saveMacroBuilderJSONFileChooser.confirm.title.text"),
+                                    JOptionPane.YES_NO_OPTION);
+                            if (rv != JOptionPane.YES_OPTION) {
+                                super.cancelSelection();
+                                return;
+                            }
+                        } else {// no json file
+                            String m = String.format(getZapResourceString(
+                                            "EnvironmentVariables.saveMacroBuilderJSONFileChooser.noaccept.message.text"),
+                                    f.getName(), getFileFilter().toString());
+                            JOptionPane.showMessageDialog(this, m, getZapResourceString(
+                                            "EnvironmentVariables.saveMacroBuilderJSONFileChooser.noaccept.title.text"),
+                                    JOptionPane.ERROR_MESSAGE);
+                            super.cancelSelection();
+                            return;
+                        }
+                    } else if (!getFileFilter().accept(f)) {
+                        String ext = getFileFilter().toString();
+                        String absPath = f.getAbsolutePath() + ext;
+                        File fileWithExt = new File(absPath);
+                        setSelectedFile(fileWithExt);
+                        LOGGER4J.debug("saveMacroBuilderJSONFileChooser selectedfile[" + getSelectedFile().getAbsolutePath() + "]");
+                    }
+                }
+                super.approveSelection();
+            }
+        };
+
+        jfc.setSelectedFile(cfile);
+        ParmFileFilter pFilter=new ParmFileFilter();
+        jfc.setFileFilter(pFilter);
+
+        EnvironmentVariables.choosedFilePathName = null;
+        int fileChooserSelection = jfc.showSaveDialog(parent);
+        switch(fileChooserSelection) {
+            case JFileChooser.APPROVE_OPTION:
+                //code to handle choosed file here.
+                File file = jfc.getSelectedFile();
+                String name = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\");
+                EnvironmentVariables.choosedFilePathName = name;
+                LOGGER4J.debug("saveMacroBuilderJSONFileChooser APPROVED[" + name +"]");
+                break;
+            default:
+                break;
+        }
+
+        return EnvironmentVariables.choosedFilePathName;
     }
 }

@@ -203,8 +203,8 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
                                                 new ClientDependMessageContainer(href),
                                                 determinedEncode))
                         .collect(Collectors.toList());
-        mbui.addNewRequests(this.listprr);
         langdialog.setVisible(false);
+        this.mbui.ParamTrackingActionPerformed(this.listprr, null);
     }
 
     @Override

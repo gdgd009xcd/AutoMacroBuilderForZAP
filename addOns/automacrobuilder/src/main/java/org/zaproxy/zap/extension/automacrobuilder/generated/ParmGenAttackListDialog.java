@@ -23,14 +23,15 @@ import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
  *
  * @author gdgd009xcd
  */
+@Deprecated
 @SuppressWarnings("serial")
 public class ParmGenAttackListDialog extends javax.swing.JDialog {
 
-    ParmGenNew parentwin;
+    private ParmGenNew parentwin;
 //    private java.awt.Frame parentwin;
-    String defaultAtkListFileName = "AttackList.txt";
-    String currentAtkListFile ;
-    DefaultListModel<String> PatternModel;
+    private String defaultAtkListFileName = "AttackList.txt";
+    private String currentAtkListFile ;
+    private DefaultListModel<String> PatternModel;
     
     /**
      * Creates new form ParmGenAttackListDialog

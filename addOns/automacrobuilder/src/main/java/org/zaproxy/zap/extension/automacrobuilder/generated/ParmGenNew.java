@@ -60,7 +60,7 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
     AppParmsIni addrec;
 
     //起動元ウィンドウ
-    private ParmGenTop parentwin;
+    private CustomTrackingParamterConfigMain parentwin;
 
     DefaultTableModel[] ParamTableModels={
         null, null, null, null,null
@@ -73,7 +73,7 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
 
 
 
-    public ParmGenNew(ParmGenTop _parentwin, AppParmsIni _rec){
+    public ParmGenNew(CustomTrackingParamterConfigMain _parentwin, AppParmsIni _rec){
 
         current_tablerowidx = 0;
 
@@ -465,11 +465,6 @@ private void setAppParmsIni(){
                 break;
             case P_RANDOMMODEL:
                 mname = "RANDOMMODEL";
-                break;
-            case P_TAMPERMODEL:
-                mname = "TAMPERMODEL";
-                tamperTargetURL.setText(targetURL);
-                new ParmGenAttackListDialog(this, true, "").setVisible(true);
                 break;
             default:
                 mname = "UNKNOWNMODEL";
