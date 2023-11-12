@@ -27,6 +27,7 @@ import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionHook;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
+import org.zaproxy.zap.utils.DisplayUtils;
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")
@@ -36,7 +37,7 @@ public class MyWorkPanel extends AbstractPanel {
             org.apache.logging.log4j.LogManager.getLogger();
 
     private static final ImageIcon A_TAB_ICON =
-            MyFontUtils.getScaledIcon(
+            DisplayUtils.getScaledIcon(
                     new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 
     MyWorkPanel(

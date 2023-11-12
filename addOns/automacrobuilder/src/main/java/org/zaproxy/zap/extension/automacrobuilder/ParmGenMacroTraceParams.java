@@ -11,6 +11,12 @@ public class ParmGenMacroTraceParams {
         this.tabIndex = tabindex;
     }
 
+    public ParmGenMacroTraceParams(ParmGenMacroTraceParams pmtParams) {
+        this.selected_request = pmtParams.selected_request;
+        this.last_stepno = pmtParams.last_stepno;
+        this.tabIndex = pmtParams.getTabIndex();
+    }
+
     public ParmGenMacroTraceParams(String hv) {
         setString(hv);
     }

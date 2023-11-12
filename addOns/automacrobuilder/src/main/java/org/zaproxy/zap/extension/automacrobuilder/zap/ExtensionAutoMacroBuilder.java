@@ -24,7 +24,9 @@ import java.awt.Font;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import javax.swing.JTextPane;
+import javax.swing.*;
+
+import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionAdaptor;
@@ -37,10 +39,14 @@ import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.zap.view.MessageViewStatusPanel;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.PopUpMenuItem;
 import org.zaproxy.zap.extension.sessions.ExtensionSessionManagement;
 import org.zaproxy.zap.session.SessionManagementMethodType;
+import org.zaproxy.zap.utils.DisplayUtils;
 import org.zaproxy.zap.utils.FontUtils;
 import org.zaproxy.zap.view.ZapMenuItem;
+
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
 
 /**
  * An example ZAP extension which adds a top level menu item, a pop up menu item and a status panel.
@@ -62,6 +68,10 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     // URL for AutoMacroBuilder
     private String AMBURL = "https://gdgd009xcd.github.io/AutoMacroBuilderForZAP/";
 
+    private static final ImageIcon A_TAB_ICON =
+            DisplayUtils.getScaledIcon(
+                    new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
+
     // private static final ImageIcon ICON =
     //        new ImageIcon(ExtensionAutoMacroBuilder.class.getResource(RESOURCES + "/cake.png"));
 
@@ -75,6 +85,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     private ParmGenMacroTrace pmt = null;
     private MacroBuilderUI mbui = null;
     private MessageViewStatusPanel messageViewStatusPanel = null;
+    ExtensionActiveScanWrapper extwrapper = null;
 
     // private SimpleExampleAPI api;
 
@@ -99,7 +110,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
 
         // this.api = new SimpleExampleAPI(this);
         // extensionHook.addApiImplementor(this.api);
-        ExtensionActiveScanWrapper extwrapper =
+        extwrapper =
                 new ExtensionActiveScanWrapper(this.pmtProvider, this.mbui);
 
         // As long as we're not running as a daemon
@@ -108,6 +119,9 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             // extensionHook.getHookMenu().addPopupMenuItem(getPopupMsgMenuExample());
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuAdd2MacroBuilder());
             // extensionHook.getHookView().addStatusPanel(getStatusPanel());
+            extensionHook.getHookMenu().addPopupMenuItem(new PopUpMenuItem(this.mbui,
+                    this.extwrapper.getStartedActiveScanContainer(),
+                    "org.zaproxy.zap.extension.customactivescan.view.ScanLogPanel", Constant.messages.getString("autoMacroBuilder.PopUpItemSingleSend.title.text"), A_TAB_ICON));
 
             this.messageViewStatusPanel = new MessageViewStatusPanel(extwrapper,
                     this.mbui,  extensionHook);
@@ -146,6 +160,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         if (sessMethodTypes != null) {
             sessMethodTypes.add(new AutoMacroBuilderSessionManagementMethodType());
         }
+        EnvironmentVariables.setExtensionAutoMacroBuilder(this);
         LOGGER4J.debug("succeeded getting methodTypes: size=" + methodTypes.size());
     }
 
@@ -165,6 +180,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     public void unload() {
         super.unload();
 
+        cleanUp();
         // In this example it's not necessary to override the method, as there's nothing to unload
         // manually, the components added through the class ExtensionHook (in hook(ExtensionHook))
         // are automatically removed by the base unload() method.
@@ -185,6 +201,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         if (removeMethodType != null) {
             methodTypes.remove(removeMethodType);
         }
+        setEnabled(false);
     }
 
     private AbstractPanel getStatusPanel() {
@@ -281,5 +298,17 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
         } catch (MalformedURLException e) {
             return null;
         }
+    }
+
+    public void cleanUp() {
+        this.extwrapper.cleanUpStartedActiveScan();
+    }
+
+    public ParmGenMacroTraceProvider getParmGenMacroTraceProvider() {
+        return this.pmtProvider;
+    }
+
+    public MacroBuilderUI getMacroBuilderUI(){
+        return this.mbui;
     }
 }

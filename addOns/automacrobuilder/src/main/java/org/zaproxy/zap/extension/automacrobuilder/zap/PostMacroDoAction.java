@@ -31,6 +31,8 @@ public class PostMacroDoAction implements InterfaceDoAction {
     void setParameters(
             StartedActiveScanContainer acon, HttpMessage msg, int initiator, HttpSender sender) {
         final ParmGenMacroTrace pmt = acon.getRunningInstance();
+        // set current pmtParam for CustomActiveScan
+        acon.setCustomActiveScanPmtParamsOfThread(pmt.getParmGenMacroTraceParams());
         List<InterfaceAction> actionlist = new ArrayList<>();
 
         // action create and save into ThreadLocal

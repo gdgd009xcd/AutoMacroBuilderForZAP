@@ -6,18 +6,18 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
-import org.parosproxy.paros.db.DatabaseException;
 import org.parosproxy.paros.extension.history.ExtensionHistory;
 import org.parosproxy.paros.model.HistoryReference;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.Session;
 import org.parosproxy.paros.network.*;
-import org.zaproxy.zap.extension.automacrobuilder.PRequest;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
-import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
+import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
+import org.zaproxy.zap.extension.automacrobuilder.view.SwingTimerFakeRunner;
 import org.zaproxy.zap.model.SessionStructure;
+import org.zaproxy.zap.utils.DisplayUtils;
+
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
 
 @SuppressWarnings("serial")
 public class PopUpItemSingleSend extends JMenuItem {
@@ -33,6 +33,9 @@ public class PopUpItemSingleSend extends JMenuItem {
     private BeforeMacroDoActionProvider beforemacroprovider = null;
     private PostMacroDoActionProvider postmacroprovider = null;
     private ExtensionHistory extensionHistory = null;
+    private static final ImageIcon A_TAB_ICON =
+            DisplayUtils.getScaledIcon(
+                    new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 
     PopUpItemSingleSend(
             MacroBuilderUI mbui,
@@ -43,83 +46,118 @@ public class PopUpItemSingleSend extends JMenuItem {
         this.beforemacroprovider = beforemacroprovider;
         this.postmacroprovider = postmacroprovider;
         this.setToolTipText(Constant.messages.getString("autoMacroBuilder.PopUpItemSingleSend.Tooltip.text"));
+        this.setIcon(A_TAB_ICON);
 
         final StartedActiveScanContainer f_acon = acon;
         final MacroBuilderUI f_mbui = mbui;
 
         addActionListener(
                 e -> {
-                    PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
-
-                    if (newrequest != null) {
-                        f_mbui.clearMessageResponse();
-                        int selectedTabIndex = f_mbui.getSelectedTabIndexOfMacroRequestList();
-                        int currentSelectedPos =
-                                f_mbui.getRequestJListSelectedIndexAtTabIndex(selectedTabIndex);
-                        ParmGenMacroTrace pmt =
-                                f_mbui.getParmGenMacroTraceAtTabIndex(selectedTabIndex);
-                        int subSequenceScanLimit = f_mbui.getSubSequenceScanLimit();
-                        int lastStepNo =
-                                pmt.getLastStepNo(currentSelectedPos, subSequenceScanLimit);
-                        final HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
-                        final ParmGenMacroTraceParams pmtParams =
-                                new ParmGenMacroTraceParams(
-                                        currentSelectedPos, lastStepNo, selectedTabIndex);
-                        final Thread t =
-                                new Thread(
-                                        new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                try {
-                                                    f_acon.addParmGenMacroTraceParams(pmtParams);
-                                                    HttpSender sender = getHttpSenderInstance();
-                                                    beforemacroprovider.setParameters(
-                                                            f_acon,
-                                                            htmess,
-                                                            HttpSender.MANUAL_REQUEST_INITIATOR,
-                                                            sender);
-                                                    ThreadManagerProvider.getThreadManager()
-                                                            .beginProcess(beforemacroprovider);
-                                                    htmess.setTimeSentMillis(
-                                                            System.currentTimeMillis());
-                                                    pmt.send(sender, htmess);
-                                                    postmacroprovider.setParameters(
-                                                            f_acon,
-                                                            htmess,
-                                                            HttpSender.MANUAL_REQUEST_INITIATOR,
-                                                            sender);
-                                                    ThreadManagerProvider.getThreadManager()
-                                                            .beginProcess(postmacroprovider);
-
-                                                    Session session = Model.getSingleton().getSession();
-                                                    HistoryReference ref =
-                                                            new HistoryReference(session, HistoryReference.TYPE_ZAP_USER, htmess);
-                                                    final ExtensionHistory extHistory = getHistoryExtension();
-                                                    if (extHistory != null) {
-                                                        extHistory.addHistory(ref);
-                                                    }
-                                                    SessionStructure.addPath(Model.getSingleton(), ref, htmess);// must add SiteNode Tree.
-                                                } catch (Exception exception) {
-                                                    LOGGER4J.error(exception.getMessage(), exception);
-                                                } finally {
-                                                    shutdownHttpSender();
-                                                }
-                                            }
-                                        });
-                        t.start();
-                        try {
-                            t.join();
-                        } catch (InterruptedException ex) {
-                            LOGGER4J.error("", ex);
-                        }
-                        SwingUtilities.invokeLater(
-                                () -> {
-                                    f_mbui.updateCurrentSelectedRequestListDisplayContents();
-                                    f_mbui.showMessageViewOnWorkBench(1);
-                                });
-                    }
+                    singleSendSelectedRequest(f_mbui, f_acon);
                 });
     }
+
+    /**
+     * send current selected Message in AutoMacroBuilder
+     *
+     * @param f_mbui
+     * @param f_acon
+     */
+    private void singleSendSelectedRequest(MacroBuilderUI f_mbui, StartedActiveScanContainer f_acon) {
+
+        PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
+
+
+        if (newrequest != null) {
+
+            f_mbui.clearMessageResponse();
+            int selectedTabIndex = f_mbui.getSelectedTabIndexOfMacroRequestList();
+
+            int currentSelectedPos =
+                    f_mbui.getRequestJListSelectedIndexAtTabIndex(selectedTabIndex);
+
+            ParmGenMacroTrace pmt =
+                    f_mbui.getParmGenMacroTraceAtTabIndex(selectedTabIndex);
+            int subSequenceScanLimit = f_mbui.getSubSequenceScanLimit();
+            int lastStepNo =
+                    pmt.getLastStepNo(currentSelectedPos, subSequenceScanLimit);
+            final HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
+            final ParmGenMacroTraceParams pmtParams =
+                    new ParmGenMacroTraceParams(
+                            currentSelectedPos, lastStepNo, selectedTabIndex);
+            ParmGenMacroTraceProvider pmtProvider = f_acon.getPmtProvider();
+            SwingTimerFakeRunner runner = new SwingTimerFakeRunner(selectedTabIndex, f_mbui, new Runnable() {
+                @Override
+                public void run() {
+                    f_mbui.updateCurrentSelectedRequestListDisplayContents();
+                    f_mbui.showMessageViewOnWorkBench(1);
+                }
+            });
+            pmtProvider.setUseSwingRunner(selectedTabIndex, runner);
+
+            final Thread t =
+                    new Thread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+
+
+                                        f_acon.addParmGenMacroTraceParams(pmtParams);
+                                        HttpSender sender = getHttpSenderInstance();
+                                        beforemacroprovider.setParameters(
+                                                f_acon,
+                                                htmess,
+                                                HttpSender.MANUAL_REQUEST_INITIATOR,
+                                                sender);
+                                        ThreadManagerProvider.getThreadManager()
+                                                .beginProcess(beforemacroprovider);
+                                        htmess.setTimeSentMillis(
+                                                System.currentTimeMillis());
+                                        pmt.send(sender, htmess);
+                                        postmacroprovider.setParameters(
+                                                f_acon,
+                                                htmess,
+                                                HttpSender.MANUAL_REQUEST_INITIATOR,
+                                                sender);
+                                        ThreadManagerProvider.getThreadManager()
+                                                .beginProcess(postmacroprovider);
+
+                                        Session session = Model.getSingleton().getSession();
+                                        HistoryReference ref =
+                                                new HistoryReference(session, HistoryReference.TYPE_ZAP_USER, htmess);
+                                        final ExtensionHistory extHistory = getHistoryExtension();
+                                        if (extHistory != null) {
+                                            extHistory.addHistory(ref);
+                                        }
+                                        SessionStructure.addPath(Model.getSingleton(), ref, htmess);// must add SiteNode Tree.
+                                    } catch (Exception exception) {
+                                        LOGGER4J.error(exception.getMessage(), exception);
+                                    } finally {
+                                        shutdownHttpSender();
+                                        runner.doneRunningInstance();
+                                    }
+                                }
+                            });
+            t.start();
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                LOGGER4J.error("", ex);
+            }
+
+
+
+            /**
+            SwingUtilities.invokeLater(
+                    () -> {
+                        f_mbui.updateCurrentSelectedRequestListDisplayContents();
+                        f_mbui.showMessageViewOnWorkBench(1);
+                    });
+             **/
+        }
+    }
+
 
     /**
      * Get HttpSender Instance

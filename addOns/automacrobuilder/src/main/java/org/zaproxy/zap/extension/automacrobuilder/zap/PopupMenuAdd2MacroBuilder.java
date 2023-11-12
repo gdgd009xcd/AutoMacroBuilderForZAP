@@ -35,9 +35,12 @@ import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependMessageCon
 import org.zaproxy.zap.model.StructuralNode;
 import org.zaproxy.zap.model.StructuralSiteNode;
 import org.zaproxy.zap.model.Target;
+import org.zaproxy.zap.utils.DisplayUtils;
 import org.zaproxy.zap.view.popup.PopupMenuItemSiteNodeContainer;
 
 import javax.swing.*;
+
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
 
 public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
         implements InterfaceLangOKNG {
@@ -45,6 +48,9 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
     private static final long serialVersionUID = 1L;
+    private static final ImageIcon A_TAB_ICON =
+            DisplayUtils.getScaledIcon(
+                    new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
     private LangSelectDialog langdialog = null;
     private ParmGenMacroTrace pmt = null;
     private MacroBuilderUI mbui = null;
@@ -56,6 +62,8 @@ public class PopupMenuAdd2MacroBuilder extends PopupMenuItemSiteNodeContainer
         super(label, true);
         this.pmt = null;
         this.mbui = mbui;
+        setMenuIndex(1);
+        setIcon(A_TAB_ICON);
         langdialog = new LangSelectDialog(this.mbui, this, Encode.ISO_8859_1, Dialog.ModalityType.DOCUMENT_MODAL);
     }
 

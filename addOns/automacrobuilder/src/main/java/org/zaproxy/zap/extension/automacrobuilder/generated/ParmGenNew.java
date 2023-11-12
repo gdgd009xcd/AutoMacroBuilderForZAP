@@ -16,9 +16,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.StyledDocument;
 
 import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
+import org.zaproxy.zap.extension.automacrobuilder.view.TextPaneLineWrapper;
 
 /**
  *
@@ -1435,7 +1437,8 @@ private void setAppParmsIni(){
             }
         });
 
-        RequestArea.setEditorKit(new TextPaneLineWrapper());
+        StyledDocument doc = RequestArea.getStyledDocument();
+        RequestArea.setEditorKit(new TextPaneLineWrapper(doc));
         RequestArea.setAutoscrolls(false);
         RequestArea.setPreferredSize(new java.awt.Dimension(1000, 1500));
         jScrollPane1.setViewportView(RequestArea);
@@ -1472,7 +1475,8 @@ private void setAppParmsIni(){
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        ResponseArea.setEditorKit(new TextPaneLineWrapper());
+        StyledDocument originalDoc = ResponseArea.getStyledDocument();
+        ResponseArea.setEditorKit(new TextPaneLineWrapper(originalDoc));
         jScrollPane2.setViewportView(ResponseArea);
 
         selected_responseURL.setText("http://aaaa");

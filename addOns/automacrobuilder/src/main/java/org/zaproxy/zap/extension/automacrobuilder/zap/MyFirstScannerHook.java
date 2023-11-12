@@ -20,16 +20,20 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.logging.Level;
+
 import org.parosproxy.paros.core.scanner.AbstractPlugin;
 import org.parosproxy.paros.core.scanner.HostProcess;
 import org.parosproxy.paros.core.scanner.Scanner;
 import org.parosproxy.paros.core.scanner.ScannerHook;
+import org.parosproxy.paros.extension.Extension;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
 import org.zaproxy.zap.network.HttpRequestConfig;
 import org.zaproxy.zap.network.HttpRequestConfig.Builder;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 
 public class MyFirstScannerHook implements ScannerHook {
 
@@ -38,6 +42,8 @@ public class MyFirstScannerHook implements ScannerHook {
 
     private StartedActiveScanContainer startedcon = null;
 
+    //private static Map<Long, String> THREADLISTTEST = new ConcurrentHashMap<>();
+
     MyFirstScannerHook(StartedActiveScanContainer startedcon) {
         this.startedcon = startedcon;
     }
@@ -45,7 +51,12 @@ public class MyFirstScannerHook implements ScannerHook {
     @Override
     public void afterScan(HttpMessage arg0, AbstractPlugin arg1, Scanner arg2) {
         // TODO Auto-generated method stub
-
+        ParmGenMacroTraceParams pmtParamsForCustomActiveScan = this.startedcon.getCustomActiveScanPmtParamsOfThread();
+        if (pmtParamsForCustomActiveScan != null) {
+            this.startedcon.addCustomActiveScanPmtParamsByScanner(arg2, pmtParamsForCustomActiveScan);
+        } else {
+            LOGGER4J.error("pmtParamsForCustomActiveScan is null");
+        }
         LOGGER4J.debug("MyFirstScannerHook afterScan Called. URL[" + getURL(arg0) + "]");
     }
 
@@ -54,6 +65,7 @@ public class MyFirstScannerHook implements ScannerHook {
         // TODO Auto-generated method stub
         LOGGER4J.debug("MyFirstScannerHook beforeScan Called. URL[" + getURL(arg0) + "]");
 
+        //  THREADLISTTEST.put(Thread.currentThread().getId(), "alive");
         if (this.startedcon.isStartedActiveScan(
                 arg2)) { // only call following methods when Scanner.start(Target) is
             // called by ExtensionActiveScanWrapper
@@ -64,6 +76,7 @@ public class MyFirstScannerHook implements ScannerHook {
             hpros.getHttpSender().setFollowRedirect(false);
             // forceUser set to null for disabling authentication
             hpros.getHttpSender().setUser(null);
+
             this.startedcon
                     .addTheadid(); // Add the thread ID that belongs to Start ActiveScan for telling
             this.startedcon.addParmGenMacroTraceParams(arg2);
@@ -77,7 +90,53 @@ public class MyFirstScannerHook implements ScannerHook {
     public void scannerComplete() {
         // TODO Auto-generated method stub
         LOGGER4J.debug("MyFirstScannerHook scannerComplete Called. ");
+        boolean called = false;
+        List<Integer[]> listIntegerArray = this.startedcon.getCustomActiveScanPmtParamsArray();
+        if (!listIntegerArray.isEmpty()) {
+            LOGGER4J.debug("MyFirstScannerHook listIntegerArray.size=" + listIntegerArray.size());
+
+            Extension extension = ZapUtil.getExtensionAscanRules();
+
+            Integer[] postedArray = ZapUtil.callCustomActiveScanMethodReturner(Integer[].class,
+                    extension,
+                    "org.zaproxy.zap.extension.customactivescan.ExtensionAscanRules",
+                    "postPmtParams",
+                    new Class<?>[]{List.class}, // List<T> type T is no need to specify.
+                    new Object[]{listIntegerArray}
+            );
+            if (postedArray != null) {
+                called = true;
+                this.startedcon.cleanUpCustomActiveScanPmtParamsByScanner(postedArray);
+            }
+        }
+
+        if (!called) {
+            this.startedcon.clearCustomActiveScanPmtParamsByScanner();
+        }
+
     }
+
+    /**
+    private void ThreadLeakCheck() {
+        int liveCounter = 0;
+        int totalCounter = THREADLISTTEST.size();
+        for(Map.Entry<Long, String> ent: THREADLISTTEST.entrySet()) {
+            for (Thread t : Thread.getAllStackTraces().keySet()) {
+                if (ent.getKey()==t.getId()) {
+                    switch (t.getState()) {
+                        case TERMINATED:
+                            break;
+                        default:
+                            liveCounter++;
+                            break;
+                    }
+                }
+            }
+        }
+        THREADLISTTEST.clear();
+        LOGGER4J.info("ThreadLive Counter=" + liveCounter + " total=" + totalCounter);
+    }
+     **/
 
     /**
      * Create HttpRequestConfig, set followRedirect to false, and then set it to

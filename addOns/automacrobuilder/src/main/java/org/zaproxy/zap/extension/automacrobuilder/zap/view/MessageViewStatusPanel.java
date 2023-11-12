@@ -7,6 +7,7 @@ import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
 import org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionActiveScanWrapper;
 import org.zaproxy.zap.extension.automacrobuilder.zap.MyWorkPanel;
+import org.zaproxy.zap.utils.DisplayUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +20,7 @@ public class MessageViewStatusPanel extends AbstractPanel {
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
     private static final ImageIcon A_TAB_ICON =
-            MyFontUtils.getScaledIcon(
+            DisplayUtils.getScaledIcon(
                     new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
     private MacroBuilderUI mbui;
 

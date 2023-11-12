@@ -30,6 +30,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import com.google.gson.JsonElement;
+import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.CloseXbtnTabPanel;
@@ -37,6 +38,7 @@ import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
 import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 import org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder;
+import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
 
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.JSONFileIANACharsetName;
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
@@ -389,7 +391,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
     }
 
-    public void Redraw() {
+    private void Redraw() {
         //ListModel cmodel = RequestList.getModel();
         //RequestList.setModel(cmodel);
         LOGGER4J.debug("RequestList.repaint called.");
@@ -1085,8 +1087,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     }//GEN-LAST:event_customActionPerformed
 
-    private void MacroRequestLoadContents(int selectedTabIndexOfRequestList){
-        if (displayInfo != null && displayInfo.selected_request_idx!=-1&&!displayInfo.isLoadedMacroRequestContents) {
+    private void messageRequestLoadContents(int selectedTabIndexOfRequestList){
+        if (displayInfo != null && displayInfo.selected_request_idx!=-1&&!displayInfo.isLoadedMessageRequestContents) {
             
             List<PRequestResponse> prequestResponseList = getPRequestResponseListAtTabIndex(selectedTabIndexOfRequestList);
             PRequestResponse pqr = prequestResponseList.get(displayInfo.selected_request_idx);
@@ -1095,8 +1097,21 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
             reqdoc.setRequestChunks(pqr.request);
 
-            displayInfo.isLoadedMacroRequestContents = true;
+            displayInfo.isLoadedMessageRequestContents = true;
         }
+    }
+
+    public void setHttpMessage2messageRequest(HttpMessage message){
+        ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
+        if (pmt == null) return;
+        PRequestResponse pRequestResponse = ZapUtil.getPRequestResponse(message, pmt.getSequenceEncode());
+        JTextPaneContents reqdoc = new JTextPaneContents(messageRequest);
+
+        reqdoc.setRequestChunks(pRequestResponse.request);
+        messageResponse.setText("");
+
+        displayInfo.isLoadedMessageRequestContents = true;
+        displayInfo.isLoadedmessageResponseContents = true;
     }
     
     private void messageResponseLoadContents(int selectedTabIndexOfRequestList){
@@ -1128,7 +1143,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int selIndex = messageView.getSelectedIndex();//tabbedpanes selectedidx 0start..
         switch(selIndex){
             case 0:
-                MacroRequestLoadContents(selectedTabIndexOfRequestList);
+                messageRequestLoadContents(selectedTabIndexOfRequestList);
                 break;
             case 1:
                 messageResponseLoadContents(selectedTabIndexOfRequestList);
@@ -1137,7 +1152,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 MacroCommentLoadContents(selectedTabIndexOfRequestList);
                 break;
             default:
-                MacroRequestLoadContents(selectedTabIndexOfRequestList);
+                messageRequestLoadContents(selectedTabIndexOfRequestList);
                 break;
         }
     }
@@ -2124,7 +2139,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                 + displayInfo.selected_request_idx + "]");
                 return null;
             }
-            MacroRequestLoadContents(selectedTabIndex);
+            messageRequestLoadContents(selectedTabIndex);
             StyledDocument doc =  messageRequest.getStyledDocument();
             if ( doc instanceof StyledDocumentWithChunk) {
                 return CastUtils.castToType(doc);
@@ -2244,8 +2259,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     }
     
     public JList<String> getRequestJListAtTabIndex(int tabIndex) throws IndexOutOfBoundsException {
-        JList<String> requestJList = requestJLists.get(tabIndex);
-        return requestJList;
+        try {
+            JList<String> requestJList = requestJLists.get(tabIndex);
+            return requestJList;
+        } catch (Exception ex) {
+            LOGGER4J.error(ex.getMessage(), ex);
+        }
+        return null;
     }
     
     /**
@@ -2395,7 +2415,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     static class DisplayInfoOfRequestListTab {
         public int selected_request_idx = -1;
         public boolean isLoadedMacroCommentContents = false;
-        public boolean isLoadedMacroRequestContents = false;
+        public boolean isLoadedMessageRequestContents = false;
         public boolean isLoadedmessageResponseContents = false;
         
         DisplayInfoOfRequestListTab() {
@@ -2409,7 +2429,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         public void clearViewFlags() {
             isLoadedMacroCommentContents = false;
-            isLoadedMacroRequestContents = false;
+            isLoadedMessageRequestContents = false;
             isLoadedmessageResponseContents = false;
         }
     }
@@ -2579,6 +2599,72 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         }
     }
+
+    public void setSelectedRequestInRequestJlist(int tabIndex, int selectedIndex) {
+        setSelectdMacroRequestListTabs(tabIndex);
+        JList<String> jList = getRequestJListAtTabIndex(tabIndex);
+        if (jList != null) {
+            jList.setSelectedIndex(selectedIndex);
+        }
+    }
+    public void setSelectdMacroRequestListTabs(int tabIndex) {
+        if (tabIndex > -1 && tabIndex < getPlusBtnPanelTabIndexOfMacroRequestListTabs()) {
+            this.MacroRequestListTabs.setSelectedIndex(tabIndex);
+        }
+    }
+
+    private int getPlusBtnPanelTabIndexOfMacroRequestListTabs() {
+        int indexOfPlusBtnPanel = MacroRequestListTabs.indexOfComponent(plusBtnPanel);
+        return indexOfPlusBtnPanel;
+    }
+
+
+    public int getListModelSize(int tabIndex) {
+        DefaultListModel<String> listModel = (DefaultListModel<String>)getRequestJListAtTabIndex(tabIndex).getModel();
+        return listModel.getSize();
+    }
+    public void updateJlistForRepaintInvokeLater(int tabIndexVal, int countDown) {
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                DefaultListModel<String> listModel = (DefaultListModel<String>)getRequestJListAtTabIndex(tabIndexVal).getModel();
+                int selectedIndexVal = listModel.getSize() - countDown;
+
+                if (selectedIndexVal>=0) {
+                    String value = listModel.getElementAt(selectedIndexVal);
+                    listModel.setElementAt("", selectedIndexVal);
+                    listModel.setElementAt(value, selectedIndexVal);
+                }
+            }
+        });
+
+    }
+
+    public void updateJlistForRepaint(int tabIndexVal, ParmGenMacroTrace basePmt, int countDown) {
+
+
+        int currentSelectedTabIndex = getSelectedTabIndexOfMacroRequestList();
+        if (currentSelectedTabIndex == tabIndexVal) {
+            DefaultListModel<String> listModel = (DefaultListModel<String>) getRequestJListAtTabIndex(tabIndexVal).getModel();
+
+            int selectedIndexVal = listModel.getSize() - countDown;
+            int runnningNo = selectedIndexVal;
+
+            if (countDown < 0) {
+                selectedIndexVal = listModel.getSize() - 1;
+                runnningNo = -1;
+            }
+
+            if (selectedIndexVal >= 0) {
+                basePmt.setRunningStepNo(runnningNo);
+                String value = listModel.getElementAt(selectedIndexVal);
+                listModel.setElementAt("", selectedIndexVal);
+                listModel.setElementAt(value, selectedIndexVal);
+            }
+        }
+    }
+
 
     public void clearMessageResponse() {
         this.messageResponse.setText("");

@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import org.zaproxy.zap.extension.automacrobuilder.view.SwingTimerFakeRunner;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +39,7 @@ public class ParmGenMacroTraceProvider {
             org.apache.logging.log4j.LogManager.getLogger();
     private Map<UUID, ParmGenMacroTrace> pmtmap; // current Running Instance of pmt
     private List<ParmGenMacroTrace> pmtList; // original pmt list
+    private Map<Integer, SwingTimerFakeRunner> swingRunnerMap;
 
     // The following parameters belong to the application scope.
     // so these parameters keep value until ending application.
@@ -68,6 +71,11 @@ public class ParmGenMacroTraceProvider {
 
     public void setCBreplaceTrackingParam(boolean _b) {
         CBreplaceTrackingParam = _b;
+    }
+    public void setUseSwingRunner(int tabIndex, SwingTimerFakeRunner runner) {
+        if (!this.swingRunnerMap.containsKey(tabIndex)) {// ignore already existed runner
+            this.swingRunnerMap.put(tabIndex, runner);
+        }
     }
 
     public void setWaitTimer(String msec) {
@@ -112,6 +120,7 @@ public class ParmGenMacroTraceProvider {
         ParmGenMacroTrace pmt_originalbase = new ParmGenMacroTrace();
         pmtList = new ArrayList<>();
         pmtList.add(pmt_originalbase);
+        swingRunnerMap = new ConcurrentHashMap<>();
     }
 
     public void clear() {
@@ -120,6 +129,7 @@ public class ParmGenMacroTraceProvider {
         pmtList.clear();
         pmt_originalbase.clear();
         pmtList.add(pmt_originalbase);
+        swingRunnerMap.clear();
     }
 
     /**
@@ -136,6 +146,7 @@ public class ParmGenMacroTraceProvider {
         }
         return null;
     }
+
 
     /**
      * add new ParmGenMacroTrace base instance
@@ -177,8 +188,9 @@ public class ParmGenMacroTraceProvider {
     public <T> ParmGenMacroTrace getNewParmGenMacroTraceInstance(
             T sender, ParmGenMacroTraceParams pmtParams) {
         ParmGenMacroTrace newpmt =
-                getBaseInstance(pmtParams.getTabIndex()).getScanInstance(sender, pmtParams, this);
+                getBaseInstance(pmtParams.getTabIndex()).createScanRunningInstance(sender, pmtParams, this);
         pmtmap.put(newpmt.getUUID(), newpmt);
+
         return newpmt;
     }
 
@@ -198,12 +210,27 @@ public class ParmGenMacroTraceProvider {
     public synchronized void removeEndInstance(UUID uuid) {
         try {
             pmtmap.remove(uuid);
+
         } catch (Exception e) {
             LOGGER4J.error(
                     "removeEndInstance failed by exception:"
                             + e.getMessage()
                             + " thread:"
                             + Thread.currentThread().getId());
+        }
+    }
+
+
+    protected SwingTimerFakeRunner getSwingRunner(int tabIndex) {
+        LOGGER4J.debug("get swingRunner tabIndex= " + tabIndex);
+        return this.swingRunnerMap.get(tabIndex);// this return previous data or maybe null.
+    }
+
+    public void removeSwingRunner(int tabIndex) {
+        LOGGER4J.debug("removed swingRunner tabIndex= " + tabIndex);
+        SwingTimerFakeRunner runner = this.swingRunnerMap.remove(tabIndex);
+        if (runner != null) {
+            runner.doneRunningInstance();
         }
     }
 }
