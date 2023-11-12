@@ -31,4 +31,11 @@ public class CastUtils {
     public static <T> T castToType(Object obj) {
         return (T) obj;
     }
+
+    public static <T> T castToType(Class<T> clazz, Object obj) {
+        if (clazz.isAssignableFrom(obj.getClass())) {
+            return clazz.cast(obj);
+        }
+        return null;
+    }
 }

@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.10] - 2023-11-12
+### Changed
+- new feature: added feature which is related to popup menu of CustomActiveScan
+- new feature: Changed  behaviour of "SendMessage" popup menu. it shows animation what is doing.
+- maintenance: updated typical.gif
+
 ## [v1.1.9] - 2023-11-03
 ### Sorry..
 - bugfix: Fixed strange behaviour in file load/save actions.

@@ -26,6 +26,7 @@ import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependent;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientRequest;
 import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
+import org.zaproxy.zap.extension.automacrobuilder.view.SwingTimerFakeRunner;
 
 /** @author gdgd009xcd */
 public class ParmGenMacroTrace extends ClientDependent {
@@ -114,6 +115,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private boolean isCacheNull = false;
 
+    private int runningStepNo = -1;// current running stepno. use only in base instance.
+
     public String state_debugprint() {
         String msg = "PMT_UNKNOWN";
         switch (state) {
@@ -180,13 +183,18 @@ public class ParmGenMacroTrace extends ClientDependent {
     public ParmGenMacroTrace() {}
 
     /**
-     * Get copy of this instance for scan
+     * create New running instance for scan
      *
      * @return
      */
-    public <T> ParmGenMacroTrace getScanInstance(
+    public <T> ParmGenMacroTrace createScanRunningInstance(
             T sender, ParmGenMacroTraceParams pmtParams, ParmGenMacroTraceProvider pmtProvider) {
         ParmGenMacroTrace nobj = new ParmGenMacroTrace();
+        SwingTimerFakeRunner swingRunner = pmtProvider.getSwingRunner(pmtParams.getTabIndex());
+        if (swingRunner != null) {
+            swingRunner.registRunningInstance(nobj);
+        }
+
         nobj.sender = sender;
         nobj.threadid = Thread.currentThread().getId();
         // nobj.setUUID(UUIDGenerator.getUUID()); // already set in super.constructor
@@ -224,6 +232,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         nobj.isURIOfRequestIsModified = this.isURIOfRequestIsModified;
 
         nobj.isCacheNull = this.isCacheNull;
+
+        nobj.runningStepNo = this.runningStepNo;
 
         return nobj;
     }
@@ -280,6 +290,8 @@ public class ParmGenMacroTrace extends ClientDependent {
 
         nobj.isCacheNull = this.isCacheNull;
 
+        nobj.runningStepNo = this.runningStepNo;
+
         return nobj;
     }
 
@@ -302,6 +314,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         lastResponseEncode = null;
         isURIOfRequestIsModified = false;
         isCacheNull = false;
+        runningStepNo = -1;
         nullfetchResValAndCookieMan();
     }
 
@@ -517,7 +530,8 @@ public class ParmGenMacroTrace extends ClientDependent {
         oit = null;
         cit = null;
 
-        stepno = 0;
+        this.stepno = 0;
+
 
         try {
             if (rlist != null && selected_request >= 0 && rlist.size() > selected_request) {
@@ -531,7 +545,7 @@ public class ParmGenMacroTrace extends ClientDependent {
                     // copy clone.
                     PRequestResponse ppr = cit.next().clone();
                     PRequestResponse opr = oit.next().clone();
-                    stepno = n;
+                    this.stepno = n;
                     if (n++ >= selected_request) {
                         break;
                     }
@@ -551,7 +565,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
                     LOGGER4J.debug(
                             "PreMacro StepNo:"
-                                    + stepno
+                                    + this.stepno
                                     + " "
                                     + ppr.request.getHost()
                                     + " "
@@ -569,7 +583,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
                     if (pqrs != null) {
                         // cit.set(pqrs); // 更新
-                        savelist.put(stepno, pqrs);
+                        savelist.put(this.stepno, pqrs);
                     }
 
                     if (TWaiter != null) {
@@ -717,7 +731,6 @@ public class ParmGenMacroTrace extends ClientDependent {
         } else {
             state = PMT_POSTMACRO_NULL;
         }
-
         LOGGER4J.debug("END PostMacro X-Thread:" + threadid);
     }
 
@@ -1281,6 +1294,11 @@ public class ParmGenMacroTrace extends ClientDependent {
         return hasnolist;
     }
 
+    public ParmGenMacroTraceParams getParmGenMacroTraceParams(){
+        ParmGenMacroTraceParams pmtParams = new ParmGenMacroTraceParams(this.selected_request, this.last_stepno, this.tabIndex);
+        return pmtParams;
+    }
+
     /**
      * update AppParmsIni and clear cookie/token caches if newAppParmsIniList == null and
      * getAppParmsIniList() != null then nothing to do(current ParmIniList remains)
@@ -1333,4 +1351,16 @@ public class ParmGenMacroTrace extends ClientDependent {
     public boolean isCacheNull() {
         return this.isCacheNull;
     }
+
+    public void setRunningStepNo(int step) {
+        this.runningStepNo = step;
+    }
+
+    public int getRunningStepNo() {
+        return this.runningStepNo;
+    }
+
+
+
+
 }

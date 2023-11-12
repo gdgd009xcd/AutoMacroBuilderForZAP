@@ -1,25 +1,31 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+
+import org.parosproxy.paros.control.Control;
+import org.parosproxy.paros.extension.Extension;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpResponseHeader;
-import org.zaproxy.zap.extension.automacrobuilder.Encode;
-import org.zaproxy.zap.extension.automacrobuilder.PRequest;
-import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenBinUtil;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
+import org.zaproxy.zap.control.AddOn;
+import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.network.HttpRequestBody;
 import org.zaproxy.zap.network.HttpResponseBody;
+
+import javax.swing.*;
 
 public class ZapUtil {
 
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
+
+    private static Extension extensionCustomActive = null;
+    private static ClassLoader classLoaderCustomActive = null;
     /**
      * Get HttpMessage from PRequestResponse
      *
@@ -217,5 +223,131 @@ public class ZapUtil {
      */
     public static String int2String(int val, String defaultString) {
         return val >= 0 ? Integer.toString(val) : defaultString;
+    }
+
+    protected static Extension getExtensionAscanRules() {
+        if (ZapUtil.extensionCustomActive == null) {
+            ZapUtil.extensionCustomActive = Control.getSingleton()
+                    .getExtensionLoader()
+                    .getExtension("ExtensionCustomActiveScanRules");
+        }
+        if (ZapUtil.extensionCustomActive != null) {
+            if (!ZapUtil.extensionCustomActive.isEnabled()) {
+                ZapUtil.extensionCustomActive = null;
+                ZapUtil.classLoaderCustomActive = null;
+            }
+        }
+        return ZapUtil.extensionCustomActive;
+    }
+    private static ClassLoader getClassLoaderCustomActiveScan() {
+        Extension extension = getExtensionAscanRules();
+        if (ZapUtil.classLoaderCustomActive == null) {
+            if (extension != null) {
+                AddOn addon = extension.getAddOn();
+                if (addon != null) {
+                    try {
+                        ZapUtil.classLoaderCustomActive = addon.getClassLoader();
+                        return ZapUtil.classLoaderCustomActive;
+                    } catch (Exception ex) {
+                        LOGGER4J.error(ex.getMessage(), ex);
+                    }
+                    return null;
+                }
+            } else {
+                LOGGER4J.debug("extension not found.");
+            }
+        }
+        return ZapUtil.classLoaderCustomActive;
+    }
+
+    public static boolean callCustomActiveScanMethod(Object object, String packageName, String methodName, Class<?>[] clazzArray, Object[] objectArray) {
+
+        String examplePackageName = "org.zaproxy.zap.extension.customactivescan.HttpMessageWithLCSResponse";
+
+        Object[] exampleargument =  new Object[]{
+          123, "a"
+        };
+
+        Class<?>[] exampleClazz = {
+                Integer.class, String.class
+        };
+
+        boolean called = false;
+
+        ClassLoader addonClassLoader = getClassLoaderCustomActiveScan();
+        if (addonClassLoader != null) {
+            try {
+                Class<?> cls = Class.forName(packageName, true, addonClassLoader);
+                LOGGER4J.debug("loaded class:" + cls.getName());
+                if (cls.isAssignableFrom(object.getClass())) {
+                    if (clazzArray == null || objectArray == null || clazzArray.length == 0 || objectArray.length == 0) {
+                        Method method = object.getClass().getMethod(methodName);
+                        method.invoke(object);
+                        called = true;
+                    } else {
+                        Method method = object.getClass().getMethod(methodName, clazzArray);
+                        method.invoke(object, objectArray);
+                        LOGGER4J.debug("invoked.cls:" + cls.getName() + " method:" + methodName);
+                        called = true;
+                    }
+                } else {
+                    LOGGER4J.debug("different.cls:" + cls.getName() + " object:" + object.getClass().getName());
+                }
+
+            } catch (Exception ex) {
+                LOGGER4J.error(ex.getMessage(), ex);
+            }
+        }
+        return called;
+    }
+
+    public static <T> T callCustomActiveScanMethodReturner(Class<T> returnClass, Object object, String packageName, String methodName, Class<?>[] clazzArray, Object[] objectArray) {
+
+        T returnValue = null;
+        String examplePackageName = "org.zaproxy.zap.extension.customactivescan.HttpMessageWithLCSResponse";
+
+        Object[] exampleargument =  new Object[]{
+                123, "a"
+        };
+
+        Class<?>[] exampleClazz = {
+                Integer.class, String.class
+        };
+
+        boolean called = false;
+
+        ClassLoader addonClassLoader = getClassLoaderCustomActiveScan();
+        if (addonClassLoader != null) {
+            try {
+                Class<?> cls = Class.forName(packageName, true, addonClassLoader);
+                LOGGER4J.debug("loaded class:" + cls.getName());
+                if (cls.isAssignableFrom(object.getClass())) {
+                    if (clazzArray == null || objectArray == null || clazzArray.length == 0 || objectArray.length == 0) {
+                        Method method = object.getClass().getMethod(methodName);
+                        returnValue = CastUtils.castToType(returnClass, method.invoke(object));
+                        called = true;
+                    } else {
+                        Method method = object.getClass().getMethod(methodName, clazzArray);
+                        returnValue =CastUtils.castToType(returnClass, method.invoke(object, objectArray));
+                        LOGGER4J.debug("invoked.cls:" + cls.getName() + " method:" + methodName);
+                        called = true;
+                    }
+                } else {
+                    LOGGER4J.debug("different.cls:" + cls.getName() + " object:" + object.getClass().getName());
+                }
+
+            } catch (Exception ex) {
+                returnValue = null;
+                LOGGER4J.error(ex.getMessage(), ex);
+            }
+        }
+        return returnValue;
+    }
+    public static void SwingInvokeLaterIfNeeded(Runnable runnable) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(runnable);
+        } else {
+            runnable.run();
+        }
     }
 }

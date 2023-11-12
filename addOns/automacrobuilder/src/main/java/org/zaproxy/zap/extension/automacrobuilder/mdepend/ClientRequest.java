@@ -58,7 +58,7 @@ public class ClientRequest implements InterfaceClientRequest {
             try {
                 // send message
                 pmt.send(pmt.getSender(), htmess);
-                LOGGER4J.info("STEP[" + pmt.getStepNo() + "] send URL:" + htmess.getRequestHeader().getURI());
+                LOGGER4J.debug("STEP[" + pmt.getStepNo() + "] send URL:" + htmess.getRequestHeader().getURI());
                 HttpRequestHeader requestheader = htmess.getRequestHeader();
                 HttpRequestBody requestbody = htmess.getRequestBody();
 

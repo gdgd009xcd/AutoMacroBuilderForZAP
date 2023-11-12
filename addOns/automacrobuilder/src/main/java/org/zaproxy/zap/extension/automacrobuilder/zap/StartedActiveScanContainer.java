@@ -5,13 +5,17 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 import org.parosproxy.paros.core.scanner.Scanner;
 import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.ascan.ActiveScan;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGen;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
@@ -29,15 +33,30 @@ public class StartedActiveScanContainer {
 
     private MacroBuilderUI mbui;
     private ParmGenMacroTraceProvider pmtProvider = null;
-    private Map<ActiveScan, ParmGenMacroTraceParams> ascanmap = null;
-    private static final ThreadLocal<Long> STARTED_THREADS = new ThreadLocal<Long>();
+    private Map<ActiveScan, ParmGenMacroTraceParams> traceParamsMapByActiveScan = null;
+
+    // ThreadLocal is actually Map<Thread, anyClass>.
+    // if Thread is teminated then automatically remove entry in map.
+    //
+    private static final ThreadLocal<Long> STARTED_THREADS = new ThreadLocal<>();
     private static final ThreadLocal<UUID> STARTED_UUIDS = new ThreadLocal<>();
     private static final ThreadLocal<ParmGenMacroTraceParams> STARTED_PMTPARAMS =
             new ThreadLocal<>();
 
+    private Map<Integer, String> scanLogPanelScannerIdMap = null;
+
+    private static final ThreadLocal<ParmGenMacroTraceParams> CUSTOMACTIVESCAN_PMTPARAMS = new ThreadLocal<>();
+
+
+
+
+    private Map<Scanner, ParmGenMacroTraceParams> customActiveScanTraceParamsMapByScanner = null;
+
     StartedActiveScanContainer(ParmGenMacroTraceProvider pmtProvider, MacroBuilderUI mbui) {
         this.pmtProvider = pmtProvider;
-        this.ascanmap = new ConcurrentHashMap<>();
+        this.traceParamsMapByActiveScan = new ConcurrentHashMap<>();
+        this.customActiveScanTraceParamsMapByScanner = new ConcurrentHashMap<>();
+        this.scanLogPanelScannerIdMap = new ConcurrentHashMap<>();
         this.mbui = mbui;
     }
 
@@ -52,7 +71,7 @@ public class StartedActiveScanContainer {
         try {
             cleanupStoppedActiveScan();
             ActiveScan ascan = startscan.startScan();
-            ascanmap.put(ascan, tstep);
+            traceParamsMapByActiveScan.put(ascan, tstep);
             id = ascan.getId();
             LOGGER4J.debug("startScan currentstepno: " + tstep.getSelectedRequestNo());
         } finally {
@@ -61,21 +80,21 @@ public class StartedActiveScanContainer {
     }
 
     /**
-     * remove Stopped ActiveAcan
+     * remove Stopped ActiveAcan from ConcurrentMaps.
      *
      * <p>from list
      */
-    private void cleanupStoppedActiveScan() {
+    protected void cleanupStoppedActiveScan() {
         Map<ActiveScan, ParmGenMacroTraceParams> cleanupmap =
-                ascanmap.entrySet().stream()
+                traceParamsMapByActiveScan.entrySet().stream()
                         .filter(ent -> !ent.getKey().isStopped())
                         .collect(Collectors.toMap(ent -> ent.getKey(), ent -> ent.getValue()));
 
         if (cleanupmap != null && cleanupmap.size() > 0) {
-            ascanmap = cleanupmap;
-            LOGGER4J.debug("cleanup running scans:" + ascanmap.size());
+            traceParamsMapByActiveScan = cleanupmap;
+            LOGGER4J.debug("cleanup running scans:" + traceParamsMapByActiveScan.size());
         } else {
-            ascanmap.clear();
+            traceParamsMapByActiveScan.clear();
             LOGGER4J.debug("clearup all scans");
         }
     }
@@ -89,21 +108,25 @@ public class StartedActiveScanContainer {
     public boolean isStartedActiveScan(Scanner ascan) {
         boolean result = false;
         try {
-            result = ascanmap.containsKey(ascan);
+            result = traceParamsMapByActiveScan.containsKey(ascan);
         } finally {
         }
         return result;
     }
 
     /**
-     * Set ParmGenMacroTrace parameters.
+     * Set ParmGenMacroTraceParams in beforeScan ScannerHook.
      *
      * @param ascan
      */
     public void addParmGenMacroTraceParams(Scanner ascan) {
-        STARTED_PMTPARAMS.set(ascanmap.get(ascan));
+        STARTED_PMTPARAMS.set(traceParamsMapByActiveScan.get(ascan));
     }
 
+    /**
+     * set ParmGenMacroTraceParams  in PopUpSingleSend or AuthenticationMethodType.
+     * @param pmtParams
+     */
     public void addParmGenMacroTraceParams(ParmGenMacroTraceParams pmtParams) {
         STARTED_PMTPARAMS.set(pmtParams);
     }
@@ -207,6 +230,7 @@ public class StartedActiveScanContainer {
         if (pmtBase != null) {
             pmtBase.updateOriginalBase(runningInstance);
         }
+        this.pmtProvider.removeSwingRunner(tabIndex);
     }
 
     public void removeEndInstance() {
@@ -231,4 +255,81 @@ public class StartedActiveScanContainer {
         addUUID(uuid);
         this.pmtProvider.addRunningInstance(runningInstance);
     }
+
+    public void addCustomActiveScanPmtParamsByScanner(Scanner scanner, ParmGenMacroTraceParams pmtParams){
+        LOGGER4J.info("addCustomActiveScanPmtParamsByScanner scanid=" + scanner.getId() + " selectedRequestNo=" + pmtParams.getSelectedRequestNo());
+        this.customActiveScanTraceParamsMapByScanner.put(scanner, pmtParams);
+    }
+
+
+    public void clearCustomActiveScanPmtParamsByScanner() {
+        this.customActiveScanTraceParamsMapByScanner.clear();
+    }
+
+    public boolean hasCustomActiveScanPmtParamsByScanner(int scannerId) {
+        List<ParmGenMacroTraceParams> foundList = this.customActiveScanTraceParamsMapByScanner.entrySet().stream()
+                .filter(ent -> ent.getKey().getId() == scannerId)
+                .map(ent -> ent.getValue())
+                .collect(Collectors.toList());
+        return !foundList.isEmpty();
+    }
+    public int sizeOfCustomActiveScanPmtParamsByScanner() {
+        return this.customActiveScanTraceParamsMapByScanner.size();
+    }
+
+    public void cleanUpCustomActiveScanPmtParamsByScanner(Integer[] postedArray) {
+        Map<Scanner, ParmGenMacroTraceParams> cleanupmap =
+                this.customActiveScanTraceParamsMapByScanner.entrySet().stream()
+                        .filter(ent -> {
+                            for (Integer i: postedArray) {
+                                if (i==ent.getKey().getId()) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })
+                        .collect(Collectors.toMap(ent -> ent.getKey(), ent -> ent.getValue()));
+        this.customActiveScanTraceParamsMapByScanner = cleanupmap;
+    }
+
+    public List<Integer[]> getCustomActiveScanPmtParamsArray() {
+        List<Integer[]> listIntegerArray = new ArrayList<>();
+        Map<Scanner, ParmGenMacroTraceParams> removedParamsMapByScanner = new ConcurrentHashMap<>();
+        LOGGER4J.debug("traceParamsMapByScanId size= " + this.customActiveScanTraceParamsMapByScanner.size());
+        for(Map.Entry<Scanner, ParmGenMacroTraceParams> entry: this.customActiveScanTraceParamsMapByScanner.entrySet()){
+            if (entry.getKey().isStop()) {
+                Integer[] integerArray = new Integer[]{
+                        entry.getKey().getId(),
+                        entry.getValue().getSelectedRequestNo(),
+                        entry.getValue().getLastStepNo(),
+                        entry.getValue().getTabIndex()
+                };
+                listIntegerArray.add(integerArray);
+            } else {
+                //removedParamsMapByScanner.put(entry.getKey(), entry.getValue());
+            }
+        }
+        //this.customActiveScanTraceParamsMapByScanner = removedParamsMapByScanner;
+        return listIntegerArray;
+    }
+
+
+    protected void setCustomActiveScanPmtParamsOfThread(ParmGenMacroTraceParams pmtParams) {
+        LOGGER4J.debug("setCustomActiveScanPmtParamsOfThread at threadid:" + Thread.currentThread().getId());
+        CUSTOMACTIVESCAN_PMTPARAMS.set(pmtParams);
+    }
+
+    protected ParmGenMacroTraceParams getCustomActiveScanPmtParamsOfThread() {
+        LOGGER4J.debug("get(remove)CustomActiveScanPmtParamsOfThread at threadid:" + Thread.currentThread().getId());
+        try {
+            return CUSTOMACTIVESCAN_PMTPARAMS.get();
+        } finally {
+            CUSTOMACTIVESCAN_PMTPARAMS.remove();
+        }
+    }
+
+    public ParmGenMacroTraceProvider getPmtProvider() {
+        return this.pmtProvider;
+    }
+
 }

@@ -19,6 +19,9 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
+import org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -74,6 +77,8 @@ public class EnvironmentVariables {
     private static List<Pattern> ExcludeMimeTypesPatterns = null;
     private static org.apache.logging.log4j.Logger LOGGER4J;
 
+    private static ExtensionAutoMacroBuilder extensionAutoMacroBuilder;
+
     public static String JSONFileIANACharsetName =
             Encode.UTF_8.getIANACharsetName(); // JSON file IN/OUT encoding
     public static String DefaultCSVFileIANACharsetName =
@@ -84,6 +89,8 @@ public class EnvironmentVariables {
     //
     static {
         LOGGER4J = org.apache.logging.log4j.LogManager.getLogger();
+
+        extensionAutoMacroBuilder = null;
 
         setExcludeMimeTypes(
                 Arrays.asList(
@@ -272,6 +279,7 @@ public class EnvironmentVariables {
 
 
         jfc.setFileFilter(pFilter);
+        jfc.setAcceptAllFileFilterUsed(false);
 
         int fileChooserSelection = jfc.showOpenDialog(parent);// OPEN_DIALOG
 
@@ -343,6 +351,7 @@ public class EnvironmentVariables {
         jfc.setSelectedFile(cfile);
         ParmFileFilter pFilter=new ParmFileFilter();
         jfc.setFileFilter(pFilter);
+        jfc.setAcceptAllFileFilterUsed(false);
 
         EnvironmentVariables.choosedFilePathName = null;
         int fileChooserSelection = jfc.showSaveDialog(parent);
@@ -359,5 +368,38 @@ public class EnvironmentVariables {
         }
 
         return EnvironmentVariables.choosedFilePathName;
+    }
+
+    public static void setExtensionAutoMacroBuilder(ExtensionAutoMacroBuilder extensionAutoMacroBuilder) {
+        EnvironmentVariables.extensionAutoMacroBuilder = extensionAutoMacroBuilder;
+    }
+
+    private static void callCleanUp() {
+        if (EnvironmentVariables.extensionAutoMacroBuilder != null) {
+            EnvironmentVariables.extensionAutoMacroBuilder.cleanUp();
+        }
+    }
+
+    private static ParmGenMacroTraceProvider getParmGenMacroTraceProvider() {
+        if (EnvironmentVariables.extensionAutoMacroBuilder != null) {
+            return EnvironmentVariables.extensionAutoMacroBuilder.getParmGenMacroTraceProvider();
+        }
+        return null;
+    }
+
+    public static ParmGenMacroTrace getBaseInstanceOfParmGenMacroTrace(int tabIndex) {
+        ParmGenMacroTraceProvider pmtProvider = getParmGenMacroTraceProvider();
+        if (pmtProvider != null) {
+            return pmtProvider.getBaseInstance(tabIndex);
+        }
+        return null;
+    }
+
+    public static MacroBuilderUI getMacroBuilderUI() {
+        if (EnvironmentVariables.extensionAutoMacroBuilder != null) {
+            MacroBuilderUI ui = EnvironmentVariables.extensionAutoMacroBuilder.getMacroBuilderUI();
+            return ui;
+        }
+        return null;
     }
 }

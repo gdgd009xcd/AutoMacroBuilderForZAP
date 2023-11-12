@@ -19,16 +19,22 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import org.zaproxy.zap.extension.automacrobuilder.zap.MyWorkPanel;
+import org.zaproxy.zap.utils.DisplayUtils;
+
 import java.awt.Color;
 import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
+import javax.swing.*;
+
+import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")
 public class MacroBuilderUIRequestListRender extends DefaultListCellRenderer {
     ParmGenMacroTrace pmt;
+    private static final ImageIcon A_TAB_ICON =
+            DisplayUtils.getScaledIcon(
+                    new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 
     public MacroBuilderUIRequestListRender(ParmGenMacroTrace pmt) {
         this.pmt = pmt;
@@ -41,6 +47,13 @@ public class MacroBuilderUIRequestListRender extends DefaultListCellRenderer {
                 (JLabel)
                         super.getListCellRendererComponent(
                                 list, value, index, isSelected, cellHasFocus);
+
+        boolean isRunning = pmt.getRunningStepNo() == index;
+        if (isRunning && index >= 0) {
+            label.setIcon(A_TAB_ICON);
+        } else {
+            label.setIcon(null);
+        }
 
         if (list.isSelectedIndex(index)) {
             // 選択行はデフォルトの色

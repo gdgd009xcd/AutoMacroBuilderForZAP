@@ -98,4 +98,8 @@ public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
     public void setTargetStepNo(ParmGenMacroTraceParams targetStepNo) {
         this.targetStepNo = targetStepNo;
     }
+
+    protected void cleanUpStartedActiveScan() {
+        this.startedascan.cleanupStoppedActiveScan();
+    }
 }
