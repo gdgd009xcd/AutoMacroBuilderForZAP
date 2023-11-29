@@ -2096,7 +2096,7 @@ private void setAppParmsIni(){
         if (rowsSelected.length > 0){
             current_tablecolidx = 3;
             current_tablerowidx = rowsSelected[0];
-            new ParmGenRegex(this, current_tablecolidx > 2 ? false : true).setVisible(true);
+            new ParmGenRegex(this,  true).setVisible(true);
         }
     }//GEN-LAST:event_csvParamRegexTestActionPerformed
 

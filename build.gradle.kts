@@ -1,6 +1,8 @@
 plugins {
     id("com.diffplug.spotless") version "6.20.0"
     id("com.github.ben-manes.versions") version "0.49.0"
+    // Apply the java-library plugin to add support for Java Library
+    //`java-library`
 }
 
 allprojects {

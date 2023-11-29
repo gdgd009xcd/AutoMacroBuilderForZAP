@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "1.1.10"
+version = "1.1.11"
 description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {
@@ -8,6 +8,7 @@ tasks.withType<JavaCompile> {
 }
 
 dependencies {
+    //implementation(files("../../../CustomActiveScanLib/out/artifacts/CustomActiveScanLib_jar/CustomActiveScanLib.jar"))
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("org.jsoup:jsoup:1.15.3")
 }
