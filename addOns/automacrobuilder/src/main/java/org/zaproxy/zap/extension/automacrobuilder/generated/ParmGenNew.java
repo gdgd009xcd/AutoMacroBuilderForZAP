@@ -21,19 +21,18 @@ import javax.swing.text.StyledDocument;
 import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
 import org.zaproxy.zap.extension.automacrobuilder.view.TextPaneLineWrapper;
+import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
 
 /**
  *
- * @author tms783
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, interfaceParmGenWin {
     
     private static org.apache.logging.log4j.Logger LOGGER4J = org.apache.logging.log4j.LogManager.getLogger();
     
-    // 下記定数P_XXXは、ModelTabsの各タブの出現順序と一致しなければならない。
-    // ModelTabsStateChangedでタブ切り替えた場合に、切り替えたタブの番号ModelTabs.getSelectedIndex()の返値と下記定数は
-    // 対応している。
+    // below P_XXX variables are tabIndex number of ModelTabs.
     public final static int P_NUMBERMODEL = 0;
     final static int P_CSVMODEL = 1;
     final static int P_TRACKMODEL = 2;
@@ -41,7 +40,7 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
     final static int P_RANDOMMODEL = 4;//NOP
 
 
-    //
+    //　below P_XXX variables are tabIndex number of ResReqTabs.
     public final static int P_REQUESTTAB = 0;
     public final static int P_RESPONSETAB = 1;
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
@@ -99,17 +98,19 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
         String _url = mess.request.getURL();
 
         selected_requestURL.setText(_url);
-        
-        SwingUtilities.invokeLater(() -> {
-            try {
-                JTextPaneContents reqdoc = new JTextPaneContents(RequestArea);
-                reqdoc.setRequestChunks(mess.request);
-            } catch (Exception ex) {
-                Logger.getLogger(ParmGenNew.class.getName()).log(Level.SEVERE, null, ex);
+
+        ZapUtil.SwingInvokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JTextPaneContents reqdoc = new JTextPaneContents(RequestArea);
+                    reqdoc.setRequestChunks(mess.request);
+                } catch (Exception ex) {
+                    LOGGER4J.error(ex.getMessage(), ex);
+                }
             }
-           
         });
-        
+
         current_model = P_NUMBERMODEL;
 
         if(_rec!=null){
@@ -143,6 +144,9 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
             addrec = rec;
             CSVrewind.setSelected(true);
             NumberRewind.setSelected(true);
+            if (ParmGenGSONSaveV2.proxy_messages.size() > 1) {
+                current_model = P_TRACKMODEL;
+            }
         }
 
         setAppParmsIni();
