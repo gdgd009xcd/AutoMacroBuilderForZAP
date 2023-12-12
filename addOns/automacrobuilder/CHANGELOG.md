@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.12] - 2023-12-12
+### Added
+- improve: Automacrobuilder now tracks cookies in http resposes on "ZAP's proxy".
+### Fixed
+- bugfix: Fixed incorrect codes in cookie state management.
+
 ## [v1.1.11] - 2023-11-29
 ### Changed
 - bugfix: removed no meaning condition code in CSV column parameter setting.

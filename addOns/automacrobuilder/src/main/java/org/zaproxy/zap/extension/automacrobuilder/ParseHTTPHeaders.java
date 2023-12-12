@@ -52,7 +52,7 @@ class ParseHTTPHeaders implements DeepClone {
     String url;
     boolean isSSL; // ==true then ssl
     String path;
-    String path_pref_url;
+    private String scheme;
     String protocol;
     String status;
     String reason;
@@ -173,7 +173,7 @@ class ParseHTTPHeaders implements DeepClone {
         formdata = false;
         content_length = -1;
         bytebody = null;
-        path_pref_url = "";
+        scheme = "";
         parsedheaderlength = 0;
         isHeaderModified = true;
     }
@@ -206,7 +206,7 @@ class ParseHTTPHeaders implements DeepClone {
         url = pheaders.url;
         isSSL = pheaders.isSSL;
         path = pheaders.path;
-        path_pref_url = pheaders.path_pref_url;
+        scheme = pheaders.scheme;
         protocol = pheaders.protocol;
         status = pheaders.status;
         reason = pheaders.reason;
@@ -314,8 +314,8 @@ class ParseHTTPHeaders implements DeepClone {
         return isSSL;
     }
 
-    public String getPathPrefURL() {
-        return path_pref_url;
+    public String getScheme() {
+        return scheme;
     }
 
     public boolean isFormData() {
@@ -422,10 +422,10 @@ class ParseHTTPHeaders implements DeepClone {
                                 path = parms[0];
                                 String lowerpath = path.toLowerCase();
                                 if (lowerpath.startsWith("http")) {
-                                    path_pref_url = "http";
+                                    scheme = "http";
                                     isSSL = false;
                                     if (lowerpath.startsWith("https")) {
-                                        path_pref_url = "https";
+                                        scheme = "https";
                                         isSSL = true;
                                     }
                                     String[] actualpaths = path.split("[/]");
@@ -839,7 +839,7 @@ class ParseHTTPHeaders implements DeepClone {
         return false;
     }
 
-    public boolean setCookiesFromCookieMan(ParmGenCookieManager cookieman) {
+    public boolean setCookiesFromCookieMan(CookieManager cookieman) {
         List<HttpCookie> hcookies = cookieman.get(host, path, isSSL);
         return setCookies(hcookies);
     }
@@ -1690,6 +1690,10 @@ class ParseHTTPHeaders implements DeepClone {
         }
 
         return pmtParams;
+    }
+
+    public String getPath() {
+        return this.path;
     }
 
     @Override

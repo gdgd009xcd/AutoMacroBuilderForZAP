@@ -24,6 +24,8 @@ import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
+import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.ThreadManagerProvider;
 import org.zaproxy.zap.extension.forceduser.ExtensionForcedUser;
 import org.zaproxy.zap.network.HttpSenderListener;
@@ -122,6 +124,17 @@ public class MyFirstSenderListener implements HttpSenderListener {
                         "onHttpRequestReceive Sender is originated from StartedActiveScan. HttpSender:"
                                 + arg2);
             } else {
+                switch(arg1) {
+                    // tracking cookies only in proxy/manual request.
+                    case HttpSender.PROXY_INITIATOR:
+                    case HttpSender.MANUAL_REQUEST_INITIATOR:
+                        ParmGenMacroTraceProvider pmtProvider = this.startedcon.getPmtProvider();
+                        pmtProvider.parseSetCookie(arg0);
+                        break;
+                    default:
+                        break;
+                }
+
                 LOGGER4J.debug("onHttpResponseReceive: no action. sender is not created by ExtensionActiveScanWrapper");
             }
         } finally {

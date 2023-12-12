@@ -19,13 +19,14 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import org.apache.commons.httpclient.URI;
+import org.parosproxy.paros.network.HtmlParameter;
+import org.parosproxy.paros.network.HttpMessage;
+import org.parosproxy.paros.network.HttpRequestHeader;
+import org.parosproxy.paros.network.HttpResponseHeader;
 import org.zaproxy.zap.extension.automacrobuilder.view.SwingTimerFakeRunner;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -52,6 +53,7 @@ public class ParmGenMacroTraceProvider {
     private boolean CBreplaceCookie = false; // == true then overwrite Cookie
     private boolean CBreplaceTrackingParam = false; // == true then overwrite Tracking Tokens
     private int waittimer = 0; // wait timer (msec)
+    private CookieManager cookieManagerInAppScope;//collecting set-Cookie header values except originated from AutoMacroBuilder
 
     public void setCBInheritFromCache(boolean b) {
         CBInheritFromCache = b;
@@ -121,6 +123,7 @@ public class ParmGenMacroTraceProvider {
         pmtList = new ArrayList<>();
         pmtList.add(pmt_originalbase);
         swingRunnerMap = new ConcurrentHashMap<>();
+        cookieManagerInAppScope = new CookieManager();
     }
 
     public void clear() {
@@ -232,5 +235,46 @@ public class ParmGenMacroTraceProvider {
         if (runner != null) {
             runner.doneRunningInstance();
         }
+    }
+
+    public void parseSetCookie(HttpMessage httpMessage) {
+        HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
+        // responseHeader.getCookieParams returns header of "set-cookie" and "set-cookie2"
+        TreeSet<HtmlParameter> cookies = responseHeader.getCookieParams();
+        for(HtmlParameter cookie: cookies) {
+            // Set-Cookie: PHPSESSID=875cfa8439d7912bfda16b35e5cfa7df; path=/; expires=Fri, 08-Dec-23 16:51:00 GMT;domain=localhost; HttpOnly; Secure;
+            // cookieName = "PHPSESSID";
+            // cookieValue = "875cfa8439d7912bfda16b35e5cfa7df";
+            // cookieAttrs  = new HashSet<String>(); stored entire [name=value] string like following.
+            // cookieAttrs.add("path=/");
+            // cookieAttrs.add("expires=Fri, 08-Dec-23 16:51:00 GMT");
+            // cookieAttrs.add("domain=localhost");
+            // cookieAttrs.add("HttpOnly");
+            // cookieAttrs.add("Secure");
+
+            String cookieName = cookie.getName();
+            String cookieValue = cookie.getValue();
+            Set<String> cookieAttrs = cookie.getFlags();
+            StringBuffer setCookieLine = new StringBuffer();
+            setCookieLine.append("Set-Cookie: ");
+            setCookieLine.append(cookieName + "=" + cookieValue + ";");
+            for(String cookieAttr: cookieAttrs) {
+                setCookieLine.append(" " + cookieAttr + ";");
+            }
+            HttpRequestHeader requestHeader = httpMessage.getRequestHeader();
+            URI uri = requestHeader.getURI();
+            try {
+                String hostName = uri.getHost();
+                String path = uri.getPath();
+                LOGGER4J.debug("domain[" + hostName + "] path[" + path + "] line[" + setCookieLine.toString() + "]");
+                this.cookieManagerInAppScope.parse(hostName, path, setCookieLine.toString());
+            }catch (Exception ex) {
+
+            }
+        }
+    }
+
+    public CookieManager getCookieManagerInAppScope() {
+        return this.cookieManagerInAppScope;
     }
 }

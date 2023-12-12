@@ -49,7 +49,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     private FetchResponseVal fetchResVal = null; // token cache  has DeepCloneable
 
-    private ParmGenCookieManager cookieMan = null; // cookie manager has DeepCloneable
+    private CookieManager cookieMan = null; // cookie manager has DeepCloneable
 
     PRequestResponse toolbaseline = null; // single shot request tool  baseline request
     // such as Repeater. when mutithread scan, this parameter is null.
@@ -207,6 +207,12 @@ public class ParmGenMacroTrace extends ClientDependent {
         nobj.tabIndex = pmtParams.getTabIndex();
         nobj.fetchResVal = this.fetchResVal != null ? this.fetchResVal.clone() : null; // deepclone
         nobj.cookieMan = this.cookieMan != null ? this.cookieMan.clone() : null; // deepclone
+        if (pmtProvider.getCBInheritFromCache()) {
+            if (nobj.cookieMan == null) {
+                nobj.cookieMan = new CookieManager();
+            }
+           nobj.cookieMan.addCookieManager(pmtProvider.getCookieManagerInAppScope());
+        }
         nobj.savelist = new HashMap<>();
         nobj.toolbaseline = this.toolbaseline != null ? this.toolbaseline.clone() : null;
         nobj.CBInheritFromCache =
@@ -1172,7 +1178,7 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     public boolean initCookieManager() {
         if (cookieMan == null) {
-            cookieMan = new ParmGenCookieManager();
+            cookieMan = new CookieManager();
             return true;
         }
         return false;
@@ -1185,7 +1191,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         for (String headerval : setcookieheaders) {
             String cheader = "Set-Cookie: " + headerval;
             String domain = pqrs.request.getHost();
-            String path = "/"; // default root path
+            String path = pqrs.request.getPath();
             cookieMan.parse(domain, path, cheader);
         }
     }
