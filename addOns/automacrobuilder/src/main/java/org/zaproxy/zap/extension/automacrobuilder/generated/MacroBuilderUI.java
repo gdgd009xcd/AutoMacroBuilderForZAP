@@ -42,6 +42,7 @@ import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
 
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.JSONFileIANACharsetName;
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
+import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.A_TAB_ICON;
 import static org.zaproxy.zap.extension.automacrobuilder.ListDeepCopy.listDeepCopyPRequestResponse;
 
 /**
@@ -522,6 +523,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         });
         PopupMenuForRequestList.add(deleteRequest);
 
+        showMessageView.setIcon(A_TAB_ICON);
         showMessageView.setText(bundle.getString("MacroBuilderUI.showMessageView.text")); // NOI18N
         showMessageView.addActionListener(new ActionListener() {
             @Override

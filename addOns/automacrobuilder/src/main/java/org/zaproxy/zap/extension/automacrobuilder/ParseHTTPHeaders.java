@@ -54,8 +54,8 @@ class ParseHTTPHeaders implements DeepClone {
     String path;
     private String scheme;
     String protocol;
-    String status;
-    String reason;
+    private String status_code;
+    private String reason_phrase;
     String host;
     int port;
     public ArrayList<String> pathparams;
@@ -208,8 +208,8 @@ class ParseHTTPHeaders implements DeepClone {
         path = pheaders.path;
         scheme = pheaders.scheme;
         protocol = pheaders.protocol;
-        status = pheaders.status;
-        reason = pheaders.reason;
+        status_code = pheaders.status_code;
+        reason_phrase = pheaders.reason_phrase;
         host = pheaders.host;
         port = pheaders.port;
         pathparams = new ArrayList<>(pheaders.pathparams);
@@ -398,10 +398,12 @@ class ParseHTTPHeaders implements DeepClone {
                 bodystring = httpmessage.substring(epos);
                 break;
             } else {
-                if (frec) { // start-line
+                if (frec) { // parse start_line
                     nv = rec.split("[ \t]+", 3);
-                    // request nv[0] method nv[1] url nv[2] protocol
-                    if (nv.length > 2) {
+                    // request_line   nv[0]=method nv[1]=url nv[2]=protocol
+                    // response_line  nv[0]=protocol nv[1]=status_code nv[2]=reason_phrase
+                    // * reason_phrase may be whitespace
+                    if (nv.length > 1) {
                         method = nv[0];
 
                         String lowerline = method.toLowerCase();
@@ -409,8 +411,11 @@ class ParseHTTPHeaders implements DeepClone {
                         if (lowerline.startsWith("http")) { // response
                             isrequest = false;
                             protocol = nv[0];
-                            status = nv[1];
-                            reason = nv[2];
+                            status_code = nv[1];
+                            reason_phrase = "";
+                            if (nv.length > 2) {
+                                reason_phrase = nv[2];
+                            }
                             // REMOVE set_cookieparams.clear();
                             setcookieheaders.clear();
                         } else { // request;
@@ -465,7 +470,10 @@ class ParseHTTPHeaders implements DeepClone {
                                             decodedParamName(nvpair[0], pageenc), nvpair[1]);
                                 }
                             }
-                            protocol = nv[2];
+                            protocol = "HTTP/1.1";
+                            if (nv.length > 2) {
+                                protocol = nv[2];
+                            }
                         }
                     }
                     frec = false;
@@ -951,11 +959,11 @@ class ParseHTTPHeaders implements DeepClone {
         if (isrequest) {
             return method + " " + url + " " + protocol;
         }
-        return protocol + " " + status + " " + reason;
+        return protocol + " " + status_code + " " + reason_phrase;
     }
 
     public String getStatus() {
-        return status;
+        return status_code;
     }
 
     /**

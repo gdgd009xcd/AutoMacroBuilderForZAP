@@ -19,15 +19,12 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
-import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
-
 import java.awt.*;
-import javax.swing.*;
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.extension.ExtensionHook;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
-import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
-import org.zaproxy.zap.utils.DisplayUtils;
+import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.A_TAB_ICON;
+
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")
@@ -36,9 +33,6 @@ public class MyWorkPanel extends AbstractPanel {
     private static final org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    private static final ImageIcon A_TAB_ICON =
-            DisplayUtils.getScaledIcon(
-                    new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 
     MyWorkPanel(
             ExtensionActiveScanWrapper extscanwrapper,
