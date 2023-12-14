@@ -21,7 +21,7 @@ jobs:
       - name: Checkout project sources
         uses: actions/checkout@v3
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2.11
+        uses: gradle/gradle-build-action@v2.11.0
       - name: Run build with Gradle Wrapper
         run: ./gradlew ${{env.ZAP_ADDON_BUILD_TASK}}
       - name: get zap file name
