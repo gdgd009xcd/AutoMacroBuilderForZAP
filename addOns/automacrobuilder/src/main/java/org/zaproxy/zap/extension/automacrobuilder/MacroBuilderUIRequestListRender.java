@@ -19,22 +19,15 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-import org.zaproxy.zap.extension.automacrobuilder.zap.MyWorkPanel;
-import org.zaproxy.zap.utils.DisplayUtils;
-
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.*;
-
-import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
+import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.A_TAB_ICON;
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")
 public class MacroBuilderUIRequestListRender extends DefaultListCellRenderer {
     ParmGenMacroTrace pmt;
-    private static final ImageIcon A_TAB_ICON =
-            DisplayUtils.getScaledIcon(
-                    new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 
     public MacroBuilderUIRequestListRender(ParmGenMacroTrace pmt) {
         this.pmt = pmt;

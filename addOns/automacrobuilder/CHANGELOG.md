@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.13] - 2023-12-13
+### Fixed
+- bugfix: Fixed "null null null" response status-line is appeared in messageView
+### Changed
+- maintenance: changed version of gradle-build-action from @2 to @2.11 
+
 ## [v1.1.12] - 2023-12-12
 ### Added
 - improve: Automacrobuilder now tracks cookies in http resposes on "ZAP's proxy".

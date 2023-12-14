@@ -68,7 +68,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
     // URL for AutoMacroBuilder
     private String AMBURL = "https://gdgd009xcd.github.io/AutoMacroBuilderForZAP/";
 
-    private static final ImageIcon A_TAB_ICON =
+    public static final ImageIcon A_TAB_ICON =
             DisplayUtils.getScaledIcon(
                     new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 

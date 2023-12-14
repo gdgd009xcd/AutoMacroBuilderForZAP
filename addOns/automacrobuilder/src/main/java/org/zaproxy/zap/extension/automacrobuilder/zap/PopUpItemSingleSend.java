@@ -15,9 +15,7 @@ import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.view.SwingTimerFakeRunner;
 import org.zaproxy.zap.model.SessionStructure;
-import org.zaproxy.zap.utils.DisplayUtils;
-
-import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
+import static org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder.A_TAB_ICON;
 
 @SuppressWarnings("serial")
 public class PopUpItemSingleSend extends JMenuItem {
@@ -33,9 +31,6 @@ public class PopUpItemSingleSend extends JMenuItem {
     private BeforeMacroDoActionProvider beforemacroprovider = null;
     private PostMacroDoActionProvider postmacroprovider = null;
     private ExtensionHistory extensionHistory = null;
-    private static final ImageIcon A_TAB_ICON =
-            DisplayUtils.getScaledIcon(
-                    new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 
     PopUpItemSingleSend(
             MacroBuilderUI mbui,
