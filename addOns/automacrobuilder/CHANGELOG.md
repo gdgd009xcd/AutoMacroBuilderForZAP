@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - maintenance: changed version of gradle-build-action from 2 to 2.11.0
 
-
 ## [v1.1.12] - 2023-12-12
 ### Added
 - improve: Automacrobuilder now tracks cookies in http resposes on "ZAP's proxy".
