@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - bugfix: Fixed "null null null" response status-line is appeared in messageView
 ### Changed
-- maintenance: changed version of gradle-build-action from @2 to @2.11.0
+- maintenance: changed version of gradle-build-action from 2 to 2.11.0
 
 
 ## [v1.1.12] - 2023-12-12
