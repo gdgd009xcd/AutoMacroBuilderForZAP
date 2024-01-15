@@ -6,7 +6,7 @@
 <toc version="2.0">
 	<tocitem text="ZAP User Guide" tocid="toplevelitem">
 		<tocitem text="Add Ons" tocid="addons">
-			<tocitem text="AutoMacroBuilderForZAP" target="automacrobuilder"/>
+			<tocitem text="AutoMacroBuilderForZAP" target="addon.automacrobuilder"/>
 		</tocitem>
 	</tocitem>
 </toc>

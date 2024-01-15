@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.14] - 2023-12-14
+### Added
+- improve: Added javahelp [?] button on the right-top corner of the MacroBuilder tab
+### Changed
+- maintenance: Removed the "Tracking Parameter" JPanel which is used only burp from the MacroBuilder Tab. 
+
 ## [v1.1.13] - 2023-12-14
 ### Fixed
 - bugfix: Fixed "null null null" response status-line is appeared in messageView

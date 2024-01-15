@@ -72,8 +72,7 @@ public class ExtensionAutoMacroBuilder extends ExtensionAdaptor {
             DisplayUtils.getScaledIcon(
                     new ImageIcon(MyWorkPanel.class.getResource(ZAP_ICONS + "/A.png")));
 
-    // private static final ImageIcon ICON =
-    //        new ImageIcon(ExtensionAutoMacroBuilder.class.getResource(RESOURCES + "/cake.png"));
+
 
     // private static final String EXAMPLE_FILE = "example/ExampleFile.txt";
 
