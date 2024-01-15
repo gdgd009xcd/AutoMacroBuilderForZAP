@@ -82,42 +82,44 @@ public class CookieManager implements DeepClone {
                             hostName, path,
 
                             true); // SSL attribute is ignored when cookie values ​​are added to
-            String defaultPath = extractDefaultPath(path);
-            originalURIs.add(uri);
-            //
-            // Description of Cookie Attributes
-            //
-            // * domain
-            //   specified:
-            //     cookie is sent specified domain or subdomain of it.
-            //     the domain attribute must be a domain containing the
-            //     current host name, so, only same as host or subdomain can be specified.
-            //     (ex: hostname example.com  domain=example.com or domain=www.example.com)
-            //   Not specified:
-            //     If domain attribute is not specified, the cookie is sent only to the host that sent Set-Cookie.
-            //
-            // * path
-            //   specified:
-            //     cookie is sent to the request path which prefix matches the path value.
-            //
-            //   Not specified:
-            //     defaultPath is assigned as the path value. defaultPath is  directory portion of request-uri.
-            //     ex1. uri=http://test.com/shared/lib/index.php
-            //          defaultPath = /shared/lib
-            //     ex2. uri=http://test.com/index.php
-            //          defaultPath = /
-            //     ex3. uri=http://test.com/
-            //          defaultPath = /
-            //
-            //
-            for (HttpCookie hc : parsedcookies) {
-                String pathProp = hc.getPath();
-                if (pathProp == null || pathProp.isEmpty()) {
-                    hc.setPath(defaultPath);
+            if (uri != null) {
+                String defaultPath = extractDefaultPath(path);
+                originalURIs.add(uri);
+                //
+                // Description of Cookie Attributes
+                //
+                // * domain
+                //   specified:
+                //     cookie is sent specified domain or subdomain of it.
+                //     the domain attribute must be a domain containing the
+                //     current host name, so, only same as host or subdomain can be specified.
+                //     (ex: hostname example.com  domain=example.com or domain=www.example.com)
+                //   Not specified:
+                //     If domain attribute is not specified, the cookie is sent only to the host that sent Set-Cookie.
+                //
+                // * path
+                //   specified:
+                //     cookie is sent to the request path which prefix matches the path value.
+                //
+                //   Not specified:
+                //     defaultPath is assigned as the path value. defaultPath is  directory portion of request-uri.
+                //     ex1. uri=http://test.com/shared/lib/index.php
+                //          defaultPath = /shared/lib
+                //     ex2. uri=http://test.com/index.php
+                //          defaultPath = /
+                //     ex3. uri=http://test.com/
+                //          defaultPath = /
+                //
+                //
+                for (HttpCookie hc : parsedcookies) {
+                    String pathProp = hc.getPath();
+                    if (pathProp == null || pathProp.isEmpty()) {
+                        hc.setPath(defaultPath);
+                    }
+                    cookiestore.add(uri, hc);
                 }
-                cookiestore.add(uri, hc);
+                return parsedcookies;
             }
-            return parsedcookies;
         }
         return null;
     }
