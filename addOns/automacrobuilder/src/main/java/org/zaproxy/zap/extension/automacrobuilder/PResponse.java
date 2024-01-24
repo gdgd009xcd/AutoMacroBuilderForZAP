@@ -32,6 +32,7 @@ public class PResponse extends ParseHTTPHeaders {
     private ParmGenGSONDecoder jsonparser = null;
 
     public static final int MAX_SIZE_RESPONSE_CONTENTS = 25000;
+    private static final int MAX_SIZE_DISPLAYABLE_TEXTS = 100000;
 
     public PResponse(byte[] bin, Encode _pageenc) {
         super(bin, _pageenc);
@@ -40,7 +41,7 @@ public class PResponse extends ParseHTTPHeaders {
         jsonparser = null;
     }
 
-    // Location headerのパラメータ取得
+    // get Location header value
     public <T> InterfaceCollection<T> getLocationTokens(InterfaceCollection<T> tklist) {
         String locheader = getHeader("Location");
 
@@ -179,13 +180,14 @@ public class PResponse extends ParseHTTPHeaders {
         return getResponseChunks(theaders, tbodies, tcontent_type);
     }
 
-    public List<PResponse.ResponseChunk> getResponseChunks(
+    private List<PResponse.ResponseChunk> getResponseChunks(
             String theaders, byte[] tbodies, String tcontent_type) {
         List<PResponse.ResponseChunk> reschunks = new ArrayList<>();
 
         String mediaType = getContentMimeType();
         String displayableImageContents = "";
         String application_json_contents = "";
+        String text_contents = "";
         if (tcontent_type != null && !tcontent_type.isEmpty()) {
             LOGGER4J.debug("content-type[" + tcontent_type + "]");
             List<String> matches =
@@ -194,17 +196,24 @@ public class PResponse extends ParseHTTPHeaders {
                 displayableImageContents = matches.get(0);
             }
             List<String> jsonmatches =
-                    ParmGenUtil.getRegexMatchGroups("application/(json)", tcontent_type);
+                    ParmGenUtil.getRegexMatchGroups("application/(json|javascript)", tcontent_type);
+            if (jsonmatches.size() > 0) {
+                application_json_contents = jsonmatches.get(0);
+            }
+            List<String> textmatches =
+                    ParmGenUtil.getRegexMatchGroups("application/(\\w)", tcontent_type);
             if (jsonmatches.size() > 0) {
                 application_json_contents = jsonmatches.get(0);
             }
         }
 
         boolean displayableTextContents = false;
-        if (mediaType.equalsIgnoreCase("text/html")) {
-            displayableTextContents = true;
-        } else if (!application_json_contents.isEmpty()) {
-            displayableTextContents = true;
+        if (tbodies.length < MAX_SIZE_DISPLAYABLE_TEXTS) {
+            if (mediaType.equalsIgnoreCase("text/html")) {
+                displayableTextContents = true;
+            } else if (!application_json_contents.isEmpty()) {
+                displayableTextContents = true;
+            }
         }
 
         int partno = 0;
