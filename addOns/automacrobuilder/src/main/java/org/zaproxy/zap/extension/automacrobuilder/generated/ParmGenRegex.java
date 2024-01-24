@@ -36,7 +36,7 @@ import org.zaproxy.zap.extension.automacrobuilder.view.SwingStyle;
 
 /**
  *
- * @author tms783
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ParmGenRegex extends javax.swing.JDialog {
@@ -212,11 +212,16 @@ public class ParmGenRegex extends javax.swing.JDialog {
         SwingStyle.clearAllCharacterAttributes(doc);
 
         OriginalText.setCaretPosition(0);
-        
+
+        boolean hasBinaryContents = false;
         isLabelSaveBtn = false;
         if (doc instanceof StyledDocumentWithChunk) {
             this.docwithchunk = CastUtils.castToType(doc);
+            hasBinaryContents = this.docwithchunk.hasBinaryContents();
             isLabelSaveBtn = this.docwithchunk.isRequest();
+        }
+        if(hasBinaryContents) {
+            RegexTest.setEnabled(false);
         }
         
         addHexView(isLabelSaveBtn);
@@ -284,7 +289,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         for(int i = 0;i < patterns.length; i++){
             for(int j = 0 ; j< 2; j++){
                 String strpattern = patterns[i] + grpclose[j];
-                Pattern pattern = ParmGenUtil.Pattern_compile(strpattern);//数値
+                Pattern pattern = ParmGenUtil.Pattern_compile(strpattern);// number
                 Matcher matcher = pattern.matcher(orig); 
                 if (matcher.find()){
                     regex = matcher.group();
@@ -310,7 +315,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     
     int  hasGroupRegex(String r){
         // (?:^|[^\\])(\([^?].*?\)|\(\))
-        String greg = "(?:^|[^\\\\])(\\([^?].*?\\)|\\(\\))";//後方参照グループ
+        String greg = "(?:^|[^\\\\])(\\([^?].*?\\)|\\(\\))";//back-reference group
         Pattern pattern = ParmGenUtil.Pattern_compile(greg);
         Matcher matcher = pattern.matcher(r);
         int gtotal = 0;
@@ -873,7 +878,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
             regprefix = "(?:\\r|\\n|.)";
         
         }else{
-            regprefix = "\\s";//ホワイトスペース（改行含む）
+            regprefix = "\\s";//white space(which contains \t \r \n \f)
         }
 
         String minmatch = "";
@@ -1013,13 +1018,13 @@ public class ParmGenRegex extends javax.swing.JDialog {
         // TODO add your handling code here:
 
             switch (evt.getKeyCode()) {
-            case KeyEvent.VK_Z:	//CTRL+Zのとき、UNDO実行
+            case KeyEvent.VK_Z:	//Undo when Ctrl+Z key is pressed.
                     if (evt.isControlDown() && um.canUndo()) {
                             um.undo();
                             evt.consume();
                     }
                     break;
-            case KeyEvent.VK_Y:	//CTRL+Yのとき、REDO実行
+            case KeyEvent.VK_Y:	//Undo when CTRL+Y key is pressed.
                     if (evt.isControlDown() && um.canRedo()) {
                             um.redo();
                     }

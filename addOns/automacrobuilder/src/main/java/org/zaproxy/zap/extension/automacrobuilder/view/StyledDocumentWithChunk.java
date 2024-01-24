@@ -14,8 +14,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -35,10 +34,14 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     private static final String CHUNK_STYLENAME = "StyledDocumentWithChunk.STYLE";
     private static final String CRIMAGE_STYLENAME = "StyledDocumentWithChunk.CRSTYLE_IMAGE";
 
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
+
     private final String[] styleNames = {
             CHUNK_STYLENAME,
             CRIMAGE_STYLENAME
     };
+
+    Map<String, Style> styleMap = null;
 
     public static int PARTNO_MAXLEN = 4;
 
@@ -102,8 +105,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 try {
                     generateStyledDocFromRequestText(chunkdoc.getText(0, chunkdoc.getLength()));
                 } catch (BadLocationException ex) {
-                    Logger.getLogger(StyledDocumentWithChunk.class.getName())
-                            .log(Level.SEVERE, null, ex);
+                    LOGGER4J.error(ex.getMessage(), ex);
                 }
             } else {
                 LOGGER4J.debug("chunkdoc is RESPONSE");
@@ -116,14 +118,36 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     private void createStyles() {
+        styleMap = new HashMap<>();
         for(String name: styleNames) {
-            Style style = this.getStyle(name);
-            if (style == null) {
-                Style defaultStyle = SwingStyle.getDefaultStyle(this);
-                this.addStyle(name, defaultStyle);
-            }
+            addOrGetStyle(name);
         }
     }
+    private void deleteStyles() {
+        for (Map.Entry<String, Style> ent : this.styleMap.entrySet()) {
+            this.removeStyle(ent.getKey());
+        }
+    }
+
+    /**
+     * add  Style if it does not exist
+     * otherwise return existing one.
+     *
+     * @param newStyleName
+     * @return Style
+     */
+    private Style addOrGetStyle(String newStyleName) {
+        Style style = this.getStyle(newStyleName);
+        if (style == null) {
+            Style defaultStyle = SwingStyle.getDefaultStyle(this);
+            Style s = this.addStyle(newStyleName, defaultStyle);
+            this.styleMap.put(newStyleName, s);
+            return s;
+        }
+        return style;
+    }
+
+
 
     /**
      * this document for Prequest or not.
@@ -140,6 +164,37 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
     List<PResponse.ResponseChunk> getResponseChunks() {
         return responseChunks;
+    }
+
+    /**
+     * return boolean value is there exist binary contents or not
+     *
+     * @return true - has binary contents
+     *
+     */
+    public boolean hasBinaryContents() {
+        if (isRequest()) {
+            Optional<RequestChunk> reqBinChunk =
+                    requestChunks.stream()
+                            .filter(
+                                    c ->
+                                            (c.getChunkType()
+                                                    == RequestChunk
+                                                    .CHUNKTYPE
+                                                    .CONTENTS
+                                                    || c.getChunkType()
+                                                    == RequestChunk
+                                                    .CHUNKTYPE
+                                                    .CONTENTSIMG)
+                                                    )
+                            .findFirst();
+            return reqBinChunk.isPresent();
+        }
+        Optional<PResponse.ResponseChunk> resBinChunk =
+                responseChunks.stream()
+                        .filter(c -> (c.getChunkType() == PResponse.ResponseChunk.CHUNKTYPE.CONTENTSIMG
+                                || c.getChunkType() == PResponse.ResponseChunk.CHUNKTYPE.CONTENTSBINARY)).findFirst();
+        return resBinChunk.isPresent();
     }
 
     /**
@@ -214,7 +269,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
             // requestChunks = newrequest.getRequestChunks();
             return resultarray.getBytes();
         } catch (BadLocationException ex) {
-            Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER4J.error(ex.getMessage(), ex);
         }
         return null;
     }
@@ -234,7 +289,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         try {
             doctext = this.getText(0, this.getLength());
         } catch (BadLocationException ex) {
-            Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER4J.error(ex.getMessage(), ex);
             return;
         }
 
@@ -348,23 +403,26 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         }
     }
 
+    private void destroyDocumentAndRecreateStyles() {
+        try {
+            this.remove(0, this.getLength());
+            this.deleteStyles();
+            this.createStyles();
+        } catch (BadLocationException ex) {
+            LOGGER4J.error(ex.getMessage(), ex);
+        }
+    }
     /** update StyledDocument with requestChunk */
     private void updateRequest() {
         Encode pageenc = this.enc;
 
         responseChunks = null;
 
-        try {
-            this.remove(0, this.getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        destroyDocumentAndRecreateStyles();
 
         // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
         // display contents. this problem occur only ZAP.
         // Thus you must get original Document from JEditorPane for Setting Text.
-
-        Style defaultStyle = SwingStyle.getDefaultStyle(this);
 
         List<RequestChunk> chunks = requestChunks;
 
@@ -421,7 +479,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                     icon = new ImageIcon(BRKICONURL, partno);
                                 }
                                 // doc.addStyle(partno, def);
-                                s = makeStyleImageButton(defaultStyle, icon, partno);
+                                s = makeStyleImageButton(icon, bundle.getString("ParmGenRegex.UndisplayableLargerData.text"), partno);
                                 LOGGER4J.debug("@CONTENTS length:" + chunk.getBytes().length);
                                 element = partno;
                             } else {
@@ -451,7 +509,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                                             + CONTENTS_PLACEHOLDER_SUFFIX;
                             ImageIcon icon = new ImageIcon(BINICONURL, partno);
                             // doc.addStyle(partno, def);
-                            s = makeStyleImageButton(defaultStyle, icon, partno);
+                            s = makeStyleImageButton(icon,bundle.getString("ParmGenRegex.UndisplayableLargerData.text"),partno);
                             LOGGER4J.debug("BINICONED @CONTENTS length:" + chunk.getBytes().length);
                             element = partno;
                         } else {
@@ -491,7 +549,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 pos = this.getLength();
             }
         } catch (BadLocationException ex) {
-            Logger.getLogger(JTextPaneContents.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER4J.error(ex.getMessage(), ex);
         }
         LOGGER4J.debug("doc.length:" + this.getLength());
     }
@@ -511,11 +569,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         responseChunks = presponse.getResponseChunks();
         requestChunks = null;
 
-        try {
-            this.remove(0, this.getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        destroyDocumentAndRecreateStyles();
 
         Style defaultStyle = SwingStyle.getDefaultStyle(this);
 
@@ -536,7 +590,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 switch (chunk.getChunkType()) {
                     case CONTENTSBINARY:
                         icon = new ImageIcon(BINICONURL, partno);
-                        s = makeStyleImageButton(defaultStyle, icon, partno);
+                        s = makeStyleImageButton(icon,bundle.getString("ParmGenRegex.UndisplayableLargerData.text"), partno);
                         elem = partno;
                         LOGGER4J.debug("CONTENTSBINARY[" + elem + "]pos:" + pos);
                         break;
@@ -547,7 +601,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                         } catch (Exception e) {
                             icon = new ImageIcon(BRKICONURL, partno);
                         }
-                        s = makeStyleImageButton(defaultStyle, icon, partno);
+                        s = makeStyleImageButton(icon, bundle.getString("ParmGenRegex.BrokenData.text"),partno);
                         elem = partno;
                         LOGGER4J.debug("CONTENTSIMG[" + elem + "]pos:" + pos);
                         break;
@@ -571,23 +625,25 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     /**
      * create button with ImageIcon and add eventhandler.
      *
-     * @param s
      * @param icon
      * @param actioncommand
      * @return
      */
-    public Style makeStyleImageButton(Style s, ImageIcon icon, String actioncommand) {
-        StyleConstants.setAlignment(s, StyleConstants.ALIGN_CENTER);
+    public Style makeStyleImageButton(ImageIcon icon, String toolTip, String actioncommand) {
+        String styleName = "Image" + actioncommand;
+        Style imageStyle = addOrGetStyle(styleName);
+        StyleConstants.setAlignment(imageStyle, StyleConstants.ALIGN_CENTER);
         JButton button = new JButton();
         button.setIcon(icon);
+        button.setToolTipText(toolTip);
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setActionCommand(actioncommand);
         button.addActionListener(
                 e -> {
                     LOGGER4J.debug("button pressed:" + e.getActionCommand());
                 });
-        StyleConstants.setComponent(s, button);
-        return s;
+        StyleConstants.setComponent(imageStyle, button);
+        return imageStyle;
     }
 
     public Style getCRstyle() {
@@ -628,16 +684,14 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 cpos++;
                 pos = this.getLength();
             } catch (BadLocationException ex) {
-                Logger.getLogger(StyledDocumentWithChunk.class.getName())
-                        .log(Level.SEVERE, null, ex);
+                LOGGER4J.error(ex.getMessage(), ex);
             }
         }
         if (cpos < totallen) {
             try {
                 this.insertString(pos, text.substring(cpos, totallen), null);
             } catch (BadLocationException ex) {
-                Logger.getLogger(StyledDocumentWithChunk.class.getName())
-                        .log(Level.SEVERE, null, ex);
+                LOGGER4J.error(ex.getMessage(), ex);
             }
         }
     }
@@ -651,11 +705,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
         if (requesttext == null || requesttext.isEmpty() || requestChunks == null) return;
 
-        try {
-            this.remove(0, this.getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger(StyledDocumentWithChunk.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        destroyDocumentAndRecreateStyles();
 
         int npos = -1;
         int cpos = 0;
@@ -704,18 +754,21 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                         RequestChunk content_chunk = ochunks.orElse(null);
                         if (content_chunk != null && content_chunk.getBytes().length > 0) {
                             ImageIcon icon = null;
+                            String toolTip ;
                             if (content_chunk.getChunkType() == RequestChunk.CHUNKTYPE.CONTENTS) {
                                 icon = new ImageIcon(BINICONURL, partnostr);
+                                toolTip = bundle.getString("ParmGenRegex.BinaryData.text");
                             } else { // diplayable image
                                 try {
                                     icon = new ImageIcon(content_chunk.getBytes(), partnostr);
+                                    toolTip = "Image";
                                     LOGGER4J.debug("icon status:" + ImageIconLoadStatus(icon));
                                 } catch (Exception e) {
+                                    toolTip = bundle.getString("ParmGenRegex.BrokenData.text");
                                     icon = new ImageIcon(BRKICONURL, partnostr);
                                 }
                             }
-                            Style defstyle = SwingStyle.getDefaultStyle(this);
-                            s = makeStyleImageButton(defstyle, icon, partnostr);
+                            s = makeStyleImageButton(icon, toolTip,partnostr);
                         }
                     }
                 }
@@ -724,8 +777,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 try {
                     this.insertString(this.getLength(), element, s);
                 } catch (BadLocationException ex) {
-                    Logger.getLogger(StyledDocumentWithChunk.class.getName())
-                            .log(Level.SEVERE, null, ex);
+                    LOGGER4J.error(ex.getMessage(), ex);
                 }
             } else {
                 insertStringCR(this.getLength(), element);

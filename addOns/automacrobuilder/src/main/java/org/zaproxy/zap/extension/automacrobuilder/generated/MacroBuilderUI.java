@@ -75,7 +75,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     int EditTarget = -1;
     Encode EditPageEnc = Encode.ISO_8859_1;
-    static final int REQUEST_DISPMAXSIZ = 500000;//1MB
+    static final int REQUEST_DISPMAXSIZ = 500000;//0.5MB
     static final int RESPONSE_DISPMAXSIZ = 1000000;//1MB
 
     JPanel plusBtnPanel = null;
@@ -240,6 +240,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
         messageRequest.setText("");
         messageResponse.setText("");
+
         MacroComments.setText("");
         this.pmtProvider.clear();
         this.maxTabIndex = 0;
@@ -473,7 +474,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         RequestList = new javax.swing.JList<>();
         generalHelpBtn = new JButton(QUESTION_BUTTON_ICON);
 
-
+        messageResponse.setEditable(false);
 
         generalHelpBtn.addActionListener(new ActionListener() {
             @Override
@@ -1801,7 +1802,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             String orig = messageResponse.getText();
             if (pos != -1) {
                 StyledDocument doc = messageResponse.getStyledDocument();
-                new ParmGenRegex(this,reg,doc).setVisible(true);
+                if (doc instanceof StyledDocumentWithChunk) {
+                    StyledDocumentWithChunk newchunkdoc = new StyledDocumentWithChunk((StyledDocumentWithChunk) doc);
+                    new ParmGenRegex(this, reg, newchunkdoc).setVisible(true);
+                }
             }
         }
         

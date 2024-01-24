@@ -45,7 +45,8 @@ public class PRequest extends ParseHTTPHeaders {
     }
 
     /**
-     * handover chunks, doctext from chunkdoc to this instance
+     * create instance
+     * pass argument chunkdoc, extract doctext from chunkdoc
      *
      * @param h
      * @param p
