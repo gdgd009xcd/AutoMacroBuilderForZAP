@@ -37,7 +37,7 @@ public class ParmGenRequestToken {
 
     public ParmGenRequestToken(ParmGenToken tkn) {
         if (tkn != null) { //  Is tkn convertable?
-            switch (tkn.getTokenKey().GetTokenType()) {
+            switch (tkn.getTokenKey().getTokenType()) {
                 case JSON:
                     key =
                             new ParmGenRequestTokenKey(

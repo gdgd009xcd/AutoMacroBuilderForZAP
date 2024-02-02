@@ -1430,109 +1430,14 @@ class ParseHTTPHeaders implements DeepClone {
     }
 
     /**
-     * extract request header patterns which has tkval value<br>
-     * e.g. cookie: name=tkval<br>
-     * Authorization: Bearer tkval
+     *  extract request header patterns which has collections value<br>
      *
-     * @param tkval
+     *  e.g.
+     *  Authorization: Bearer token68
+     *
+     * @param collections
      * @return
      */
-    @Deprecated
-    public ArrayList<HeaderPattern> hasHeaderMatchedValue(String tkval) {
-        //
-        ArrayList<HeaderPattern> alist = new ArrayList<>();
-        HashMap<Integer, Integer> sameTokens = new HashMap<>();
-
-        for (HeaderPattern hpattern : headerpatterns) {
-            ParmGenHeader pgh =
-                    getParmGenHeader(hpattern.getUpperHeaderName()); // get same name header
-            if (pgh != null) {
-
-                // Authorization: Bearer token68
-                // extract token68, then compare it with tkval
-                ListIterator<ParmGenBeen> it = pgh.getValuesIter();
-                while (it.hasNext()) {
-                    HeaderPattern hpattern_copy = new HeaderPattern(hpattern);
-                    ParmGenBeen bn = it.next();
-                    String headerline = pgh.getName() + ": " + bn.v;
-                    Pattern tkname_pattern = hpattern_copy.getTokenName_RegexPattern(tkval);
-                    Matcher tkname_matcher = tkname_pattern.matcher(headerline);
-                    if (tkname_matcher.find()) {
-                        String tokenname = tkname_matcher.group(1);
-                        hpattern_copy.setTkName(tokenname);
-                        Pattern tkvalue_pattern =
-                                hpattern_copy.getTokenValue_RegexPattern(tokenname);
-                        Matcher tkvalue_matcher = tkvalue_pattern.matcher(headerline);
-                        if (tkvalue_matcher.find()) {
-                            String matched_tkvalue = tkvalue_matcher.group(1);
-                            if (matched_tkvalue != null && matched_tkvalue.equals(tkval)) {
-                                Integer fcnt_obj = sameTokens.get(hpattern_copy.getSameTokenHash());
-                                int fcnt = 0;
-                                if (fcnt_obj != null) {
-                                    fcnt = fcnt_obj;
-                                    fcnt++;
-                                }
-                                sameTokens.put(hpattern_copy.getSameTokenHash(), fcnt);
-                                hpattern_copy.setFcnt(fcnt);
-                                alist.add(hpattern_copy);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return alist;
-    }
-
-    public ArrayList<HeaderPattern> hasHeaderMatchedValue(ParmGenResTokenCollections collections) {
-        //
-        ArrayList<HeaderPattern> alist = new ArrayList<>();
-
-        for (HeaderPattern hpattern : headerpatterns) {
-            ParmGenHeader pgh =
-                    getParmGenHeader(hpattern.getUpperHeaderName()); // get same name header
-            if (pgh != null) {
-
-                // Authorization: Bearer token68
-                // extract token68, then compare it with tkval
-                ListIterator<ParmGenBeen> it = pgh.getValuesIter();
-                while (it.hasNext()) { // access the header list sequentially
-                    HeaderPattern hpattern_copy = new HeaderPattern(hpattern);
-                    ParmGenBeen bn = it.next();
-                    String headerline = pgh.getName() + ": " + bn.v;
-                    ParmGenToken foundResponseToken = null;
-
-                    foundResponseToken =
-                            collections.resTokenUrlDecodedValueHash.get(
-                                    bn.v); // search header's value
-
-                    if (foundResponseToken != null
-                            && foundResponseToken.isEnabled()) { // use valid(Enabled) token only
-                        String tkval = foundResponseToken.getTokenValue().getValue();
-                        Pattern tkname_pattern = hpattern_copy.getTokenName_RegexPattern(tkval);
-                        Matcher tkname_matcher = tkname_pattern.matcher(headerline);
-                        if (tkname_matcher.find()) {
-                            String tokenname = tkname_matcher.group(1);
-                            hpattern_copy.setTkName(tokenname);
-                            Pattern tkvalue_pattern =
-                                    hpattern_copy.getTokenValue_RegexPattern(tokenname);
-                            Matcher tkvalue_matcher = tkvalue_pattern.matcher(headerline);
-                            if (tkvalue_matcher.find()) {
-                                String matched_tkvalue = tkvalue_matcher.group(1);
-                                if (matched_tkvalue != null && matched_tkvalue.equals(tkval)) {
-                                    hpattern_copy.setFcnt(0);
-                                    hpattern_copy.setFoundResponseToken(foundResponseToken);
-                                    alist.add(hpattern_copy);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return alist;
-    }
-
     public ArrayList<HeaderPattern> hasMatchedValueExistInHeaders(ParmGenResTokenCollections collections) {
 
         ArrayList<HeaderPattern> alist = new ArrayList<>();
@@ -1549,12 +1454,22 @@ class ParseHTTPHeaders implements DeepClone {
                     while (it.hasNext()) { // access the header list sequentially
                         HeaderPattern hpattern_copy = new HeaderPattern(hpattern);
                         ParmGenBeen bn = it.next();
-                        String headerline = pgh.getName() + ": " + bn.v;
+                        String headerline = pgh.getName() + ": " + bn.v;// bn.v == "Bearer token68"
                         ParmGenToken foundResponseToken = null;
 
                         foundResponseToken =
                                 collections.resTokenUrlDecodedValueHash.get(
                                         bn.v); // search header's value
+                        if (foundResponseToken == null) {
+                            // split "Bearer token68" with SP
+                            String[] vArray = bn.v.split("[ \t]+", 2);
+                            if (vArray.length > 1) {
+                                String maybeToken68 = vArray[1];
+                                foundResponseToken =
+                                        collections.resTokenUrlDecodedValueHash.get(
+                                                maybeToken68); // search header's value
+                            }
+                        }
 
                         if (foundResponseToken != null
                                 && foundResponseToken.isEnabled()) { // use valid(Enabled) token only

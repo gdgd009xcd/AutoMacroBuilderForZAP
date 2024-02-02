@@ -86,6 +86,8 @@ public class AppValue {
         TEXTAREA,
         JSON,
         ACTION,
+        META,
+
     };
 
     private boolean urlencode; // Whether to  encode URL

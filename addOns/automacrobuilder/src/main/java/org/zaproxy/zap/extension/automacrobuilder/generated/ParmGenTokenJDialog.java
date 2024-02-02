@@ -78,7 +78,7 @@ public class ParmGenTokenJDialog extends javax.swing.JDialog {
             tkey = entry.getKey();
             tval = entry.getValue();
             boolean enabled = tval.getBoolean();
-            Object[] rec = new Object[] {tval.getBoolean(),"", tkey.GetTokenType().name(), Integer.toString(tkey.getFcnt()),tkey.getName(),tval.getValue()};
+            Object[] rec = new Object[] {tval.getBoolean(),"", tkey.getTokenType().name(), Integer.toString(tkey.getFcnt()),tkey.getName(),tval.getValue()};
             model.addRow(rec);
         }
 

@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.16] - 2024-02-02
+### Changed
+- bugfix: fixed bug in tracking token68 in Authorization bearer header(which used in OAuth2.0)
+### Added
+- improve: Added feature of tracking "Rails" csrf-token in meta tag 
+
 ## [v1.1.15] - 2024-01-24
 ### Changed
 - bugfix: fixed bug in related to misuse of displaying icons in StyledDocument 
