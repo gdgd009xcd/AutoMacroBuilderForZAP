@@ -12,7 +12,6 @@ import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,9 +22,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
@@ -77,6 +73,9 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     Encode EditPageEnc = Encode.ISO_8859_1;
     static final int REQUEST_DISPMAXSIZ = 500000;//0.5MB
     static final int RESPONSE_DISPMAXSIZ = 1000000;//1MB
+    private static String RAILS_CSRF_PARAM = "csrf-param";
+    public static String RAILS_CSRF_TOKEN = "csrf-token";
+
 
     JPanel plusBtnPanel = null;
 
@@ -1410,7 +1409,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                         if (foundResToken != null) {
 
                             //add a token to  Query / Body Request parameter.
-                            switch (foundResToken.getTokenKey().GetTokenType()) {
+                            switch (foundResToken.getTokenKey().getTokenType()) {
                                 case ACTION:
                                 case HREF:
 
@@ -1581,7 +1580,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             apv.setresURL(".*");//TrackFrom any URL
                             apv.setresRegexURLencoded("");
                             int resvalpart = AppValue.V_AUTOTRACKBODY;
-                            switch (_RToken.getTokenKey().GetTokenType()) {
+                            switch (_RToken.getTokenKey().getTokenType()) {
                                 case LOCATION:
                                     resvalpart = AppValue.V_HEADER;
                                     break;
@@ -1599,7 +1598,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             apv.setFromStepNo(-1);
 
                             apv.setToStepNo(EnvironmentVariables.TOSTEPANY);
-                            apv.setTokenType(_RToken.getTokenKey().GetTokenType());
+                            apv.setTokenType(_RToken.getTokenKey().getTokenType());
                             apv.setEnabled(_RToken.isEnabled());
                             aparms.addAppValue(apv);
                         }
@@ -1673,6 +1672,16 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                             trackurltoken.fromStepNo = pos;
                         }
 
+                    }
+
+                    // handling rails token in meta tag
+                    ParmGenToken csrfParamNameToken = trackurltoken.resTokenUrlDecodedNameHash.get(RAILS_CSRF_PARAM);
+                    if (csrfParamNameToken != null && csrfParamNameToken.getTokenKey().getTokenType() == AppValue.TokenTypeNames.META) {
+                        String authenticityTokenName = csrfParamNameToken.getTokenValue().getValue();
+                        ParmGenToken csrfTokenValue = trackurltoken.resTokenUrlDecodedNameHash.get(RAILS_CSRF_TOKEN);
+                        if (csrfTokenValue != null && csrfTokenValue.getTokenKey().getTokenType() == AppValue.TokenTypeNames.META) {
+                            trackurltoken.resTokenUrlDecodedNameHash.put(authenticityTokenName, csrfTokenValue);
+                        }
                     }
 
                     if (!trackurltoken.resTokenUrlDecodedNameSlashValueHash.isEmpty()) {

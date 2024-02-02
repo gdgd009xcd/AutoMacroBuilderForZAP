@@ -19,6 +19,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
+import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
+
 import java.util.HashMap;
 
 /** @author youtube */
@@ -83,6 +85,7 @@ public class ParmGenResTokenCollections {
         ParmGenToken foundNameResToken = resTokenUrlDecodedNameHash.get(requestTokenNameDecoded);
         ParmGenToken foundValueResToken = resTokenUrlDecodedValueHash.get(requestTokenValueDecoded);
         ParmGenToken foundResToken = null;
+
         if (foundNameAndValueResToken
                 != null) { // exactly request parameter matched response parameter's name & value
             foundResToken = foundNameAndValueResToken;
@@ -96,6 +99,8 @@ public class ParmGenResTokenCollections {
             if (foundNameResTokenValueDecoded != null
                     && foundNameResTokenValueDecoded.length()
                             == requestTokenValueDecoded.length()) {
+                foundResToken = foundNameResToken;
+            } else if(foundNameResToken.getTokenKey().getName().toLowerCase().equals(MacroBuilderUI.RAILS_CSRF_TOKEN)) {
                 foundResToken = foundNameResToken;
             }
         }

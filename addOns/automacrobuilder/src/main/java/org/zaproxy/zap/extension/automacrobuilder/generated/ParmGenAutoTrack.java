@@ -389,7 +389,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
                         ParmGenTokenValue tval = tkn.getTokenValue();
                         String name = tkey.getName();
                         String value = tval.getValue();
-                        AppValue.TokenTypeNames _tktype = tkey.GetTokenType();
+                        AppValue.TokenTypeNames _tktype = tkey.getTokenType();
                         int npos = 0;
                         if(valueexistonly==true&&(value==null||value.isEmpty())){
                             //value値の無いパラメータは対象外
@@ -417,7 +417,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
                     ParmGenTokenValue tval = tkn.getTokenValue();
                     String name = tkey.getName();
                     String value = tval.getValue();
-                    AppValue.TokenTypeNames _tktype = tkey.GetTokenType();
+                    AppValue.TokenTypeNames _tktype = tkey.getTokenType();
                     int npos = tkey.getFcnt();
                     if(valueexistonly==true&&(value==null||value.isEmpty())){
                         //value値の無いパラメータは対象外

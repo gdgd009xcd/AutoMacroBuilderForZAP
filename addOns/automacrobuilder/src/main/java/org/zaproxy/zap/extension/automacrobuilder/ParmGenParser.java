@@ -22,8 +22,6 @@ package org.zaproxy.zap.extension.automacrobuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -31,12 +29,18 @@ import org.jsoup.select.Elements;
 
 /** @author tms783 */
 public class ParmGenParser implements DeepClone {
+
+    final private static org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
     // get the factory
     String htmltext;
     Document doc;
     Elements elems;
     Map<ParmGenTokenKey, ParmGenTokenValue> map;
     Map<ParmGenTokenKey, ParmGenTokenValue> defmap; // T_DEFAULT
+    // target tags: input|A|HREF|META
+    // private static String tagSelector = "input,a[href],form[action],textarea,meta";
+    private static String tagSelector = "[name],a[href],form[action]";
 
     private void init() {
         htmltext = null;
@@ -46,7 +50,7 @@ public class ParmGenParser implements DeepClone {
         defmap = null;
     }
 
-    // tokenらしき値を自動引継ぎ
+    // tracking token parser
     public ParmGenParser(String htmltext) {
         setup(htmltext);
     }
@@ -59,60 +63,62 @@ public class ParmGenParser implements DeepClone {
         Elements elems = null;
 
         try {
-            doc = Jsoup.parse(htmltext); // パース実行
+            doc = Jsoup.parse(htmltext);
             // elems =
             // doc.select("input[type=hidden],input[type=text],input[type=tel],input[type=url],
             // input[type=email],
-            // input[type=search],input[type=number],input[type=email],a[href],form[action],textarea");//name属性を持つHIDDENタグ全部、A HREFタグ
-            elems = doc.select("input,a[href],form[action],textarea"); // input、A HREFタグ
-            // elemsprint(htmltext);
+            // input[type=search],input[type=number],input[type=email],a[href],form[action],textarea");//tag which has name attributes, href , form, textarea
+            elems = doc.select(tagSelector);
+
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            EnvironmentVariables.plog.printException(e);
+            LOGGER4J.error(e.getMessage(), e);
             doc = null;
             elems = null;
         }
 
         this.doc = doc;
         this.elems = elems;
+        //elemsprint();
     }
 
-    void elemsprint(String _t) {
+    void elemsprint() {
         for (Element vtag : elems) {
             String n = vtag.attr("name");
             String v = vtag.attr("value");
             String h = vtag.attr("href");
-            if (vtag.tagName().toLowerCase().indexOf("input") != -1) { // <input
-                EnvironmentVariables.plog.AppendPrint(
+            String content = vtag.attr("content");
+            if (vtag.tagName().toLowerCase().equals("input")) { // <input
+                LOGGER4J.debug(
                         "<" + vtag.tagName() + " name=\"" + n + "\" value=\"" + v + "\">");
-            } else if (vtag.tagName().toLowerCase().indexOf("a") != -1) { // <A
-                EnvironmentVariables.plog.AppendPrint("<" + vtag.tagName() + " href=\"" + h + "\">");
+            } else if (vtag.tagName().toLowerCase().equals("a")) { // <A
+                LOGGER4J.debug("<" + vtag.tagName() + " href=\"" + h + "\">");
+
+            } else if (vtag.tagName().toLowerCase().equals("meta")) {
+                LOGGER4J.debug((ParmGenUtil.isTokenValue(content) ? "Token":"") + "<" + vtag.tagName() + " name=\"" + n + "\" content=\"" + content + "\">");
             } else {
-                EnvironmentVariables.plog.AppendPrint("<" + vtag.tagName() + "\">");
+                LOGGER4J.debug("<" + vtag.tagName() + "\">");
             }
         }
     }
 
-    public ArrayList<ParmGenToken> getParmGenTokens(
+    private ArrayList<ParmGenToken> getParmGenTokens(
             Element vtag, HashMap<String, Integer> namepos) {
         String[] nv = null;
         ParmGenToken tk = null;
         ArrayList<ParmGenToken> tklist = new ArrayList<ParmGenToken>();
-        if (vtag.tagName().toLowerCase().indexOf("input") != -1) { // <input
-            String n = vtag.attr("name");
+        String lowerTagName = vtag.tagName().toLowerCase();
+        String nameAttribute = vtag.attr("name");
+        if (lowerTagName.equals("input")) { // <input
             String v = vtag.attr("value");
             String t = vtag.attr("type");
-            // <inputタグのnameパラメータ
-            if (n == null) {
+            // name attribute in input tag.
+            String n = nameAttribute;
+            if (n.isEmpty()) {
                 n = null;
-            } else if (n.isEmpty()) {
-                n = null;
-            }
-            if (v == null) {
-                v = "";
             }
             if (n != null) {
-                // 重複nameの検査
+                // count if same name is exist
                 int npos = 0;
                 if (namepos.containsKey(n)) {
                     npos = namepos.get(n);
@@ -128,9 +134,28 @@ public class ParmGenParser implements DeepClone {
                 tk = new ParmGenToken(ttype, "", n, v, false, npos);
                 tklist.add(tk);
             }
-        } else if (vtag.tagName().toLowerCase().equals("a")) { // <A
+        } else if (lowerTagName.equals("meta")) { // <meta
+            String v = vtag.attr("content");
+            // name attribute in input tag.
+            String n = nameAttribute;
+            if (n.isEmpty()) {
+                n = null;
+            }
+            if (n != null) {
+                // count if same name is exist
+                int npos = 0;
+                if (namepos.containsKey(n)) {
+                    npos = namepos.get(n);
+                    npos++;
+                }
+                namepos.put(n, npos);
+                AppValue.TokenTypeNames ttype = AppValue.TokenTypeNames.META;
+                tk = new ParmGenToken(ttype, "", n, v, false, npos);
+                tklist.add(tk);
+            }
+        } else if (lowerTagName.equals("a")) { // <A
             String h = vtag.attr("href");
-            // href属性から、GETパラメータを抽出。
+            // extract GET(query) parameters from href attribute.
             // ?name=value&....
             if (h != null) {
                 String[] nvpairs = h.split("[&?]|amp;");
@@ -143,7 +168,7 @@ public class ParmGenParser implements DeepClone {
                         value = nvp[1];
 
                         if (name != null && name.length() > 0 && value != null) {
-                            // 重複nameの検査
+                            // count if same name is exist
                             int npos = 0;
                             if (namepos.containsKey(name)) {
                                 npos = namepos.get(name);
@@ -163,9 +188,9 @@ public class ParmGenParser implements DeepClone {
                     }
                 }
             }
-        } else if (vtag.tagName().toLowerCase().indexOf("form") != -1) { // <A
+        } else if (lowerTagName.equals("form")) { // <form
             String h = vtag.attr("action");
-            // href属性から、GETパラメータを抽出。
+            // extract GET(query) parameters from action attribute
             // ?name=value&....
             if (h != null) {
                 String[] nvpairs = h.split("[&?]|amp;");
@@ -178,7 +203,7 @@ public class ParmGenParser implements DeepClone {
                         value = nvp[1];
 
                         if (name != null && name.length() > 0 && value != null) {
-                            // 重複nameの検査
+                            // count if same name is exist
                             int npos = 0;
                             if (namepos.containsKey(name)) {
                                 npos = namepos.get(name);
@@ -198,21 +223,16 @@ public class ParmGenParser implements DeepClone {
                     }
                 }
             }
-        } else if (vtag.tagName().toLowerCase().indexOf("textarea") != -1) { // <textarea
-            String n = vtag.attr("name");
+        } else if (lowerTagName.equals("textarea")) { // <textarea
+            String n = nameAttribute;
             String v = vtag.html();
             String t = vtag.attr("type");
-            // <inputタグのnameパラメータ
-            if (n == null) {
+            // name attribute in textarea tag
+            if (n.isEmpty()) {
                 n = null;
-            } else if (n.isEmpty()) {
-                n = null;
-            }
-            if (v == null) {
-                v = "";
             }
             if (n != null) {
-                // 重複nameの検査
+                // count if same name is exist
                 int npos = 0;
                 if (namepos.containsKey(n)) {
                     npos = namepos.get(n);
@@ -227,9 +247,12 @@ public class ParmGenParser implements DeepClone {
         }
         return tklist;
     }
-    //
-    // 引き継ぎパラメータ一覧
-    //
+
+    /**
+     * get ParmGenToken list from response
+     *
+     * @return
+     */
     public ArrayList<ParmGenToken> getNameValues() {
 
         HashMap<String, Integer> namepos = new HashMap<String, Integer>();
@@ -245,15 +268,19 @@ public class ParmGenParser implements DeepClone {
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            EnvironmentVariables.plog.printException(e);
+            LOGGER4J.error(e.getMessage(), e);
         }
 
         return lst;
     }
 
-    //
-    // レスポンスパラメータ抽出
-    //
+    /**
+     * Gets the ParmGenToken that matches the specified parameters.
+     * @param name
+     * @param fcnt
+     * @param _tokentype
+     * @return
+     */
     public ParmGenToken fetchNameValue(String name, int fcnt, AppValue.TokenTypeNames _tokentype) {
         if (name == null) return null; // name nullは不可。
         ParmGenTokenKey tkey = null;
@@ -307,7 +334,7 @@ public class ParmGenParser implements DeepClone {
             nobj.defmap = HashMapDeepCopy.hashMapDeepCopyParmGenHashMapSuper(this.defmap);
             return nobj;
         } catch (CloneNotSupportedException ex) {
-            Logger.getLogger(ParmGenParser.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER4J.error(ex.getMessage(), ex);
         }
 
         return null;

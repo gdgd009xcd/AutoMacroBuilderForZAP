@@ -49,7 +49,7 @@ public class ParmGenTokenKey implements DeepClone {
         return name;
     }
 
-    public AppValue.TokenTypeNames GetTokenType() {
+    public AppValue.TokenTypeNames getTokenType() {
         return tokentype;
     }
 
