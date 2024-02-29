@@ -37,7 +37,9 @@ public class PRequest extends ParseHTTPHeaders {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
+    // @Deprecated(since = "1.2", forRemoval = true) 20240229 since no need hold chunks in this PRequest.
     private List<RequestChunk> chunks = null;
+    // @Deprecated(since = "1.2", forRemoval = true) 20240229 since no need hold doctext in this PRequest.
     private String doctext = null;
 
     public PRequest(String h, int p, boolean ssl, byte[] _binmessage, Encode _pageenc) {
@@ -48,6 +50,8 @@ public class PRequest extends ParseHTTPHeaders {
      * create instance
      * pass argument chunkdoc, extract doctext from chunkdoc
      *
+     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
+     *
      * @param h
      * @param p
      * @param ssl
@@ -55,7 +59,8 @@ public class PRequest extends ParseHTTPHeaders {
      * @param _pageenc
      * @param chunkdoc
      */
-    public PRequest(
+    @Deprecated(since = "1.2", forRemoval = true)
+    PRequest(
             String h,
             int p,
             boolean ssl,
@@ -65,11 +70,7 @@ public class PRequest extends ParseHTTPHeaders {
         super(h, p, ssl, _binmessage, _pageenc);
         if (chunkdoc != null) {
             chunks = chunkdoc.getRequestChunks();
-            try {
-                doctext = chunkdoc.getText(0, chunkdoc.getLength());
-            } catch (BadLocationException ex) {
-                Logger.getLogger(PRequest.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            doctext = chunkdoc.getPlaceHolderStyleText();
         }
     }
 
@@ -99,8 +100,11 @@ public class PRequest extends ParseHTTPHeaders {
     /**
      * Get List<RequestChunk> which is parsed request contents representation
      *
+     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
+     *
      * @return
      */
+    @Deprecated(since = "1.2", forRemoval = true)
     public List<RequestChunk> getRequestChunks() {
         if (this.chunks == null) {
             String theaders = getHeaderOnly();
@@ -112,18 +116,36 @@ public class PRequest extends ParseHTTPHeaders {
     }
 
     /**
+     * generate List<RequestChunk> which is parsed request contents representation
+     * @return
+     */
+    public List<RequestChunk> generateRequestChunks() {
+        List<RequestChunk> chunks;
+        String theaders = getHeaderOnly();
+        byte[] tbodies = getBodyBytes();
+        String tcontent_type = getHeader("Content-Type");
+        chunks = getRequestChunks(theaders, tbodies, tcontent_type);
+        return chunks;
+    }
+
+    /**
      * set doc text from StyledDocumentWithChunks(representating for PRequest)
+     *
+     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
      *
      * @param doc
      */
+    @Deprecated(since = "1.2", forRemoval = true)
     public void setDocText(StyledDocumentWithChunk doc) {
-        try {
-            this.doctext = doc.getText(0, doc.getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger(PRequest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        this.doctext = doc.getPlaceHolderStyleText();
     }
 
+    /**
+     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
+     *
+     * @return
+     */
+    @Deprecated(since = "1.2", forRemoval = true)
     public String getDocText() {
         return this.doctext;
     }
@@ -301,8 +323,11 @@ public class PRequest extends ParseHTTPHeaders {
     /**
      * update DocText and Chunks with specified chunks
      *
+     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
+     *
      * @param orgchunks
      */
+    @Deprecated(since = "1.2", forRemoval = true)
     void updateDocAndChunks(List<RequestChunk> orgchunks) {
 
         if (orgchunks == null) return;

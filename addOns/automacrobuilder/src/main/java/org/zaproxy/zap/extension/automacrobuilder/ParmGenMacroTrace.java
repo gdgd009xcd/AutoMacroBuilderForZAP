@@ -832,14 +832,16 @@ public class ParmGenMacroTrace extends ClientDependent {
                     ent -> {
                         int i = ent.getKey();
                         if (i < this.rlist.size()) {
+                            /**
                             List<RequestChunk> orgchunks =
                                     this.rlist
                                             .get(i)
                                             .request
-                                            .getRequestChunks(); // current display content chunks.
+                                            .generateRequestChunks(); // current display content chunks.
                             ent.getValue()
                                     .request
                                     .updateDocAndChunks(orgchunks); // update chunks if possible.
+                             **/
                             this.rlist.set(i, ent.getValue());
                         }
                     });

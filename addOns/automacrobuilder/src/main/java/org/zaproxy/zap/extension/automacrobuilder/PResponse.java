@@ -208,7 +208,7 @@ public class PResponse extends ParseHTTPHeaders {
         }
 
         boolean displayableTextContents = false;
-        if (tbodies.length < MAX_SIZE_DISPLAYABLE_TEXTS) {
+        if (tbodies != null && tbodies.length < MAX_SIZE_DISPLAYABLE_TEXTS) {
             if (mediaType.equalsIgnoreCase("text/html")) {
                 displayableTextContents = true;
             } else if (!application_json_contents.isEmpty()) {

@@ -24,11 +24,15 @@ public class RequestChunk implements DeepClone {
     CHUNKTYPE ctype;
     byte[] data;
     int partno;
+    int textPos;// text position in StyledDocument
+    int textLen;// text length in StyledDocument
 
     RequestChunk(CHUNKTYPE ctype, byte[] data, int partno) {
         this.ctype = ctype;
         this.data = data;
         this.partno = partno;
+        this.textPos = -1;
+        this.textLen = -1;
     }
 
     /**
@@ -64,6 +68,19 @@ public class RequestChunk implements DeepClone {
      */
     public int getPartNo() {
         return this.partno;
+    }
+
+    public void setTextPosLen(int textPos, int textLen) {
+        this.textPos = textPos;
+        this.textLen = textLen;
+    }
+
+    public int getTextPos() {
+        return this.textPos;
+    }
+
+    public int getTextLen() {
+        return this.textLen;
     }
 
     public RequestChunk clone() {
