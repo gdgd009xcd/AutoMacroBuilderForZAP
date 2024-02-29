@@ -2,6 +2,14 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.17] - 2024-02-29
+### Changed
+- bugfix: fixed bug in strange text cursor caret movement in the StyledDocumentWithChunk which has JComponents.
+- bugfix: fixed bug in dissapeared CR Jlabel component while editing in the ParmGenRegex. 
+- bugfix: fixed bug in getting into infinite loop after sending request which contain no contents.
+- bugfix: fixed bug in problem when it cannot be displayed as ImageIcon in the StyledDocumentWithChunk.
+- maintenance: Added Deprecated Annotation for no meaning doing things in PRequest.
+
 ## [v1.1.16] - 2024-02-02
 ### Changed
 - bugfix: fixed bug in tracking token68 in Authorization bearer header(which used in OAuth2.0)

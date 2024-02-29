@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import com.google.gson.JsonElement;
@@ -2189,10 +2190,10 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     /**
      * update current PRequestResponse with Edited(displayed) PRequestResponse
      *
-     * @param doc
+     * @param changedDoc
      */
     @Override
-    public void ParmGenRegexSaveAction(StyledDocumentWithChunk doc) {
+    public void ParmGenRegexSaveAction(StyledDocumentWithChunk changedDoc) {
         int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
         ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(selectedTabIndex);
         if (pmt == null) return;
@@ -2202,6 +2203,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int idx = requestJList.getSelectedIndex();
         if(prequestResponseList != null && idx > -1 &&  idx < prequestResponseList.size()){
             try {
+                /**
                 PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();// get edited request
                 if (newrequest != null) {
                     pmt.updateRequestCurrentList(idx, newrequest);// copy edited request to current request
@@ -2209,8 +2211,17 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                     ndoc.setRequestChunks(newrequest);
                     pmt.nullfetchResValAndCookieMan();
                 }
+                 **/
+                if (changedDoc != null) {
+                    if (changedDoc.isRequest()) {
+                        // update only the StyledDocument in messageRequest
+                        StyledDocumentWithChunk updatedDoc = new StyledDocumentWithChunk(changedDoc);
+                        messageRequest.setStyledDocument((StyledDocument) updatedDoc);
+                        pmt.nullfetchResValAndCookieMan();
+                    }
+                }
             } catch (Exception ex) {
-                Logger.getLogger(MacroBuilderUI.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER4J.error(ex.getMessage(), ex);
             }
         }
     }

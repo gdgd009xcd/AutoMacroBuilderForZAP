@@ -16,23 +16,13 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 
-import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
-import org.zaproxy.zap.extension.automacrobuilder.InterfaceParmGenRegexSaveCancelAction;
-import org.zaproxy.zap.extension.automacrobuilder.InterfaceRegex;
-import org.zaproxy.zap.extension.automacrobuilder.PRequest;
-import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
-import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
-import org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil;
-import org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables;
-import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
-import org.zaproxy.zap.extension.automacrobuilder.view.SwingStyle;
+import org.zaproxy.zap.extension.automacrobuilder.*;
+import org.zaproxy.zap.extension.automacrobuilder.view.*;
 
 /**
  *
@@ -66,7 +56,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
     
     CustomHttpPanelHexModel hexModel = null;
     byte[] hexdata = null;
-    StyledDocumentWithChunk docwithchunk = null;
+    StyledDocumentWithChunk chunkDoc = null;
     
     public static final String Escaperegex = "([\\[\\]\\{\\}\\(\\)\\*\\<\\>\\.\\?\\+\\\"\\\'\\$])";
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
@@ -182,7 +172,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         StyledDocument origdoc = OriginalText.getStyledDocument();
         createStyles(origdoc);
 
-        SwingStyle.clearAllCharacterAttributes(origdoc);
+        clearAllCharacterAttributesExceptPlaceHolderStyles(origdoc);
 
         //RegexTextのUndo/Redo
         origdoc.addUndoableEditListener(new UndoableEditListener() {
@@ -193,9 +183,10 @@ public class ParmGenRegex extends javax.swing.JDialog {
 		});
     }
     
-    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, StyledDocument doc){
+    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, StyledDocumentWithChunk chunkDoc){
         initComponents();
-        
+
+        this.chunkDoc = chunkDoc;
         um = new UndoManager();
         original_um = new UndoManager();
         To.setEnabled(false);
@@ -206,42 +197,40 @@ public class ParmGenRegex extends javax.swing.JDialog {
         this.setModal(true);
         RegexText.setText(_reg);
 
-        OriginalText.setStyledDocument(doc);
-        createStyles(doc);
+        OriginalText.setStyledDocument(this.chunkDoc);
+        createStyles(this.chunkDoc );
 
-        SwingStyle.clearAllCharacterAttributes(doc);
+        clearAllCharacterAttributesExceptPlaceHolderStyles(this.chunkDoc);
 
         OriginalText.setCaretPosition(0);
 
         boolean hasBinaryContents = false;
         isLabelSaveBtn = false;
-        if (doc instanceof StyledDocumentWithChunk) {
-            this.docwithchunk = CastUtils.castToType(doc);
-            hasBinaryContents = this.docwithchunk.hasBinaryContents();
-            isLabelSaveBtn = this.docwithchunk.isRequest();
-        }
-        if(hasBinaryContents) {
-            RegexTest.setEnabled(false);
-        }
-        
-        addHexView(isLabelSaveBtn);
 
+
+        hasBinaryContents = this.chunkDoc.hasBinaryContents();
+        isLabelSaveBtn = this.chunkDoc.isRequest();
         if (isLabelSaveBtn) {
             JMenuItem insertCR = new JMenuItem(bundle.getString("ParmGenRegex.insCR.text"));
             OrigUndoRedoMenu.add(insertCR);
             insertCR.addActionListener(e -> {
                 int cpos = OriginalText.getCaretPosition();
                 try {
-                    this.docwithchunk.insertString(cpos,"\r", this.docwithchunk.getCRstyle());
+                    this.chunkDoc.insertString(cpos,"\r", this.chunkDoc.getCRstyle());
                 } catch (BadLocationException badLocationException) {
                     LOGGER4J.error("", badLocationException);
                 }
             });
         }
-        
-        
-        if (this.docwithchunk != null) {
-            byte[] hexdata = this.docwithchunk.getBytes();
+
+        if(hasBinaryContents) {
+            RegexTest.setEnabled(false);
+        }
+
+        addHexView(isLabelSaveBtn);
+
+        if (this.chunkDoc != null) {
+            byte[] hexdata = this.chunkDoc.getBytes();
             if (hexdata != null) {
                 hexModel.setData(hexdata);
             }
@@ -253,8 +242,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
             Cancel.setText(regexactionwin.getParmGenRegexCancelBtnText(isLabelSaveBtn));
         }
         
-        
-        //RegexTextのUndo/Redo
+        // Undo/Redo for RegexText
         Document rexdoc = RegexText.getDocument();
         rexdoc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
@@ -262,9 +250,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
 				um.addEdit(e.getEdit());
 			}
 		});
-        //RegexText Undo/Redo
 
-        doc.addUndoableEditListener(new UndoableEditListener() {
+        // Undo/Redo for chunkdoc
+        this.chunkDoc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
 				//add edit actions to UndoManager
 				original_um.addEdit(e.getEdit());
@@ -330,7 +318,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         String hex = s.replaceAll("\r", "<CR>");
         hex = hex.replaceAll("\n", "<LF>");
         
-        EnvironmentVariables.plog.debuglog(1,"["+hex+"]\n");
+        LOGGER4J.debug("["+hex+"]\n");
     }
     
     /**
@@ -349,7 +337,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         //String original = OriginalText.getText();
         StyledDocument doc = OriginalText.getStyledDocument();
 
-        SwingStyle.clearAllCharacterAttributes(doc);
+        clearAllCharacterAttributesExceptPlaceHolderStyles(doc);
 
         foundTextAttrPos.clear();
 
@@ -361,7 +349,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         try {
             original = doc.getText(0, doc.getLength());
         } catch (BadLocationException ex) {
-            Logger.getLogger(ParmGenRegex.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER4J.error(ex.getMessage(), ex);
         }
 
         init(regex, original);
@@ -379,9 +367,16 @@ public class ParmGenRegex extends javax.swing.JDialog {
             compiledregex = ParmGenUtil.Pattern_compile(regex, flags);
             
             m = compiledregex.matcher(original);
-        }catch(Exception e){
-            EnvironmentVariables.plog.printException(e);
-            JOptionPane.showMessageDialog(this,bundle.getString("ParmGenRegex.OptionPaneErrorMessage_RegexSyntaxError.text")+ e.toString() ,  bundle.getString("ParmGenRegex.ErrorOptionPaneTitle.text"), JOptionPane.ERROR_MESSAGE);
+        }catch(Exception ex){
+            LOGGER4J.error(ex.getMessage(), ex);
+            JOptionPane.showMessageDialog(
+                this,
+                bundle.getString(
+                        "ParmGenRegex.OptionPaneErrorMessage_RegexSyntaxError.text")
+                        + ex.toString(),
+                bundle.getString("ParmGenRegex.ErrorOptionPaneTitle.text"),
+                JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
         
@@ -394,68 +389,68 @@ public class ParmGenRegex extends javax.swing.JDialog {
         
         int fcount=0;
         while (m.find()) {
-                found = true;
-                fcount++;
-                int spt0 = -1;
-                int ept0 = -1;
-                int spt = -1;
-                int ept = -1;
-                int gcnt = m.groupCount();
-                String matchval = null;
-                if ( gcnt > 0){
-                    spt0 = m.start();
-                    ept0 = m.end();
-                    for(int n = 0; n < gcnt ; n++){
-                            spt = m.start(n+1);
-                            ept = m.end(n+1);
-                            matchval = m.group(n+1);
+            found = true;
+            fcount++;
+            int spt0 = -1;
+            int ept0 = -1;
+            int spt = -1;
+            int ept = -1;
+            int gcnt = m.groupCount();
+            String matchval = null;
+            if ( gcnt > 0){
+                spt0 = m.start();
+                ept0 = m.end();
+                for(int n = 0; n < gcnt ; n++){
+                        spt = m.start(n+1);
+                        ept = m.end(n+1);
+                        matchval = m.group(n+1);
 
-                    }
-                    if ( matchval == null){
-                        matchval = m.group();
-                    }
-                    if ( spt0 > spt){
-                        spt0 = spt;
-                    }
-                    if(ept0 < ept){
-                        ept0 = ept;
-                    }
-                    // spt0--->spt<matchval>ept-->ept0
-                }else{//Nothing Groups...
-                    spt0 = m.start();
-                    ept0 = m.end();
+                }
+                if ( matchval == null){
                     matchval = m.group();
                 }
-                if ( spt0 >=0 && ept0 >= 0 ){
-                        
-                        try {
-                            
-                            // spt0--->spt<matchval>ept-->ept0
-
-                            if (ept0 > spt0) {
-                                Style outerStyle = doc.getStyle(GROUP_OUTER_STYLENAME);
-                                doc.setCharacterAttributes(spt0, ept0-spt0, outerStyle, false);
-                                RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt0, ept0);
-                                foundTextAttrPos.add(rpos);
-                            }
-                            
-                            if (ept > spt) {
-                                Style innerStyle = doc.getStyle(GROUP_INNER_STYLENAME);
-                                doc.setCharacterAttributes(spt, ept-spt, innerStyle, false);
-                                RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt, ept);
-                                foundTextAttrPos.add(rpos);
-                            }
-                            
-                            //int pos = OriginalText.getCaretPosition();
-                            int pos = doc.getLength();
-                            findplist.add(ept0);
-                            if ( fidx == -1){
-                                fidx = 0;
-                            }
-			} catch (Exception e) {
-                            EnvironmentVariables.plog.printException(e);
-			}
+                if ( spt0 > spt){
+                    spt0 = spt;
                 }
+                if(ept0 < ept){
+                    ept0 = ept;
+                }
+                // spt0--->spt<matchval>ept-->ept0
+            }else{//Nothing Groups...
+                spt0 = m.start();
+                ept0 = m.end();
+                matchval = m.group();
+            }
+            if ( spt0 >=0 && ept0 >= 0 ){
+
+                try {
+
+                    // spt0--->spt<matchval>ept-->ept0
+
+                    if (ept0 > spt0) {
+                        Style outerStyle = doc.getStyle(GROUP_OUTER_STYLENAME);
+                        doc.setCharacterAttributes(spt0, ept0-spt0, outerStyle, false);
+                        RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt0, ept0);
+                        foundTextAttrPos.add(rpos);
+                    }
+
+                    if (ept > spt) {
+                        Style innerStyle = doc.getStyle(GROUP_INNER_STYLENAME);
+                        doc.setCharacterAttributes(spt, ept-spt, innerStyle, false);
+                        RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt, ept);
+                        foundTextAttrPos.add(rpos);
+                    }
+
+                    //int pos = OriginalText.getCaretPosition();
+                    int pos = doc.getLength();
+                    findplist.add(ept0);
+                    if ( fidx == -1){
+                        fidx = 0;
+                    }
+                } catch (Exception ex) {
+                    LOGGER4J.error(ex.getMessage(), ex);
+                }
+            }
         }
 
         if ( fidx != -1){
@@ -494,15 +489,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
         if (editable) {
             TextTab.addChangeListener(e -> {
                 int selIndex = TextTab.getSelectedIndex();//tabbedpanes selectedidx 0start..
-                if (this.docwithchunk != null){
+                if (this.chunkDoc != null){
                     switch(selIndex) {
                         case 1:
-                            hexdata = this.docwithchunk.getBytes();
+                            hexdata = this.chunkDoc.getBytes();
                             hexModel.setData(hexdata);
                             break;
                         default:
                             hexdata = hexModel.getData();
-                            this.docwithchunk.updateStyleDocAndChunkFromHex(hexdata);
+                            this.chunkDoc.updateStyleDocAndChunkFromHex(hexdata);
                             OriginalText.repaint();
                             break;
                     }
@@ -958,15 +953,15 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
     private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
         // TODO add your handling code here:
-        if(regexactionwin!=null && this.docwithchunk != null){
+        if(regexactionwin!=null && this.chunkDoc != null){
             int selIndex = TextTab.getSelectedIndex();//tabbedpanes selectedidx 0start..
             if (selIndex == 1) { // hex dump view
-                if (this.docwithchunk.isRequest()) {
+                if (this.chunkDoc.isRequest()) {
                     hexdata = hexModel.getData();
-                    this.docwithchunk.updateStyleDocAndChunkFromHex(hexdata);
+                    this.chunkDoc.updateStyleDocAndChunkFromHex(hexdata);
                 }
             }
-            regexactionwin.ParmGenRegexSaveAction(this.docwithchunk);
+            regexactionwin.ParmGenRegexSaveAction(this.chunkDoc);
             dispose();
             return;
         }
@@ -1099,6 +1094,17 @@ public class ParmGenRegex extends javax.swing.JDialog {
             RegexText.setText(regex);
         }
     }//GEN-LAST:event_SelectPatternActionPerformed
+
+    private void clearAllCharacterAttributesExceptPlaceHolderStyles(StyledDocument doc) {
+        if (doc instanceof StyledDocumentWithChunk) {
+            StyledDocumentWithChunk docWithChunk = (StyledDocumentWithChunk) doc;
+            List<InterfacePlaceHolderStyle> listOfPlaceHolderStyle = docWithChunk.getListOfPlaceHolderStyle();
+            SwingStyle.clearAllCharacterAttributes(docWithChunk);
+            docWithChunk.applyPlaceHolderStyle(listOfPlaceHolderStyle);
+        } else {
+            SwingStyle.clearAllCharacterAttributes(doc);
+        }
+    }
 
     public static class RegexSelectedTextPos {
         int st;

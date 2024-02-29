@@ -84,6 +84,13 @@ public class PopUpItemSingleSend extends JMenuItem {
             SwingTimerFakeRunner runner = new SwingTimerFakeRunner(selectedTabIndex, f_mbui, new Runnable() {
                 @Override
                 public void run() {
+                    // by below calling methods,
+                    // all three display components(messageRequest/messageResponse/MacroComments)
+                    // will be updated by sending result.
+                    // messageRequest may have request being edited in it's own StyledDocument,
+                    // but by result of sending messages,
+                    // it will modify request message so must be update also messageRequest contents.
+                    // so contents being edited in messageRequest may be discarded.
                     f_mbui.updateCurrentSelectedRequestListDisplayContents();
                     f_mbui.showMessageViewOnWorkBench(1);
                 }
