@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [v1.1.18] - 2024-03-12
+### Changed
+- bugfix: Changed ActiveScan behavior when scan is started again.
+  the current request has modified after previous scanning, so scanning again might failed.
+- maintenance: Updated copyright message
+
 ## [v1.1.17] - 2024-02-29
 ### Changed
 - bugfix: fixed bug in strange text cursor caret movement in the StyledDocumentWithChunk which has JComponents.

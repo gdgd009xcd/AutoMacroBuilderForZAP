@@ -1,28 +1,9 @@
-/*
- * Zed Attack Proxy (ZAP) and its related class files.
- *
- * ZAP is an HTTP/HTTPS proxy for assessing web application security.
- *
- * Copyright 2020 The ZAP Development Team
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.zaproxy.zap.extension.automacrobuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-/** @author youtube */
+/** @author gdgd009xcd */
 //
 // ByteArray
 //
@@ -47,7 +28,12 @@ public class ParmGenBinUtil {
         return bstream.size();
     }
 
-    /** streamにバイトを追加 */
+    /**
+     * add byte array to bstream
+     *
+     * @param bin
+     * @return
+     */
     public boolean concat(byte[] bin) {
 
         if ((bin == null)) {
@@ -70,7 +56,14 @@ public class ParmGenBinUtil {
         return bstream.toByteArray();
     }
 
-    /** substring のバイナリ版 org[beginIndex] - org[endIndex-1] length = endIndex - beginIndex > 0 */
+    /**
+     * get byte array between beginIndex and endIndex within bstream
+     * org[beginIndex] - org[endIndex-1] length = endIndex - beginIndex > 0
+     *
+     * @param beginIndex
+     * @param endIndex
+     * @return
+     */
     public byte[] subBytes(int beginIndex, int endIndex) {
 
         int length = endIndex - beginIndex; // 戻り値配列の要素数
@@ -84,13 +77,20 @@ public class ParmGenBinUtil {
         return null;
     }
 
-    /** org[beginIndex] to last */
+
+    /**
+     * get byte array from beginIndex until last.
+     *
+     * @param beginIndex
+     * @return
+     */
     public byte[] subBytes(int beginIndex) {
         return subBytes(beginIndex, length());
     }
 
     /** indexOf */
-    public int indexOf(byte[] dest, int startpos) {
+    @Deprecated
+    public int indexOfobsolete(byte[] dest, int startpos) {
         int idx = -1;
         byte[] seqbin = getBytes();
         byte[] keybin = dest;
@@ -120,6 +120,49 @@ public class ParmGenBinUtil {
         return idx;
     }
 
+    /**
+     *  get index of first occurrence of dest sequence ｗithin this byte sequence
+     *
+     * @param dest
+     * @param startpos
+     * @return
+     */
+    public int indexOf(byte[] dest, int startpos) {
+        byte[] seqbin = getBytes();
+        byte[] keybin = dest;
+
+        if (seqbin == null ||  keybin == null) return -1;
+
+        int seqLen = seqbin.length;
+        int keyLen = keybin.length;
+        int endpos = seqLen - keyLen + 1;
+
+        if (seqLen < 1 || keyLen < 1) return -1;
+
+        if (endpos > 0 && startpos < endpos) {
+            byte c = keybin[0];
+            int i = startpos;
+
+            if (keyLen == 1) {
+                return nextFirstBytePos(i, seqbin, c, keyLen);
+            } else {
+                while ((i = nextFirstBytePos(i, seqbin, c, keyLen)) != -1) {
+                    int j;
+                    for (j = 1; j < keyLen; j++) {
+                        if (seqbin[i + j] != keybin[j]) {
+                            break;
+                        }
+                    }
+                    if (j == keyLen) {
+                        return i;
+                    }
+                    i++;
+                }
+            }
+        }
+        return -1;
+    }
+
     /** */
     public int indexOf(byte[] dest) {
         return indexOf(dest, 0);
@@ -133,5 +176,20 @@ public class ParmGenBinUtil {
     /** clear data */
     public void clear() {
         bstream.reset();
+    }
+
+    private int nextFirstBytePos(int start, byte[] src, byte c, int destLen) {
+        int srcLen = src.length;
+        int minLen = srcLen - destLen;
+        for(int i=start; i < srcLen; i++) {
+            if(src[i] == c ){
+                if(i <= minLen){
+                    return i;
+                } else {
+                    break;
+                }
+            }
+        }
+        return -1;
     }
 }

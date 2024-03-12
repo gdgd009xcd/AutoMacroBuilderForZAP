@@ -98,12 +98,18 @@ public class ZapUtil {
     }
 
     /**
-     * Get PRequest from Contents of MacroRequest in mbui
+     *
      *
      * @param mbui
      * @return null or PRequest
      */
-    public static PRequest getPRequestFromMacroRequest(MacroBuilderUI mbui) {
+    /**
+     * Get PRequest from Contents of MacroRequest in mbui
+     * @param mbui
+     * @param isOriginalRequest - if true then this function returns original PRequest instead of current viewed request.
+     * @return
+     */
+    public static PRequest getPRequestFromMacroRequest(MacroBuilderUI mbui, boolean isOriginalRequest) {
         int selectedTabIndex = mbui.getSelectedTabIndexOfMacroRequestList();
         int pos = mbui.getRequestJListSelectedIndexAtTabIndex(selectedTabIndex);
         ParmGenMacroTrace pmt = mbui.getParmGenMacroTraceAtTabIndex(selectedTabIndex);
@@ -112,12 +118,21 @@ public class ZapUtil {
 
             pmt.setCurrentRequest(pos);
 
-            StyledDocumentWithChunk doc = mbui.getStyledDocumentOfSelectedMessageRequest();
-            if (doc != null) {
-                PRequestResponse prr = pmt.getRequestResponseCurrentList(pos);
-                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();
-                prr.updateRequest(newrequest.clone());
-                return newrequest;
+            PRequestResponse currentPRequestResponse = pmt.getRequestResponseCurrentList(pos);
+
+            if (!isOriginalRequest) {
+                StyledDocumentWithChunk doc = mbui.getStyledDocumentOfSelectedMessageRequest();
+                if (doc != null) {
+                    PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();
+                    currentPRequestResponse.updateRequest(newrequest.clone());
+                    return newrequest;
+                }
+            } else {
+                PRequestResponse originalPRequestRespose = pmt.getOriginalPRequestResponse(pos);
+                if (originalPRequestRespose != null) {
+                    currentPRequestResponse.updateRequest(originalPRequestRespose.request.clone());
+                    return currentPRequestResponse.request;
+                }
             }
         }
         return null;
