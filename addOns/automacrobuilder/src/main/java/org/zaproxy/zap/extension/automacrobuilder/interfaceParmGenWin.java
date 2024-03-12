@@ -1,9 +1,5 @@
 /*
- * Zed Attack Proxy (ZAP) and its related class files.
- *
- * ZAP is an HTTP/HTTPS proxy for assessing web application security.
- *
- * Copyright 2020 The ZAP Development Team
+ * Copyright 2024 gdgd009xcd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +15,7 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder;
 
-/** @author tms783 */
+/** @author gdgd009xcd */
 public interface interfaceParmGenWin {
     public void updateMessageAreaInSelectedModel(int panel);
 

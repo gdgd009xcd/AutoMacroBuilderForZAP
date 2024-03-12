@@ -27,7 +27,7 @@ import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 
 /**
  *
- * @author tms783
+ * @author gdgd009xcd
  */
 @SuppressWarnings("serial")
 public class ResponseTracker extends javax.swing.JFrame implements InterfaceRegex, interfaceParmGenWin {

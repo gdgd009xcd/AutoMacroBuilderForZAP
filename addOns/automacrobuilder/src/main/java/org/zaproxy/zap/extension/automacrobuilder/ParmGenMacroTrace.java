@@ -1,9 +1,5 @@
 /*
- * Zed Attack Proxy (ZAP) and its related class files.
- *
- * ZAP is an HTTP/HTTPS proxy for assessing web application security.
- *
- * Copyright 2020 The ZAP Development Team
+ * Copyright 2024 gdgd009xcd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -478,7 +474,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         }
     }
 
-    public PRequestResponse getOriginalRequest(int idx) {
+    public PRequestResponse getOriginalPRequestResponse(int idx) {
         if (originalrlist != null
                 && originalrlist.size() > 0
                 && idx > -1
@@ -490,7 +486,7 @@ public class ParmGenMacroTrace extends ClientDependent {
     }
 
     public PRequestResponse getCurrentOriginalRequest() {
-        return getOriginalRequest(getCurrentRequestPos());
+        return getOriginalPRequestResponse(getCurrentRequestPos());
     }
 
     // 1) Start Pre Macros

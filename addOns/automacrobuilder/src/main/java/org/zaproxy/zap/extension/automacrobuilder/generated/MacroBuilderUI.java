@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import com.google.gson.JsonElement;
@@ -559,6 +558,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         RequestEdit.add(edit);
 
         restore.setText(bundle.getString("MacroBuilderUI.restore.text")); // NOI18N
+        restore.setToolTipText(bundle.getString("MacroBuilderUI.restore.tooltip.text"));
         restore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreActionPerformed(evt);
@@ -567,6 +567,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         RequestEdit.add(restore);
 
         update.setText(bundle.getString("MacroBuilderUI.update.text")); // NOI18N
+        update.setToolTipText(bundle.getString("MacroBuilderUI.update.tooltip.text"));
         update.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 updateActionPerformed(evt);
@@ -2069,7 +2070,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         if (requestJList == null) return;
         int idx = requestJList.getSelectedIndex();
         if (idx > -1 && prequestResponseList != null && idx < prequestResponseList.size()) {
-            PRequestResponse prr = pmt.getOriginalRequest(idx);// get original PRequestResponse in originalrlist
+            PRequestResponse prr = pmt.getOriginalPRequestResponse(idx);// get original PRequestResponse in originalrlist
             if (prr != null) {
                 PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
                 current.updateRequestResponse(prr.request.clone(), prr.response.clone());// clone original PRequestResponse to CurrentList(rlist)
@@ -2103,7 +2104,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks(); // request newly created from DocText and Chunks
                 current.request = newrequest;
 
-                PRequestResponse original = pmt.getOriginalRequest(idx);
+                PRequestResponse original = pmt.getOriginalPRequestResponse(idx);
                 original.updateRequestResponse(current.request, current.response);// copy current PRequestResponse to original list(originalrlist)
                 if (EnvironmentVariables.isSaved()) { // if you have been saved params. then overwrite.
                     ParmGenGSONSaveV2 gson = new ParmGenGSONSaveV2(pmtProvider);
@@ -2629,7 +2630,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         int selectedIndex = requestJList.getSelectedIndex();
 
         for (int index = 0; index < prequestResponseList.size(); index++) {
-            PRequestResponse prr = pmt.getOriginalRequest(index);// get original PRequestResponse in original
+            PRequestResponse prr = pmt.getOriginalPRequestResponse(index);// get original PRequestResponse in original
             PRequestResponse current = pmt.getRequestResponseCurrentList(index);
             current.updateRequestResponse(prr.request.clone(), prr.response.clone());// clone original PRequestResponse to CurrentList(rlist)
 

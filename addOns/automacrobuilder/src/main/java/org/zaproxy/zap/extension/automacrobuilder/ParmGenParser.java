@@ -1,9 +1,5 @@
 /*
- * Zed Attack Proxy (ZAP) and its related class files.
- *
- * ZAP is an HTTP/HTTPS proxy for assessing web application security.
- *
- * Copyright 2020 The ZAP Development Team
+ * Copyright 2024 gdgd009xcd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +23,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-/** @author tms783 */
+/** @author gdgd009xcd */
 public class ParmGenParser implements DeepClone {
 
     final private static org.apache.logging.log4j.Logger LOGGER4J =

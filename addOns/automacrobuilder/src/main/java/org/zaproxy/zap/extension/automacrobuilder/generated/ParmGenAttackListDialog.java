@@ -95,7 +95,7 @@ public class ParmGenAttackListDialog extends javax.swing.JDialog {
         jScrollPane1.setViewportView(PatternList);
 
         AttackList.setEditable(true);
-        AttackList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "C:\\Users\\daike\\Desktop\\ParmGenParms\\SQL Injection.txt", "C:\\Users\\daike\\Desktop\\ParmGenParms\\XSS.txt", "C:\\Users\\daike\\Desktop\\ParmGenParms\\HTTP Response Divide.txt", "C:\\Users\\daike\\Desktop\\ParmGenParms\\OS command injection.txt" }));
+        AttackList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "C:\\Users\\xxxx\\Desktop\\ParmGenParms\\SQL Injection.txt", "C:\\Users\\xxxx\\Desktop\\ParmGenParms\\XSS.txt", "C:\\Users\\xxxxx\\Desktop\\ParmGenParms\\HTTP Response Divide.txt", "C:\\Users\\xxxxx\\Desktop\\ParmGenParms\\OS command injection.txt" }));
 
         jLabel1.setText("Attack Pattern List");
 

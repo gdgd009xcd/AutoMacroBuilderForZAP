@@ -60,7 +60,7 @@ public class PopUpItemSingleSend extends JMenuItem {
      */
     private void singleSendSelectedRequest(MacroBuilderUI f_mbui, StartedActiveScanContainer f_acon) {
 
-        PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui);
+        PRequest newrequest = ZapUtil.getPRequestFromMacroRequest(f_mbui, false);
 
 
         if (newrequest != null) {
