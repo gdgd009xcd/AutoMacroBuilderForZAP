@@ -109,7 +109,8 @@ public class ClientDependMessageContainer
                             .getRequestHeader()
                             .toString(); // getPrimeHeader() + mLineDelimiter + mMsgHeader +
             // mLineDelimiter;
-            byte[] bodybin = this.href.getHttpMessage().getRequestBody().getBytes();
+            // get body bytes with applying properly decoding which is based on Content-Encoding
+            byte[] bodybin = this.href.getHttpMessage().getRequestBody().getContent();
             ParmGenBinUtil pbinutil = new ParmGenBinUtil(reqheader.getBytes());
             pbinutil.concat(bodybin);
             return pbinutil.getBytes();
@@ -129,7 +130,8 @@ public class ClientDependMessageContainer
                             .getResponseHeader()
                             .toString(); // getPrimeHeader() + mLineDelimiter + mMsgHeader +
             // mLineDelimiter;
-            byte[] bodybin = this.href.getHttpMessage().getResponseBody().getBytes();
+            // get body bytes with applying properly decoding which is base on Content-Encoding
+            byte[] bodybin = this.href.getHttpMessage().getResponseBody().getContent();
             ParmGenBinUtil pbinutil = new ParmGenBinUtil(resheader.getBytes());
             pbinutil.concat(bodybin);
             return pbinutil.getBytes();
