@@ -5,10 +5,7 @@ import java.nio.charset.Charset;
 
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.Extension;
-import org.parosproxy.paros.network.HttpMalformedHeaderException;
-import org.parosproxy.paros.network.HttpMessage;
-import org.parosproxy.paros.network.HttpRequestHeader;
-import org.parosproxy.paros.network.HttpResponseHeader;
+import org.parosproxy.paros.network.*;
 import org.zaproxy.zap.control.AddOn;
 import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
@@ -86,10 +83,13 @@ public class ZapUtil {
         try {
             HttpRequestHeader httpReqHeader = new HttpRequestHeader(reqhstr, isSSL);
             HttpRequestBody mReqBody = new HttpRequestBody();
-            mReqBody.setBody(preq.getBodyBytes());
             // set PRequest Encoding Charset to request Body Charset
             mReqBody.setCharset(preq.getPageEnc().getIANACharsetName());
+            // setup Content-Encoding handlers(gzip,deflate).
+            HttpMessage.setContentEncodings(httpReqHeader, mReqBody);
             htmess = new HttpMessage(httpReqHeader, mReqBody);
+            // update request body and apply properly encodings(based on Content-Encoding) to it.
+            updateRequestContent(htmess, preq.getBodyBytes());
         } catch (HttpMalformedHeaderException e) {
             LOGGER4J.error("reqhstr:" + reqhstr, e);
         }
@@ -153,7 +153,9 @@ public class ZapUtil {
             requestBodyEncode = sequenceEncode;
         }
         ParmGenBinUtil requestbin = new ParmGenBinUtil(requestheader.toString().getBytes());
-        requestbin.concat(requestbody.getBytes());
+        //requestbin.concat(requestbody.getBytes());
+        // must use getContent method. it can apply properly decoding which is based on Content-Encoding
+        requestbin.concat(requestbody.getContent());
         HttpResponseHeader responseheader = htmess.getResponseHeader();
         HttpResponseBody responsebody = htmess.getResponseBody();
         Encode responseBodyEncode = Encode.getEnum(responsebody.getCharset());
@@ -161,7 +163,9 @@ public class ZapUtil {
             responseBodyEncode = sequenceEncode;
         }
         ParmGenBinUtil responsebin = new ParmGenBinUtil(responseheader.toString().getBytes());
-        responsebin.concat(responsebody.getBytes());
+        //responsebin.concat(responsebody.getBytes());
+        // must use getContent method which can get properly decoded value which is based on Content-Encoding
+        responsebin.concat(responsebody.getContent());
         if (responsebin.length() < 1) {
             responsebin.clear();
             Encode enc_iso8859_1 = Encode.ISO_8859_1;
@@ -200,7 +204,9 @@ public class ZapUtil {
                         + lastResponseEncode.getIANACharsetName()
                         + "]");
         ParmGenBinUtil requestbin = new ParmGenBinUtil(requestheader.toString().getBytes());
-        requestbin.concat(requestbody.getBytes());
+        //requestbin.concat(requestbody.getBytes());
+        // must use getContent method which apply properly decoding based on Content-Encoding
+        requestbin.concat(requestbody.getContent());
         String host = requestheader.getHostName();
         int port = requestheader.getHostPort();
         boolean isSSL = requestheader.isSecure();
@@ -364,5 +370,29 @@ public class ZapUtil {
         } else {
             runnable.run();
         }
+    }
+
+    /**
+     * update request body with bodyBytes and update Content-Length with bodyBytes.length
+     *
+     * @param message
+     * @param bodyBytes
+     */
+    public static void updateRequestContent(HttpMessage message, byte[] bodyBytes) {
+        // set request body bytes and apply properly encodings(based on Content-Encoding).
+        message.getRequestBody().setContent(bodyBytes);
+        // update Content-Length with bodyBytes.length
+        int bodyLength = message.getRequestBody().length();
+        String method = message.getRequestHeader().getMethod();
+        if (bodyLength == 0
+                && (HttpRequestHeader.GET.equalsIgnoreCase(method)
+                || HttpRequestHeader.CONNECT.equalsIgnoreCase(method)
+                || HttpRequestHeader.DELETE.equalsIgnoreCase(method)
+                || HttpRequestHeader.HEAD.equalsIgnoreCase(method)
+                || HttpRequestHeader.TRACE.equalsIgnoreCase(method))) {
+            message.getRequestHeader().setHeader(HttpHeader.CONTENT_LENGTH, null);
+            return;
+        }
+        message.getRequestHeader().setContentLength(bodyLength);
     }
 }

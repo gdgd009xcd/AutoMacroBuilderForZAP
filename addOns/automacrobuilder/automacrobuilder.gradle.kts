@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "1.1.18"
+version = "1.1.19"
 description = "AutoMacroBuilder for ZAP"
 
 tasks.withType<JavaCompile> {

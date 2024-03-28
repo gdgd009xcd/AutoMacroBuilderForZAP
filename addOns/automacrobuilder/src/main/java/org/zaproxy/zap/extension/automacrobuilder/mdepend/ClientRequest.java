@@ -63,7 +63,9 @@ public class ClientRequest implements InterfaceClientRequest {
                 HttpRequestBody requestbody = htmess.getRequestBody();
 
                 ParmGenBinUtil requestbin = new ParmGenBinUtil(requestheader.toString().getBytes());
-                requestbin.concat(requestbody.getBytes());
+                //requestbin.concat(requestbody.getBytes());
+                // must use getContent method which can get properly decoded value.
+                requestbin.concat(requestbody.getContent());
                 HttpResponseHeader responseheader = htmess.getResponseHeader();
                 HttpResponseBody responsebody = htmess.getResponseBody();
                 String responseHeaderString =
@@ -77,7 +79,9 @@ public class ClientRequest implements InterfaceClientRequest {
                     responseEncode = Encode.getEnum(responseHttpContentType.getCharSetName());
                 }
                 ParmGenBinUtil responsebin = new ParmGenBinUtil(responseHeaderString.getBytes());
-                responsebin.concat(responsebody.getBytes());
+                //responsebin.concat(responsebody.getBytes());
+                // must use getContent method which get body bytes with applying properly decoding which is based on Content-Encoding
+                responsebin.concat(responsebody.getContent());
                 if (responsebin.length() < 1) {
                     responsebin.clear();
                     responsebin.concat(
@@ -189,7 +193,9 @@ public class ClientRequest implements InterfaceClientRequest {
                     if (responsebody == null || responsebody.length < 1) {
                         responsebody = "".getBytes(); // not null zero length bytes.
                     }
-                    currentmessage.setResponseBody(responsebody);
+                    //currentmessage.setResponseBody(responsebody);
+                    // set body bytes with applying properly encoding which is based on Content-Encoding
+                    currentmessage.getResponseBody().setContent(responsebody);
                 } catch (HttpMalformedHeaderException e) {
                     LOGGER4J.error("", e);
                 }
