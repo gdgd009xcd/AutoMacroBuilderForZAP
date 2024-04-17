@@ -199,8 +199,8 @@ public class ParmGenAddParms extends javax.swing.JDialog implements interfacePar
             String namedecoded = name;
             try {
                 namedecoded = URLDecoder.decode(name, selectedRequestEncode.getIANACharsetName());
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(ParmGenAddParms.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {// catch all Exceptions which contains null.
+                LOGGER4J.error(ex.getMessage(), ex);
             }
             if(names.contains(namedecoded)){// select list entry which value matched namedecoded
                 lmodel.addSelectionInterval(j, j);

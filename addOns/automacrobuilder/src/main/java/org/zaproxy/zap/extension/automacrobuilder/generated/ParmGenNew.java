@@ -36,8 +36,7 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
     public final static int P_NUMBERMODEL = 0;
     final static int P_CSVMODEL = 1;
     final static int P_TRACKMODEL = 2;
-    final static int P_TAMPERMODEL = 3;
-    final static int P_RANDOMMODEL = 4;//NOP
+    final static int P_RANDOMMODEL = 3;//NOP
 
 
     //　below P_XXX variables are tabIndex number of ResReqTabs.
@@ -89,7 +88,6 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
         ParamTableModels[P_NUMBERMODEL] = (DefaultTableModel)nParamTable.getModel();
         ParamTableModels[P_CSVMODEL] = (DefaultTableModel)csvParamTable.getModel();
         ParamTableModels[P_TRACKMODEL] = (DefaultTableModel)trackTable.getModel();
-        ParamTableModels[P_TAMPERMODEL] = (DefaultTableModel)tamperTable.getModel();
 
         addJComboBoxToJTable();
 
@@ -130,9 +128,6 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
                 case AppParmsIni.T_RANDOM:
                     current_model = P_RANDOMMODEL;
                     break;
-                case AppParmsIni.T_TAMPER:
-                    current_model = P_TAMPERMODEL;
-                    break;
             }
             
             current_model_selected = true;
@@ -160,13 +155,13 @@ public class ParmGenNew extends javax.swing.JFrame implements InterfaceRegex, in
         }
         // after deternimed current_model_selected must run these functions.
         ModelTabs.setSelectedIndex(current_model);
-        ModelTabs.setEnabledAt(3, false);
 
     }
 
     public void setPatternFileName(String _name){
-        AttackPatternFile.setText(_name);
+
     }
+
     public int getCurrentModel(){
         return current_model;
     }
@@ -204,13 +199,6 @@ private void setAppParmsIni(){
                     ParamTableModels[P_TRACKMODEL].addRow(row);
                 }
                 break;
-             case P_TAMPERMODEL:
-                tamperTargetURL.setText(rec.getUrl());
-                rec.rewindAppValues();
-                while((row=rec.getNextAppValuesRow())!=null){
-                    ParamTableModels[P_TAMPERMODEL].addRow(row);
-                }
-                break;
             default:
                 break;
         }
@@ -225,18 +213,13 @@ private void setAppParmsIni(){
         }
     }
     private void addJComboBoxToJTable(){
-        //ComboBoxを設定
-        AppValue ap = new AppValue();//static 初期化。
+        //setup comboBox
         JComboBox<String> cb = new JComboBox<>(AppValue.makeTargetRequestParamTypes());
-        JComboBox<String> tb = new JComboBox<>(AppValue.makePayloadPositionNames());
         DefaultCellEditor dce = new DefaultCellEditor(cb);
-        DefaultCellEditor tbe = new DefaultCellEditor(tb);
         nParamTable. getColumnModel().getColumn(0).setCellEditor(dce);
         trackTable.getColumnModel().getColumn(0).setCellEditor(dce);
-        tamperTable.getColumnModel().getColumn(0).setCellEditor(dce);
-        tamperTable.getColumnModel().getColumn(6).setCellEditor(tbe);
 
-        //modelの初期化とクリア
+        //initialize models
         for(int i = 0; i < ParamTableModels.length; i++){
             DefaultTableModel model = ParamTableModels[i];
             if ( model!=null){
@@ -247,9 +230,6 @@ private void setAppParmsIni(){
         NumberInit.setText("");
         NumberLen.setText("");
         NumberRewind.setSelected(false);
-
-
-
     }
 
     public String getRegex(){
@@ -275,8 +255,10 @@ private void setAppParmsIni(){
         current_model_selected = true;
         addParam(current_model, reqplace, name, ni, value, target_req_isformdata, islastparam);
     }
-    /*
-     *  指定されたメッセージで、カレントのボタンのmessageAreaを更新
+
+    /**
+     * update current button's messageArea with specified message.
+     * @param panelno
      */
     public void updateMessageAreaInSelectedModel(int panelno){
         PRequestResponse rs = ParmGenGSONSaveV2.selected_messages.get(0);
@@ -313,7 +295,7 @@ private void setAppParmsIni(){
 
     private void addParam(int m, String reqplace, String name, int ni, String value, boolean target_req_isformdata, boolean islastparam){
         DefaultTableModel model = ParamTableModels[m];
-        //name=valueにデフォルトの正規表現を生成してセット
+        // set default regex for "name=value"
         String nval =  (name!=null?("(?:[&=?]|^)" + name + "="):"") + value;
         String _reqplace = reqplace;
         if ( reqplace.toLowerCase().equals("formdata")){
@@ -327,13 +309,7 @@ private void setAppParmsIni(){
             String regex = "\"" + name + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)\"(.+?)\"(?:[\\t \\]\\r\\n]*)(?:,|})";
             List<String> jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, request.getBodyStringWithoutHeader());
             boolean jsonmatched = false;
-            String jsonvalue = value;
-            /*for(String v: jsonmatchlist){
-                if(jsonvalue.equals(v)){
-                    jsonmatched = true;
-                    break;
-                }
-            }*/
+
             if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
                 jsonmatched = true;
             }
@@ -341,12 +317,7 @@ private void setAppParmsIni(){
             if(!jsonmatched){// "key": value
                 regex ="\"" + name + "\"(?:[\\t \\r\\n]*):(?:[\\t\\[\\r\\n ]*)([^,:{}\\\"]+?)(?:[\\t \\]\\r\\n]*)(?:,|})";
                 jsonmatchlist = ParmGenUtil.getRegexMatchGroups(regex, request.getBodyStringWithoutHeader());
-                /*for(String v: jsonmatchlist){
-                    if(jsonvalue.equals(v)){
-                        jsonmatched = true;
-                        break;
-                    }
-                }*/
+
                 if(jsonmatchlist!=null&&jsonmatchlist.size()>0){
                     jsonmatched = true;
                 }
@@ -358,10 +329,6 @@ private void setAppParmsIni(){
         boolean urlencode = false;
         AppValue ap = new AppValue();
 
-        String payloadposition = EnvironmentVariables.session.get(ParmGenSession.K_PAYLOADPOSITION);
-        if(payloadposition==null){
-            payloadposition = ap.getPayloadPositionName(AppValue.I_APPEND);
-        }
         String tkname = "";
         String responseURLregex = EnvironmentVariables.session.get(ParmGenSession.K_RESPONSEURLREGEX);
         String frompos = TrackFrom.getText();
@@ -492,8 +459,6 @@ private void setAppParmsIni(){
                 return trackTargetURL.getText();
             case P_RANDOMMODEL:
                 break;
-            case P_TAMPERMODEL:
-                return tamperTargetURL.getText();
             default:
                 break;
         }
@@ -512,9 +477,6 @@ private void setAppParmsIni(){
             case P_TRACKMODEL:
                 current_table = trackTable;
             case P_RANDOMMODEL:
-                break;
-            case P_TAMPERMODEL:
-                current_table = tamperTable;
                 break;
             default:
                 break;
@@ -639,18 +601,9 @@ private void setAppParmsIni(){
         trackTable = new javax.swing.JTable();
         jLabel9 = new javax.swing.JLabel();
         trackTargetURL = new javax.swing.JTextField();
-        SeqRandom = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tamperTargetURL = new javax.swing.JTextField();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        tamperTable = new javax.swing.JTable();
-        addTamper = new javax.swing.JButton();
-        upTamper = new javax.swing.JButton();
-        delTamper = new javax.swing.JButton();
-        downTamper = new javax.swing.JButton();
-        modTamper = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
-        AttackPatternFile = new javax.swing.JTextField();
+        //AttackPatternFile = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         SaveParm = new javax.swing.JButton();
         CancelParm = new javax.swing.JButton();
@@ -1293,126 +1246,7 @@ private void setAppParmsIni(){
 
         jLabel1.setText(bundle.getString("ParmGenNew.TargetPathTitleLabel1.text")); // NOI18N
 
-        tamperTargetURL.setText("jTextField1");
-
-        tamperTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {"post", null, null, "param1", "SQL injection", null, "add", null},
-                {"", null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
-            },
-            new String [] {
-                "置換位置", "置換しない", "Value", "Name", "Attack", "Advance", "Position", "ＵＲＬencode"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Boolean.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Boolean.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        tamperTable.getTableHeader().setReorderingAllowed(false);
-        jScrollPane5.setViewportView(tamperTable);
-
-        addTamper.setText(bundle.getString("ParmGenNew.ParamAddBtn.text")); // NOI18N
-        addTamper.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addTamperActionPerformed(evt);
-            }
-        });
-
-        upTamper.setText(bundle.getString("ParmGenNew.UpTamperBtn.text")); // NOI18N
-        upTamper.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                upTamperActionPerformed(evt);
-            }
-        });
-
-        delTamper.setText(bundle.getString("ParmGenNew.DeleteBtn.text")); // NOI18N
-        delTamper.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                delTamperActionPerformed(evt);
-            }
-        });
-
-        downTamper.setText(bundle.getString("ParmGenNew.DownTamperBtn.text")); // NOI18N
-        downTamper.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                downTamperActionPerformed(evt);
-            }
-        });
-
-        modTamper.setText(bundle.getString("ParmGenNew.ModTamperEditBtn.text")); // NOI18N
-        modTamper.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                modTamperActionPerformed(evt);
-            }
-        });
-
         jLabel4.setText(bundle.getString("ParmGenNew.PatternTitleLabel4.text")); // NOI18N
-
-        AttackPatternFile.setText("jTextField1");
-
-        javax.swing.GroupLayout SeqRandomLayout = new javax.swing.GroupLayout(SeqRandom);
-        SeqRandom.setLayout(SeqRandomLayout);
-        SeqRandomLayout.setHorizontalGroup(
-            SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(SeqRandomLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(SeqRandomLayout.createSequentialGroup()
-                        .addGroup(SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane5)
-                            .addGroup(SeqRandomLayout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(tamperTargetURL)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(addTamper, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(upTamper, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(delTamper, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(downTamper, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(modTamper, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(58, 58, 58))
-                    .addGroup(SeqRandomLayout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(AttackPatternFile)
-                        .addGap(164, 164, 164))))
-        );
-        SeqRandomLayout.setVerticalGroup(
-            SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(SeqRandomLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(tamperTargetURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(AttackPatternFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(SeqRandomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(SeqRandomLayout.createSequentialGroup()
-                        .addComponent(addTamper)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(modTamper)
-                        .addGap(15, 15, 15)
-                        .addComponent(delTamper)
-                        .addGap(11, 11, 11)
-                        .addComponent(upTamper)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(downTamper))
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(99, 99, 99))
-        );
-
-        ModelTabs.addTab("Tamper", SeqRandom);
 
         SaveParm.setText(bundle.getString("ParmGenNew.SaveParmBtn.text")); // NOI18N
         SaveParm.addActionListener(new java.awt.event.ActionListener() {
@@ -1765,33 +1599,18 @@ private void setAppParmsIni(){
                     String _token = (String)model.getValueAt(i, 7);
                     boolean _trackreq = Boolean.parseBoolean(model.getValueAt(i, 8).toString());
                     int fromStepNo = -1;
-                    /***
-                    try{
-                        fromStepNo = (int)model.getValueAt(i, 9);
-                    }catch(Exception e){
-                        //
-                        fromStepNo = -1;
-                    }****/
                     try{
                         fromStepNo = Integer.parseInt((String)model.getValueAt(i, 9));
                     }catch(NumberFormatException e){
                         fromStepNo = -1;
                     }
                     int toStepNo = EnvironmentVariables.TOSTEPANY;
-                    /***
-                    try{
-                        toStepNo = (int)model.getValueAt(i, 10);
-                    }catch(Exception e){
-                        //
-                        toStepNo = 0;
-                    }***/
                     try{
                         toStepNo = Integer.parseInt((String)model.getValueAt(i, 10));
                     }catch(NumberFormatException e){
                         toStepNo = EnvironmentVariables.TOSTEPANY;
                     }
                     if(toStepNo<0) toStepNo = EnvironmentVariables.TOSTEPANY;
-                    int tktype;
 
                     String tktypename = (String)model.getValueAt(i, 11);
 
@@ -2112,30 +1931,6 @@ private void setAppParmsIni(){
         // TODO add your handling code here:
     }//GEN-LAST:event_NumberLenActionPerformed
 
-    private void addTamperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTamperActionPerformed
-        // TODO add your handling code here:
-        //Tamper追加
-        //セッションクリア
-        EnvironmentVariables.session.clear();
-        //new ParmGenAddParms(this, false).setVisible(true);
-        new ParmGenTamperOpt(this).setVisible(true);
-    }//GEN-LAST:event_addTamperActionPerformed
-
-    private void upTamperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upTamperActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_upTamperActionPerformed
-
-    private void delTamperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delTamperActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_delTamperActionPerformed
-
-    private void downTamperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downTamperActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_downTamperActionPerformed
-
-    private void modTamperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modTamperActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_modTamperActionPerformed
 
     private void NumberSelBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NumberSelBtnActionPerformed
         // TODO add your handling code here:
@@ -2223,7 +2018,6 @@ private void setAppParmsIni(){
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField AddMsec;
-    private javax.swing.JTextField AttackPatternFile;
     private javax.swing.JTextField CSVSkipLine;
     private javax.swing.JCheckBox CSVrewind;
     private javax.swing.JButton CancelParm;
@@ -2249,7 +2043,6 @@ private void setAppParmsIni(){
     private javax.swing.JButton SaveParm;
     private javax.swing.JPanel SeqCSV;
     private javax.swing.JPanel SeqNumber;
-    private javax.swing.JPanel SeqRandom;
     private javax.swing.JPanel SeqResponse;
     private javax.swing.JTextField SetTo;
     private javax.swing.JLabel SetToLabel;
@@ -2257,7 +2050,6 @@ private void setAppParmsIni(){
     private javax.swing.JTextField SimpleDateFormatStr;
     private javax.swing.JTextField TrackFrom;
     private javax.swing.JLabel TrackFromLabel;
-    private javax.swing.JButton addTamper;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField csvFilePath;
     private javax.swing.JButton csvParamAdd;
@@ -2267,8 +2059,6 @@ private void setAppParmsIni(){
     private javax.swing.JTable csvParamTable;
     private javax.swing.JButton csvParamUP;
     private javax.swing.JTextField csvTargetURL;
-    private javax.swing.JButton delTamper;
-    private javax.swing.JButton downTamper;
     private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -2283,10 +2073,8 @@ private void setAppParmsIni(){
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JButton modTamper;
     private javax.swing.JButton nParamAdd;
     private javax.swing.JButton nParamAdd4;
     private javax.swing.JButton nParamDOWN;
@@ -2299,11 +2087,8 @@ private void setAppParmsIni(){
     private javax.swing.JTextField numberTargetURL;
     private javax.swing.JTextField selected_requestURL;
     private javax.swing.JTextField selected_responseURL;
-    private javax.swing.JTable tamperTable;
-    private javax.swing.JTextField tamperTargetURL;
     private javax.swing.JTable trackTable;
     private javax.swing.JTextField trackTargetURL;
-    private javax.swing.JButton upTamper;
     // End of variables declaration//GEN-END:variables
 
     @Override

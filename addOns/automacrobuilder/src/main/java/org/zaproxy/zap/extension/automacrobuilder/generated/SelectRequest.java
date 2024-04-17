@@ -24,6 +24,7 @@ import org.zaproxy.zap.extension.automacrobuilder.interfaceParmGenWin;
 @SuppressWarnings("serial")
 public class SelectRequest extends javax.swing.JDialog {
 
+    private static org.apache.logging.log4j.Logger LOGGER4J = org.apache.logging.log4j.LogManager.getLogger();
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
        DefaultTableModel model;

@@ -29,7 +29,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
      * Creates new form ParmGenAutoTrack
      */
     public ParmGenAutoTrack(ParmGenNew _pwin) {
-        parentwin = _pwin;//親ウィンドウ
+        parentwin = _pwin;//parent window
         // initComponents();
         customInitComponents();
 
@@ -164,7 +164,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
 
     private void NextBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NextBtnActionPerformed
         // TODO add your handling code here:
-        //選択したパラメータをセッションに格納。
+        //store selected parameters to session buffer.
         AppValue ap = new AppValue();
         int[] rowsSelected = TokenTable.getSelectedRows();
         DefaultTableModel model = (DefaultTableModel)TokenTable.getModel();
@@ -235,7 +235,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
 
                 },
                 new String [] {
-                        "種類", "tokentype", "出現順序", "name", "value"
+                        "type", "tokentype", "order", "name", "value"
                 }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -379,7 +379,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
             EnvironmentVariables.session.put(ParmGenSession.K_FROMPOS, Integer.toString(mpos));
             String body = rs.response.getBodyStringWithoutHeader();
             AppValue ap = new AppValue();
-            //Locationパラメータ取得
+            // get Location header value
             ParmGenArrayList tklist = new ParmGenArrayList();
             InterfaceCollection<ParmGenToken> ic = rs.response.getLocationTokens(tklist);
             if(ic!=null){
@@ -392,7 +392,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
                         AppValue.TokenTypeNames _tktype = tkey.getTokenType();
                         int npos = 0;
                         if(valueexistonly==true&&(value==null||value.isEmpty())){
-                            //value値の無いパラメータは対象外
+                            //exclude the parameter which doesn't have value
                         }else{
                             model.addRow(new Object[]{ap.getValPart(AppValue.V_HEADER),_tktype.name() ,Integer.toString(npos), name, value});
                         }
@@ -400,7 +400,7 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
 
             	}
             }
-            //responseパラメータ取得
+            // get response parameters
             ParmGenParser pgser = new ParmGenParser(body);
             HashMap<String,Integer> namepos = new HashMap<String,Integer>();
             ArrayList<ParmGenToken> lst = pgser.getNameValues();
@@ -420,13 +420,13 @@ public class ParmGenAutoTrack extends javax.swing.JFrame implements InterfaceReg
                     AppValue.TokenTypeNames _tktype = tkey.getTokenType();
                     int npos = tkey.getFcnt();
                     if(valueexistonly==true&&(value==null||value.isEmpty())){
-                        //value値の無いパラメータは対象外
+                        // exclude the parameter which doesn't have value.
                     }else{
                         model.addRow(new Object[]{ap.getValPart(AppValue.V_AUTOTRACKBODY),_tktype.name() ,Integer.toString(npos), name, value});
                     }
                 }
             }
-            //requestパラメータ取得
+            // get request parameters
             namepos.clear();
             Iterator<String> pit = rs.request.pathparams.iterator();
             int ppos = 1;

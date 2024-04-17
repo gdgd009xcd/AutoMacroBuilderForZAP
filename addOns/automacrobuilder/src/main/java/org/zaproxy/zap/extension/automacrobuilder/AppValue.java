@@ -35,8 +35,8 @@ public class AppValue {
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
     // valparttype,         value, token, tamattack,tamadvance,tamposition,urlencode
-    // 置換位置,置換しない,  value, Name,  Attack,   Advance,   Position,   URLencode
-    private String valpart; // 置換位置
+    // target part, replace or not,  value, Name,  Attack,   Advance,   Position,   URLencode
+    private String valpart; // target part of replacing in Http request
     private int valparttype; //  1-query, 2-body  3-header  4-path.... 16(10000) bit == no count
     // 32(100000) == no modify
     private String value = null; // Target Regex String to embed value in
@@ -53,10 +53,9 @@ public class AppValue {
     private int resRegexPos = -1; // Tracking token　position on page(start 0)
     private String token; // Tracking token name
     //
-    // 下記パラメータは、GUI操作時の一時保存値で、保存対象外。スキャン時は未使用。
-    // This parameter does not use when scanning. only  temporarily use  for GUI manipulation
+    // This parameter does not use when scanning. only  temporarily use  for GUI manipulation, so it is not saved to file.
     private String resFetchedValue =
-            null; // レスポンスからフェッチしたtokenの値 Token obtained from response during tracking process
+            null; // Token extracted from response during tracking process
 
     private TokenTypeNames tokentype = TokenTypeNames.INPUT;
 
@@ -89,7 +88,7 @@ public class AppValue {
     private boolean urlencode; // Whether to  encode URL
 
     private ResEncodeTypes resencodetype =
-            ResEncodeTypes.RAW; // 追跡元のエンコードタイプ Encode type of tracking param json/raw/urlencode
+            ResEncodeTypes.RAW; // Encode type of tracking source
 
     public enum ResEncodeTypes {
         RAW,
@@ -97,13 +96,10 @@ public class AppValue {
         URLENCODE,
     }
 
-    private int fromStepNo = -1; // TRACK追跡元 <0 :　無条件で追跡　>=0: 指定StepNoのリクエスト追跡
-    // Line number of response from which  getting tracking parameter  in RequestList sequence
+    private int fromStepNo = -1;// this is the position to extract the tracking parameter value
     // < 0: get tracking value from any response
     // >=0: get tracking value from specified request line number's response
-    private int toStepNo = EnvironmentVariables.TOSTEPANY; // TRACK:更新先
-    // 　>0:指定したStepNoのリクエスト更新
-    // Line number of request to which setting tracking paramter  in RequestList sequence
+    private int toStepNo = EnvironmentVariables.TOSTEPANY; // this is the position to embed the tracking parameter value
     //  <0 : No Operation.
     //  >=0 and < TOSTEPANY: set tracking value to specified line number's request
     //  ==TOSTEPANY: set tracking value to any request.
@@ -142,15 +138,6 @@ public class AppValue {
     public static final int I_INSERT = 1;
     public static final int I_REPLACE = 2;
     public static final int I_REGEX = 3;
-
-    private static String[] payloadpositionnames = {
-        // 診断パターン挿入位置
-        // append 値末尾に追加
-        // insert 値先頭に挿入
-        // replace 値をパターンに置き換え
-        // regex   埋め込み箇所正規表現指定
-        "append", "insert", "replace", "regex", null
-    };
 
     private boolean enabled = true; // enable/disable flag
 
@@ -387,13 +374,6 @@ public class AppValue {
         enabled = b;
     }
 
-    public String getPayloadPositionName(int it) {
-        if (payloadpositionnames.length > it && it >= 0) {
-            return payloadpositionnames[it];
-        }
-        return "";
-    }
-
     /**
      * Get ResEncodeTypes : response page content type JSON/RAW/URLENCODE..
      *
@@ -431,16 +411,7 @@ public class AppValue {
         return ResEncodeTypes.RAW;
     }
 
-    public static String[] makePayloadPositionNames() {
-        return new String[] {
-            payloadpositionnames[I_APPEND],
-            payloadpositionnames[I_INSERT],
-            payloadpositionnames[I_REPLACE],
-            payloadpositionnames[I_REGEX]
-        };
-    }
-
-    // ParmGenNew 数値、追跡テーブル用　ターゲットリクエストパラメータタイプリスト
+    // Target Request Parameter Type List for tracking table
     public static String[] makeTargetRequestParamTypes() {
         return new String[] {
             ctypestr[V_PATH], ctypestr[V_QUERY], ctypestr[V_BODY], ctypestr[V_HEADER]
@@ -725,7 +696,7 @@ public class AppValue {
         int _valparttype = 0;
         String[] ivals = _valtype.split(":");
         String valtypewithflags = ivals[0];
-        String _ctypestr = valtypewithflags.replaceAll("[^0-9a-zA-Z]", ""); // 英数字以外を除去
+        String _ctypestr = valtypewithflags.replaceAll("[^0-9a-zA-Z]", ""); // exclude other than alphanum
         for (int i = 1; ctypestr[i] != null; i++) {
             if (_ctypestr.equalsIgnoreCase(ctypestr[i])) {
                 _valparttype = i;
@@ -795,23 +766,56 @@ public class AppValue {
         return value;
     }
 
-    String[] replaceContents(
+    public String[] replacePathContents(
             ParmGenMacroTrace pmt,
-            int currentStepNo,
             AppParmsIni pini,
             String contents,
             String org_contents_iso8859,
-            ParmGenHashMap errorhash) {
+            ParmGenHashMap errorhash
+    ){
+        return replaceContents(pmt, pini, contents, org_contents_iso8859, errorhash, 1);
+    }
+
+    public String[] replaceContents(
+            ParmGenMacroTrace pmt,
+            AppParmsIni pini,
+            String contents,
+            String org_contents_iso8859,
+            ParmGenHashMap errorhash
+    ){
+        return replaceContents(pmt, pini, contents, org_contents_iso8859, errorhash, -1);
+    }
+
+    /**
+     * replace target contents with value of org_contents_iso8859
+     *
+     * @param pmt
+     * @param pini
+     * @param contents replace target
+     * @param org_contents_iso8859 the value of replacing
+     * @param errorhash buffer for collecting results or errors.
+     * @param foundCount matcher.find counter. <BR> >0: replace until reaching this value.<BR> ==-1 : replace All.
+     * @return
+     */
+    private String[] replaceContents(
+            ParmGenMacroTrace pmt,
+            AppParmsIni pini,
+            String contents,
+            String org_contents_iso8859,
+            ParmGenHashMap errorhash,
+            int foundCount
+    ) {
         if (contents == null) return null;
         if (valueregex == null) return null;
+        int currentStepNo = pmt.getStepNo();
         ParmGenTokenKey tk = null;
         if (toStepNo >= 0) {
             if (toStepNo != EnvironmentVariables.TOSTEPANY) {
                 if (currentStepNo != toStepNo) {
                     return null; //
                 }
-                // tokentype 固定。tokentypeは追跡元のタイプなので、追跡先toStepNoの埋め込み先タイプとは無関係で無視する。
-                // tk = new ParmGenTokenKey(AppValue.TokenTypeNames.DEFAULT, token, toStepNo);
+                // tokentype is static. tokentype is the type for tracking value source, it is no relation to toStepNo.
+                // toStepNo is the type for tracking value destination.
                 tk =
                         new ParmGenTokenKey(
                                 TokenTypeNames.DEFAULT,
@@ -931,6 +935,11 @@ public class AppValue {
                     o_newcontents += org_contents_iso8859.substring(o_cpt, o_spt) + org_newval;
                     o_cpt = o_ept;
                     o_tailcontents = org_contents_iso8859.substring(o_ept);
+                }
+            }
+            if (foundCount > 0) {
+                if (--foundCount <= 0) {
+                    break;
                 }
             }
         }

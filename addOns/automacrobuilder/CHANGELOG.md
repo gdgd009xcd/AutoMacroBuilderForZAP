@@ -2,6 +2,12 @@
 All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [v1.1.20] - 2024-04-17
+### Changed
+- maintenance: Removed unused classes (related to "Tamper" GUI)
+- bugfix: fixed bug in embeding tracking value to path
+
 ## [v1.1.19] - 2024-03-28
 ### Changed
 - bugfix: Changed to correctly encode and decode the HttpRequest body based on Content-Encoding.

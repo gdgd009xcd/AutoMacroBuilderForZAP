@@ -84,7 +84,7 @@ public class ParmGen {
                 // switch(av.valparttype & AppValue.C_VTYPE){
             case AppValue.V_PATH: // path
                 // path = url
-                nvcont = av.replaceContents(pmt, pmt.getStepNo(), pini, path, orig_url, errorhash);
+                nvcont = av.replacePathContents(pmt,  pini, path, orig_url, errorhash);
                 if (nvcont != null) {
                     String n_path = nvcont[0];
                     String o_path = nvcont[1];
@@ -109,7 +109,7 @@ public class ParmGen {
                     String query = url.substring(qpos + 1);
                     nvcont =
                             av.replaceContents(
-                                    pmt, pmt.getStepNo(), pini, query, orig_query, errorhash);
+                                    pmt,  pini, query, orig_query, errorhash);
 
                     if (nvcont != null) {
                         String n_query = nvcont[0];
@@ -166,7 +166,7 @@ public class ParmGen {
                             }
                             nvcont =
                                     av.replaceContents(
-                                            pmt, pmt.getStepNo(), pini, hval, orig_hval, errorhash);
+                                            pmt,  pini, hval, orig_hval, errorhash);
                             if (nvcont != null) {
                                 String n_hval = nvcont[0];
                                 String o_hval = nvcont[1];
@@ -208,7 +208,6 @@ public class ParmGen {
                         nvcont =
                                 av.replaceContents(
                                         pmt,
-                                        pmt.getStepNo(),
                                         pini,
                                         content,
                                         org_content_iso8859,
@@ -311,7 +310,6 @@ public class ParmGen {
                                 nvcont =
                                         av.replaceContents(
                                                 pmt,
-                                                pmt.getStepNo(),
                                                 pini,
                                                 partdatastr,
                                                 org_content_iso8859,
