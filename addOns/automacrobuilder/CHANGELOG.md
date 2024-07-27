@@ -3,6 +3,12 @@ All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.2.0] - 2024-07-27
+### Added
+- new feature:  Added [DecodeVectorInjector](https://github.com/gdgd009xcd/AutoMacroBuilderForZAP/wiki/1.8.-encoded-parameter-injector) which enabled to decode URLencoded/base64ed parameter value for scanning or pentesting.
+### Changed
+- bugfix: Fixed an issue with JTextPane-like text areas where visual components such as the CR icon were lost after editing the content.
+
 ## [v1.1.20] - 2024-04-17
 ### Changed
 - maintenance: Removed unused classes (related to "Tamper" GUI)

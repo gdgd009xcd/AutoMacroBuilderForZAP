@@ -53,7 +53,7 @@ public class ClientRequest implements InterfaceClientRequest {
             int port = request.getPort();
             boolean isSSL = request.isSSL();
 
-            HttpMessage htmess = ZapUtil.getHttpMessage(request);
+            HttpMessage htmess = ZapUtil.getHttpMessageFromPRequest(request);
 
             try {
                 // send message
@@ -142,7 +142,7 @@ public class ClientRequest implements InterfaceClientRequest {
         PRequest retval = pgen.RunPRequest(prequest);
 
         if (retval != null) {
-            HttpMessage newmessage = ZapUtil.getHttpMessage(retval);
+            HttpMessage newmessage = ZapUtil.getHttpMessageFromPRequest(retval);
             LOGGER4J.debug("ZapUtil.getHttpMessage URL[" + newmessage.getRequestHeader().getURI().toString() + "]");
             // update currentmessage contents
             currentmessage.setRequestHeader(newmessage.getRequestHeader());

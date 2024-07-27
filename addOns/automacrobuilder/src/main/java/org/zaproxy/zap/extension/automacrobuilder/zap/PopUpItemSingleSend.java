@@ -76,7 +76,7 @@ public class PopUpItemSingleSend extends JMenuItem {
             int subSequenceScanLimit = f_mbui.getSubSequenceScanLimit();
             int lastStepNo =
                     pmt.getLastStepNo(currentSelectedPos, subSequenceScanLimit);
-            final HttpMessage htmess = ZapUtil.getHttpMessage(newrequest);
+            final HttpMessage htmess = ZapUtil.getHttpMessageFromPRequest(newrequest);
             final ParmGenMacroTraceParams pmtParams =
                     new ParmGenMacroTraceParams(
                             currentSelectedPos, lastStepNo, selectedTabIndex);
@@ -91,7 +91,7 @@ public class PopUpItemSingleSend extends JMenuItem {
                     // but by result of sending messages,
                     // it will modify request message so must be update also messageRequest contents.
                     // so contents being edited in messageRequest may be discarded.
-                    f_mbui.updateCurrentSelectedRequestListDisplayContents();
+                    f_mbui.updateCurrentSelectedRequestListDisplayContentsSpecific(true, false, false);
                     f_mbui.showMessageViewOnWorkBench(1);
                 }
             });

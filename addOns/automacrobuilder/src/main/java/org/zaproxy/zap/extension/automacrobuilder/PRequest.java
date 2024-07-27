@@ -33,82 +33,14 @@ public class PRequest extends ParseHTTPHeaders {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    // @Deprecated(since = "1.2", forRemoval = true) 20240229 since no need hold chunks in this PRequest.
-    private List<RequestChunk> chunks = null;
-    // @Deprecated(since = "1.2", forRemoval = true) 20240229 since no need hold doctext in this PRequest.
-    private String doctext = null;
-
     public PRequest(String h, int p, boolean ssl, byte[] _binmessage, Encode _pageenc) {
         super(h, p, ssl, _binmessage, _pageenc);
-    }
-
-    /**
-     * create instance
-     * pass argument chunkdoc, extract doctext from chunkdoc
-     *
-     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
-     *
-     * @param h
-     * @param p
-     * @param ssl
-     * @param _binmessage
-     * @param _pageenc
-     * @param chunkdoc
-     */
-    @Deprecated(since = "1.2", forRemoval = true)
-    PRequest(
-            String h,
-            int p,
-            boolean ssl,
-            byte[] _binmessage,
-            Encode _pageenc,
-            StyledDocumentWithChunk chunkdoc) {
-        super(h, p, ssl, _binmessage, _pageenc);
-        if (chunkdoc != null) {
-            chunks = chunkdoc.getRequestChunks();
-            doctext = chunkdoc.getPlaceHolderStyleText();
-        }
-    }
-
-    public PRequest newRequestWithRemoveSpecialChars(String regex) { // remove section chars
-        byte[] binmessage = getByteMessage();
-        String isomessage = new String(binmessage, StandardCharsets.ISO_8859_1);
-        String defaultregex = "[§]";
-        if (regex != null && !regex.isEmpty()) {
-            defaultregex = regex;
-        }
-        String rawmessage = isomessage.replaceAll(defaultregex, "");
-        String host = getHost();
-        int port = getPort();
-        boolean isSSL = isSSL();
-        Encode penc = getPageEnc();
-        return new PRequest(
-                host, port, isSSL, rawmessage.getBytes(StandardCharsets.ISO_8859_1), penc);
     }
 
     @Override
     public PRequest clone() {
         PRequest nobj = (PRequest) super.clone();
-        nobj.chunks = ListDeepCopy.listDeepCopyRequestChunk(this.chunks);
         return nobj;
-    }
-
-    /**
-     * Get List<RequestChunk> which is parsed request contents representation
-     *
-     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
-     *
-     * @return
-     */
-    @Deprecated(since = "1.2", forRemoval = true)
-    public List<RequestChunk> getRequestChunks() {
-        if (this.chunks == null) {
-            String theaders = getHeaderOnly();
-            byte[] tbodies = getBodyBytes();
-            String tcontent_type = getHeader("Content-Type");
-            this.chunks = getRequestChunks(theaders, tbodies, tcontent_type);
-        }
-        return this.chunks;
     }
 
     /**
@@ -122,28 +54,6 @@ public class PRequest extends ParseHTTPHeaders {
         String tcontent_type = getHeader("Content-Type");
         chunks = getRequestChunks(theaders, tbodies, tcontent_type);
         return chunks;
-    }
-
-    /**
-     * set doc text from StyledDocumentWithChunks(representating for PRequest)
-     *
-     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
-     *
-     * @param doc
-     */
-    @Deprecated(since = "1.2", forRemoval = true)
-    public void setDocText(StyledDocumentWithChunk doc) {
-        this.doctext = doc.getPlaceHolderStyleText();
-    }
-
-    /**
-     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
-     *
-     * @return
-     */
-    @Deprecated(since = "1.2", forRemoval = true)
-    public String getDocText() {
-        return this.doctext;
     }
 
     /**
@@ -314,119 +224,5 @@ public class PRequest extends ParseHTTPHeaders {
         }
 
         return reqchunks;
-    }
-
-    /**
-     * update DocText and Chunks with specified chunks
-     *
-     * @Deprecated 20240229 since no need hold chunks/doctext in this PRequest.
-     *
-     * @param orgchunks
-     */
-    @Deprecated(since = "1.2", forRemoval = true)
-    void updateDocAndChunks(List<RequestChunk> orgchunks) {
-
-        if (orgchunks == null) return;
-        // recreate this doctext and chunks from prequest.getBytes();
-        this.chunks = null;
-        this.doctext = null;
-        StyledDocumentWithChunk nouseddoc = new StyledDocumentWithChunk(this);
-
-        Charset charset = getPageEnc().getIANACharset();
-        int npos = -1;
-        int cpos = 0;
-        int placebegin = 0;
-        while ((npos =
-                        this.doctext.indexOf(
-                                StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_PREFIX, cpos))
-                != -1) {
-            placebegin = npos;
-            cpos = npos + StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_PREFIX.length();
-            int beginpos = cpos;
-            if ((npos =
-                            this.doctext.indexOf(
-                                    StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_SUFFIX, cpos))
-                    != -1) {
-                cpos = npos + StyledDocumentWithChunk.CONTENTS_PLACEHOLDER_SUFFIX.length();
-                int endpos = npos;
-                if (endpos - beginpos <= StyledDocumentWithChunk.PARTNO_MAXLEN) {
-                    String partno = this.doctext.substring(beginpos, endpos).trim();
-                    if (partno != null && partno.length() > 0) {
-                        int pno = Integer.parseInt(partno);
-                        if (pno > -1) {
-                            Optional<RequestChunk> optorgchunk =
-                                    orgchunks.stream()
-                                            .filter(
-                                                    c ->
-                                                            c.getPartNo() == pno
-                                                                    && (c.getChunkType()
-                                                                                    == RequestChunk
-                                                                                            .CHUNKTYPE
-                                                                                            .CONTENTS
-                                                                            || c.getChunkType()
-                                                                                    == RequestChunk
-                                                                                            .CHUNKTYPE
-                                                                                            .CONTENTSIMG))
-                                            .findFirst();
-                            RequestChunk orgchunk = optorgchunk.orElse(null);
-                            Optional<RequestChunk> optnewchunk =
-                                    this.chunks.stream()
-                                            .filter(
-                                                    c ->
-                                                            c.getPartNo() == pno
-                                                                    && (c.getChunkType()
-                                                                                    == RequestChunk
-                                                                                            .CHUNKTYPE
-                                                                                            .CONTENTS
-                                                                            || c.getChunkType()
-                                                                                    == RequestChunk
-                                                                                            .CHUNKTYPE
-                                                                                            .CONTENTSIMG))
-                                            .findFirst();
-                            RequestChunk newchunk = optnewchunk.orElse(null);
-                            if (orgchunk != null && newchunk != null) {
-                                ParmGenBinUtil newarray = new ParmGenBinUtil(newchunk.getBytes());
-                                byte[] orgdata = orgchunk.getBytes();
-                                int stp = -1;
-                                int etp = 0;
-                                if ((stp = newarray.indexOf(orgdata)) != -1) {
-                                    byte[] newdata = newarray.getBytes();
-                                    int newdatalen = newdata.length;
-                                    etp = stp + orgdata.length;
-                                    String prefix = "";
-                                    String suffix = "";
-                                    if (stp > 0) {
-                                        prefix = new String(newarray.subBytes(0, stp), charset);
-                                    }
-                                    if (etp < newdatalen) {
-                                        suffix =
-                                                new String(
-                                                        newarray.subBytes(etp, newdatalen),
-                                                        charset);
-                                    }
-                                    this.doctext =
-                                            this.doctext.substring(0, placebegin)
-                                                    + prefix
-                                                    + this.doctext.substring(placebegin, cpos)
-                                                    + suffix
-                                                    + this.doctext.substring(cpos);
-                                    cpos += prefix.length() + suffix.length();
-                                    LOGGER4J.debug(
-                                            "prefix["
-                                                    + prefix
-                                                    + "] chunk.len:"
-                                                    + orgchunk.getBytes().length
-                                                    + " suffix["
-                                                    + suffix
-                                                    + "]");
-                                    newchunk.setByte(orgchunk.getBytes());
-                                    newchunk.setChunkType(orgchunk.getChunkType());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

@@ -20,15 +20,23 @@ import org.parosproxy.paros.core.scanner.ScannerParam;
 import org.zaproxy.zap.extension.ascan.ActiveScan;
 import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
 import org.zaproxy.zap.extension.ascan.PolicyManager;
+import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceProvider;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.CustomVectorInserter;
 import org.zaproxy.zap.model.Target;
 import org.zaproxy.zap.users.User;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /** @author gdgd009xcd */
 public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
+    private static final org.apache.logging.log4j.Logger LOGGER4J =
+            org.apache.logging.log4j.LogManager.getLogger();
     private ParmGenMacroTraceProvider pmtProvider = null;
     private ScannerParam scannerParam = new ScannerParam();
     private ExtensionActiveScan extension =
@@ -61,21 +69,50 @@ public class ExtensionActiveScanWrapper extends ExtensionActiveScan {
 
     @Override
     public int startScan(Target target, User user, Object[] contextSpecificObjects) {
+        ScannerParam optionalScannerParam = null;
+        ScannerParam originalScannerParam = null;
+        List<Object> resultSpecificObjectList = new ArrayList<>();
         for (Object o : contextSpecificObjects) {
             if (o instanceof ScannerParam) {
-                ((ScannerParam) o).setHandleAntiCSRFTokens(false);
-                break;
+                ScannerParam scannerParam = CastUtils.castToType(o);
+                if (originalScannerParam == null) {
+                    originalScannerParam = scannerParam;
+                    originalScannerParam.setHandleAntiCSRFTokens(false);
+                    resultSpecificObjectList.add(o);
+                } else {
+                    optionalScannerParam = scannerParam;
+                }
+            } else {
+                resultSpecificObjectList.add(o);
             }
         }
+
+        if (optionalScannerParam != null) {
+            if (optionalScannerParam.getTargetParamsInjectable() == 0) {
+                LOGGER4J.debug("disabled all input target except custom vectors");
+                originalScannerParam.setTargetParamsInjectable(0);
+                originalScannerParam.setTargetParamsEnabledRPC(ScannerParam.RPC_USERDEF);
+            } else {
+                int enabledRpc = originalScannerParam.getTargetParamsEnabledRPC();
+                enabledRpc |= ScannerParam.RPC_USERDEF;
+                originalScannerParam.setTargetParamsEnabledRPC(enabledRpc);
+            }
+        }
+
 
         final ParmGenMacroTraceParams tsno = this.targetStepNo;
         this.targetStepNo = null;
 
+        LOGGER4J.debug("Target URL[" + (target!=null?target
+                .getStartNode()
+                .getHistoryReference()
+                .getURI()
+                .toString():"") + "]");
         // START scan.
         // below start method can multipre call per targetStepNo.
         return this.startedascan.startScan(
                 () -> {
-                    int id = this.extension.startScan(target, null, contextSpecificObjects);
+                    int id = this.extension.startScan(target, null, resultSpecificObjectList.toArray());
                     return this.getScan(id);
                 },
                 tsno);

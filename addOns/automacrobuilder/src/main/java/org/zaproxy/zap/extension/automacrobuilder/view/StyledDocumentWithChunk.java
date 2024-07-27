@@ -6,6 +6,10 @@
 package org.zaproxy.zap.extension.automacrobuilder.view;
 
 import org.zaproxy.zap.extension.automacrobuilder.*;
+import org.zaproxy.zap.extension.automacrobuilder.zap.CustomTagConverter;
+import org.zaproxy.zap.extension.automacrobuilder.zap.DecoderTag;
+import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.MessageRequestDocumentFilter;
 
 import static org.zaproxy.zap.extension.automacrobuilder.ParmGenUtil.ImageIconLoadStatus;
 
@@ -16,24 +20,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 
 @SuppressWarnings({"unchecked", "serial"})
-public class StyledDocumentWithChunk extends DefaultStyledDocument {
+public class StyledDocumentWithChunk extends ManagedStyledDocument {
     private static org.apache.logging.log4j.Logger LOGGER4J =
             org.apache.logging.log4j.LogManager.getLogger();
 
-    private static final String EMBED_ISO8859_BINARY = "StyledDocumentWithChunk.EMBED_ISO8859_BINARY";
-    private static final String CRIMAGE_STYLENAME = "StyledDocumentWithChunk.CRSTYLE_IMAGE";
+    private static final String EMBED_ISO8859_BINARY = "EMBED_ISO8859_BINARY";
+    private static final String CRIMAGE_STYLENAME_PREFIX = "CARIDGE_RETURN";
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("burp/Bundle");
 
     private static final String PLACE_HOLDER_SIGN = "§";
     private final String[] styleNames = {
-            EMBED_ISO8859_BINARY,
-            CRIMAGE_STYLENAME
+            EMBED_ISO8859_BINARY
     };
 
     Map<String, Style> styleMap = null;
@@ -61,7 +63,25 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     List<RequestChunk> requestChunks = null;
     List<PResponse.ResponseChunk> responseChunks = null;
 
-    public StyledDocumentWithChunk(PRequest prequest) {
+    int counterCaridgeReturn = 0;
+
+    private boolean documentFilterMasked =false;
+
+    /**
+     * null constructor
+     */
+    public StyledDocumentWithChunk() {
+        super(SwingStyleProvider.createSwingStyle().getStyleContext());
+        createStyles();
+    }
+
+    /**
+     * convert Prequest to StyledDocumentWithChunk
+     *
+     * @param prequest
+     * @param decodeCustomTag true - decode CustomTag | false - no effect
+     */
+    public StyledDocumentWithChunk(PRequest prequest, boolean decodeCustomTag) {
         super(SwingStyleProvider.createSwingStyle().getStyleContext());
         createStyles();
         enc = prequest.getPageEnc();
@@ -69,6 +89,17 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         port = prequest.getPort();
         isSSL = prequest.isSSL();
         updateRequest(prequest);
+
+        if (decodeCustomTag) {
+            String placeHolderStyledText;
+
+            placeHolderStyledText = getDecodedPlaceHolderStyledText();
+
+            reCreateStyledDocFromRequestTextAndChunks(placeHolderStyledText, null);
+        }
+        if(this.getDocumentFilter() == null){
+            this.setDocumentFilter(new MessageRequestDocumentFilter(this));
+        }
     }
 
     public StyledDocumentWithChunk(PResponse presponse) {
@@ -97,8 +128,10 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 requestChunks =
                         ListDeepCopy.listDeepCopyRequestChunk(
                                 chunkdoc.requestChunks); // copy from source
-                reCreateStyledDocFromRequestTextAndChunks(chunkdoc.getPlaceHolderStyleText(), null);
-
+                reCreateStyledDocFromRequestTextAndChunks(chunkdoc.getPlaceHolderStyledText(), null);
+                if(this.getDocumentFilter() == null){
+                    this.setDocumentFilter(new MessageRequestDocumentFilter(this));
+                }
             } else {
                 LOGGER4J.debug("chunkdoc is RESPONSE");
                 enc = chunkdoc.enc;
@@ -109,7 +142,22 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         }
     }
 
+    /**
+     * update this document with specified text argument.<BR>
+     * this function is effective if this document is Request.
+     * @param placeHolderStyleText
+     * @return
+     */
+    private boolean updateRequestPlaceHolderStyleText(String placeHolderStyleText) {
+        if (isRequest()) {
+            reCreateStyledDocFromRequestTextAndChunks(placeHolderStyleText, null);
+            return true;
+        }
+        return false;
+    }
+
     private void createStyles() {
+        counterCaridgeReturn = 0;
         styleMap = new HashMap<>();
         for(String name: styleNames) {
             addOrGetStyle(name);
@@ -191,12 +239,26 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
     /**
      * Rebuild PRequest from intenal text and chunks.
-     * This method no affects contents of this.
+     * This method apply to Encode CustomTag.
      *
      * @return
      */
-    public PRequest reBuildPRequestFromDocTextAndChunks() {
-        byte[] data = reBuildPRequestFromDocTextAndChunks(null);
+    public PRequest reBuildPRequestFromDocTextAndChunksWithEncodeCustomTag() {
+        byte[] data = reBuildPRequestFromDocTextAndChunks(null, true);
+        if (data != null) {
+            return new PRequest(host, port, isSSL, data, enc);
+        }
+        return null;
+    }
+
+    /**
+     * Rebuild PRequest from intenal text and chunks.
+     * This method returns original. it does NOT apply to Encode CustomTag
+     *
+     * @return
+     */
+    private PRequest reBuildPRequestFromDocTextAndChunks(String placeHolderStyledText) {
+        byte[] data = reBuildPRequestFromDocTextAndChunks(placeHolderStyledText, false);
         if (data != null) {
             return new PRequest(host, port, isSSL, data, enc);
         }
@@ -210,13 +272,27 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
      * @param placeHolderStyleText
      * @return binary of PRequest
      */
-    private byte[] reBuildPRequestFromDocTextAndChunks(String placeHolderStyleText) {
+    /**
+     * Rebuild PRequest binary from specified(or intenal) PlaceHolderStyleText and internal this.requestChunks.
+     * This method apply CustomConvert if isCustomConvert == true.
+     * Otherwise this method no affects contents of this.
+     * @param placeHolderStyledText
+     * @param isCustomConvert true - apply CustomConvert | false - no affects contents
+     * @return
+     */
+    private byte[] reBuildPRequestFromDocTextAndChunks(String placeHolderStyledText, boolean isCustomConvert) {
         if (requestChunks == null) return null;
-        if (placeHolderStyleText == null || placeHolderStyleText.isEmpty()) {
-            placeHolderStyleText = this.getPlaceHolderStyleText();
+
+        if (placeHolderStyledText == null || placeHolderStyledText.isEmpty()) {
+            placeHolderStyledText = this.getPlaceHolderStyledText();
         }
+
+        if (isCustomConvert) {
+            placeHolderStyledText = getEncodedPlaceHolderStyledText();
+        }
+
         Charset charset = enc.getIANACharset();
-        byte[] docbytes = placeHolderStyleText.getBytes(charset);
+        byte[] docbytes = placeHolderStyledText.getBytes(charset);
         ParmGenBinUtil contarray = new ParmGenBinUtil(docbytes);
         ParmGenBinUtil resultarray = new ParmGenBinUtil();
         byte[] PLS_PREFIX = CONTENTS_PLACEHOLDER_PREFIX.getBytes();
@@ -272,73 +348,78 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
      */
     public void updateStyleDocAndChunkFromHex(byte[] hexBytes) {
         if (hexBytes == null) return;
-        Charset charset = enc.getIANACharset();
-        String placeHolderStyleText = this.getPlaceHolderStyleText();
+        this.documentFilterMasked = true;
+        try {
+            Charset charset = enc.getIANACharset();
+            String placeHolderStyleText = this.getPlaceHolderStyledText();
 
-        byte[] placeHolderStyleTextBytes = placeHolderStyleText.getBytes(charset);
-        ParmGenBinUtil currentPLaceHolderStyleArray = new ParmGenBinUtil(placeHolderStyleTextBytes);
-        ParmGenBinUtil hexArray = new ParmGenBinUtil(hexBytes);
-        ParmGenBinUtil resultPlaceHolderStyleArray = new ParmGenBinUtil();// array of PlaceHolderStyleText
-        byte[] PLS_PREFIX = CONTENTS_PLACEHOLDER_PREFIX.getBytes();
-        byte[] PLS_SUFFIX = CONTENTS_PLACEHOLDER_SUFFIX.getBytes();
-        int npos = -1;
-        int cpos = 0;
-        int hpos = 0;
-        while ((npos = currentPLaceHolderStyleArray.indexOf(PLS_PREFIX, cpos)) != -1) {
-            int siz = 0;
-            if (npos > cpos) {
-                siz = npos - cpos;
-                resultPlaceHolderStyleArray.concat(hexArray.subBytes(hpos, hpos + siz));
-                hpos += siz;
-            }
-            cpos = npos + PLS_PREFIX.length;
-            resultPlaceHolderStyleArray.concat(PLS_PREFIX);
+            byte[] placeHolderStyleTextBytes = placeHolderStyleText.getBytes(charset);
+            ParmGenBinUtil currentPLaceHolderStyleArray = new ParmGenBinUtil(placeHolderStyleTextBytes);
+            ParmGenBinUtil hexArray = new ParmGenBinUtil(hexBytes);
+            ParmGenBinUtil resultPlaceHolderStyleArray = new ParmGenBinUtil();// array of PlaceHolderStyleText
+            byte[] PLS_PREFIX = CONTENTS_PLACEHOLDER_PREFIX.getBytes();
+            byte[] PLS_SUFFIX = CONTENTS_PLACEHOLDER_SUFFIX.getBytes();
+            int npos = -1;
+            int cpos = 0;
+            int hpos = 0;
+            while ((npos = currentPLaceHolderStyleArray.indexOf(PLS_PREFIX, cpos)) != -1) {
+                int siz = 0;
+                if (npos > cpos) {
+                    siz = npos - cpos;
+                    resultPlaceHolderStyleArray.concat(hexArray.subBytes(hpos, hpos + siz));
+                    hpos += siz;
+                }
+                cpos = npos + PLS_PREFIX.length;
+                resultPlaceHolderStyleArray.concat(PLS_PREFIX);
 
-            if ((npos = currentPLaceHolderStyleArray.indexOf(PLS_SUFFIX, cpos)) != -1) {
-                if (npos > cpos && npos - cpos <= PARTNO_MAXLEN) {
-                    byte[] partnobytes = currentPLaceHolderStyleArray.subBytes(cpos, npos);
-                    String partnostr = new String(partnobytes, charset);
-                    if (partnostr.matches("[0-9]+")) {
-                        int partno = Integer.parseInt(partnostr);
-                        Optional<RequestChunk> ochunk =
-                                requestChunks.stream()
-                                        .filter(
-                                                c ->
-                                                        (c.getChunkType()
-                                                                                == RequestChunk
-                                                                                        .CHUNKTYPE
-                                                                                        .CONTENTS
-                                                                        || c.getChunkType()
-                                                                                == RequestChunk
-                                                                                        .CHUNKTYPE
-                                                                                        .CONTENTSIMG)
-                                                                && c.getPartNo() == partno)
-                                        .findFirst();
-                        RequestChunk resultchunk = ochunk.orElse(null);
-                        if (resultchunk != null) {
-                            siz = resultchunk.getBytes().length;
-                            if (siz > 0) {
-                                // update resultChunk.data with hexdata.
-                                resultchunk.setByte(hexArray.subBytes(hpos, hpos + siz));
-                                LOGGER4J.debug(
-                                        "update chunk from hexdata partno:"
-                                                + partno
-                                                + " siz="
-                                                + siz);
-                                hpos += siz;
+                if ((npos = currentPLaceHolderStyleArray.indexOf(PLS_SUFFIX, cpos)) != -1) {
+                    if (npos > cpos && npos - cpos <= PARTNO_MAXLEN) {
+                        byte[] partnobytes = currentPLaceHolderStyleArray.subBytes(cpos, npos);
+                        String partnostr = new String(partnobytes, charset);
+                        if (partnostr.matches("[0-9]+")) {
+                            int partno = Integer.parseInt(partnostr);
+                            Optional<RequestChunk> ochunk =
+                                    requestChunks.stream()
+                                            .filter(
+                                                    c ->
+                                                            (c.getChunkType()
+                                                                    == RequestChunk
+                                                                    .CHUNKTYPE
+                                                                    .CONTENTS
+                                                                    || c.getChunkType()
+                                                                    == RequestChunk
+                                                                    .CHUNKTYPE
+                                                                    .CONTENTSIMG)
+                                                                    && c.getPartNo() == partno)
+                                            .findFirst();
+                            RequestChunk resultchunk = ochunk.orElse(null);
+                            if (resultchunk != null) {
+                                siz = resultchunk.getBytes().length;
+                                if (siz > 0) {
+                                    // update resultChunk.data with hexdata.
+                                    resultchunk.setByte(hexArray.subBytes(hpos, hpos + siz));
+                                    LOGGER4J.debug(
+                                            "update chunk from hexdata partno:"
+                                                    + partno
+                                                    + " siz="
+                                                    + siz);
+                                    hpos += siz;
+                                }
                             }
                         }
                     }
+                    npos += PLS_SUFFIX.length;
+                    resultPlaceHolderStyleArray.concat(currentPLaceHolderStyleArray.subBytes(cpos, npos));
+                    cpos = npos;
                 }
-                npos += PLS_SUFFIX.length;
-                resultPlaceHolderStyleArray.concat(currentPLaceHolderStyleArray.subBytes(cpos, npos));
-                cpos = npos;
             }
+            if (hpos < hexBytes.length) {
+                resultPlaceHolderStyleArray.concat(hexArray.subBytes(hpos, hexBytes.length));
+            }
+            reCreateStyledDocFromRequestTextAndChunks(new String(resultPlaceHolderStyleArray.getBytes(), charset), null);
+        } finally {
+            this.documentFilterMasked = false;
         }
-        if (hpos < hexBytes.length) {
-            resultPlaceHolderStyleArray.concat(hexArray.subBytes(hpos, hexBytes.length));
-        }
-        reCreateStyledDocFromRequestTextAndChunks(new String(resultPlaceHolderStyleArray.getBytes(), charset), null);
     }
 
     /**
@@ -348,7 +429,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
      */
     public byte[] getBytes() {
         if (requestChunks != null) {
-            byte[] reqbin = reBuildPRequestFromDocTextAndChunks(null);
+            byte[] reqbin = reBuildPRequestFromDocTextAndChunks(null, false);
             if (reqbin != null) {
                 return reqbin;
             }
@@ -613,13 +694,6 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     /**
-     *
-     *
-     * @param icon
-     * @param actioncommand
-     * @return
-     */
-    /**
      * create ChunkJButton for ImageIcon and add eventhandler.
      *
      * @param icon
@@ -632,7 +706,7 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         String styleName = "ChunkImage" + partno;
         Style imageStyle = addOrGetStyle(styleName);
         StyleConstants.setAlignment(imageStyle, StyleConstants.ALIGN_CENTER);
-        ChunkJbutton button = new ChunkJbutton(partno, chunk);
+        ChunkJbutton button = new ChunkJbutton(styleName, partno, chunk);
         button.setIcon(icon);
         button.setToolTipText(toolTip);
         button.setMargin(new Insets(0, 0, 0, 0));
@@ -646,9 +720,10 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     public Style getCRstyle() {
-        Style CRstyle = this.getStyle(CRIMAGE_STYLENAME);
+        Style CRstyle = this.addOrGetStyle(CRIMAGE_STYLENAME_PREFIX + counterCaridgeReturn++);
+        //Style CRstyle = this.addOrGetStyle(CRIMAGE_STYLENAME_PREFIX);
         // component must always create per call setComponent.
-        JLabel crlabel = new JLabel("CR");
+        CaridgeReturnLabel crlabel = new CaridgeReturnLabel(CRstyle.getName(), "CR");
         crlabel.setOpaque(true);
         LineBorder border = new LineBorder(Color.GREEN, 1, true);
         Font labelFont = crlabel.getFont();
@@ -709,96 +784,94 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
 
         if (placeHolderStyleText == null || placeHolderStyleText.isEmpty() || this.requestChunks == null) return;
 
-        destroyDocumentAndRecreateStyles();
+            destroyDocumentAndRecreateStyles();
 
-        int npos = -1;
-        int cpos = 0;
-        while ((npos = placeHolderStyleText.indexOf(CONTENTS_PLACEHOLDER_PREFIX, cpos)) != -1) {
-            LOGGER4J.debug("CONTENTS_PLACEHOLDER_PREFIX found");
-            if (npos > cpos) {
-                insertStringCR(this.getLength(), placeHolderStyleText.substring(cpos, npos));
-            }
-            cpos = npos;
-            String element = CONTENTS_PLACEHOLDER_PREFIX;
-            Style s = null;
-            int pnopos = cpos + CONTENTS_PLACEHOLDER_PREFIX.length(); // partno start position
-            if ((npos = placeHolderStyleText.indexOf(CONTENTS_PLACEHOLDER_SUFFIX, pnopos)) != -1) {
-                LOGGER4J.debug(
-                        "CONTENTS_PLACEHOLDER_SUFFIX found npos,cpos="
-                                + npos
-                                + ","
-                                + pnopos
-                                + " ["
-                                + placeHolderStyleText.substring(pnopos, npos)
-                                + "]");
-                if (npos > pnopos && npos - pnopos <= PARTNO_MAXLEN) {
-                    element =
-                            CONTENTS_PLACEHOLDER_PREFIX
+            int npos = -1;
+            int cpos = 0;
+            while ((npos = placeHolderStyleText.indexOf(CONTENTS_PLACEHOLDER_PREFIX, cpos)) != -1) {
+                LOGGER4J.debug("CONTENTS_PLACEHOLDER_PREFIX found");
+                if (npos > cpos) {
+                    insertStringCR(this.getLength(), placeHolderStyleText.substring(cpos, npos));
+                }
+                cpos = npos;
+                String element = CONTENTS_PLACEHOLDER_PREFIX;
+                Style s = null;
+                int pnopos = cpos + CONTENTS_PLACEHOLDER_PREFIX.length(); // partno start position
+                if ((npos = placeHolderStyleText.indexOf(CONTENTS_PLACEHOLDER_SUFFIX, pnopos)) != -1) {
+                    LOGGER4J.debug(
+                            "CONTENTS_PLACEHOLDER_SUFFIX found npos,cpos="
+                                    + npos
+                                    + ","
+                                    + pnopos
+                                    + " ["
                                     + placeHolderStyleText.substring(pnopos, npos)
-                                    + CONTENTS_PLACEHOLDER_SUFFIX;
-                    LOGGER4J.debug("element[" + element + "]");
-                    String nstr = placeHolderStyleText.substring(pnopos, npos).trim();
-                    if (nstr.matches("[0-9]+")) {
-                        int partno = Integer.parseInt(nstr);
-                        String partnostr = Integer.toString(partno);
-                        Optional<RequestChunk> ochunks =
-                                this.requestChunks.stream()
-                                        .filter(
-                                                c ->
-                                                        (c.getChunkType()
-                                                                                == RequestChunk
-                                                                                        .CHUNKTYPE
-                                                                                        .CONTENTS
-                                                                        || c.getChunkType()
-                                                                                == RequestChunk
-                                                                                        .CHUNKTYPE
-                                                                                        .CONTENTSIMG)
-                                                                && c.getPartNo() == partno)
-                                        .findFirst();
-                        RequestChunk content_chunk = ochunks.orElse(null);
-                        if (content_chunk != null && content_chunk.getBytes().length > 0) {
-                            ImageIcon icon = null;
-                            String toolTip = "Broken Data";
-                            if (content_chunk.getChunkType() == RequestChunk.CHUNKTYPE.CONTENTS) {
-                                icon = new ImageIcon(BINICONURL, partnostr);
-                                toolTip = bundle.getString("ParmGenRegex.BinaryData.text");
-                            } else { // diplayable image
-                                try {
-                                    icon = new ImageIcon(content_chunk.getBytes(), partnostr);
-                                    toolTip = "Image";
-                                    LOGGER4J.debug("icon status:" + ImageIconLoadStatus(icon));
-                                } catch (Exception ex) {
-                                    LOGGER4J.error(ex.getMessage(), ex);
+                                    + "]");
+                    if (npos > pnopos && npos - pnopos <= PARTNO_MAXLEN) {
+                        element =
+                                CONTENTS_PLACEHOLDER_PREFIX
+                                        + placeHolderStyleText.substring(pnopos, npos)
+                                        + CONTENTS_PLACEHOLDER_SUFFIX;
+                        LOGGER4J.debug("element[" + element + "]");
+                        String nstr = placeHolderStyleText.substring(pnopos, npos).trim();
+                        if (nstr.matches("[0-9]+")) {
+                            int partno = Integer.parseInt(nstr);
+                            String partnostr = Integer.toString(partno);
+                            Optional<RequestChunk> ochunks =
+                                    this.requestChunks.stream()
+                                            .filter(
+                                                    c ->
+                                                            (c.getChunkType()
+                                                                    == RequestChunk
+                                                                    .CHUNKTYPE
+                                                                    .CONTENTS
+                                                                    || c.getChunkType()
+                                                                    == RequestChunk
+                                                                    .CHUNKTYPE
+                                                                    .CONTENTSIMG)
+                                                                    && c.getPartNo() == partno)
+                                            .findFirst();
+                            RequestChunk content_chunk = ochunks.orElse(null);
+                            if (content_chunk != null && content_chunk.getBytes().length > 0) {
+                                ImageIcon icon = null;
+                                String toolTip = "Broken Data";
+                                if (content_chunk.getChunkType() == RequestChunk.CHUNKTYPE.CONTENTS) {
+                                    icon = new ImageIcon(BINICONURL, partnostr);
+                                    toolTip = bundle.getString("ParmGenRegex.BinaryData.text");
+                                } else { // diplayable image
+                                    try {
+                                        icon = new ImageIcon(content_chunk.getBytes(), partnostr);
+                                        toolTip = "Image";
+                                        LOGGER4J.debug("icon status:" + ImageIconLoadStatus(icon));
+                                    } catch (Exception ex) {
+                                        LOGGER4J.error(ex.getMessage(), ex);
+                                    }
+                                    if (icon.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                                        toolTip = bundle.getString("ParmGenRegex.BrokenData.text");
+                                        icon = new ImageIcon(BRKICONURL, partnostr);
+                                    }
                                 }
-                                if (icon.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                                    toolTip = bundle.getString("ParmGenRegex.BrokenData.text");
-                                    icon = new ImageIcon(BRKICONURL, partnostr);
-                                }
+                                s = makeStyleImageButton(icon, toolTip, partno, content_chunk.getBytes());
                             }
-                            s = makeStyleImageButton(icon, toolTip,partno, content_chunk.getBytes());
                         }
                     }
                 }
-            }
-            if (s != null) {
-                try {
-                    LOGGER4J.debug("insert placeHolderSign s=" + (s==null?"NULL" : "not null"));
-                    this.insertString(this.getLength(), PLACE_HOLDER_SIGN, s);
-                } catch (BadLocationException ex) {
-                    LOGGER4J.error(ex.getMessage(), ex);
-                    element = "";
+                if (s != null) {
+                    try {
+                        LOGGER4J.debug("insert placeHolderSign s=" + (s == null ? "NULL" : "not null"));
+                        this.insertString(this.getLength(), PLACE_HOLDER_SIGN, s);
+                    } catch (BadLocationException ex) {
+                        LOGGER4J.error(ex.getMessage(), ex);
+                        element = "";
+                    }
+                } else {
+                    insertStringCR(this.getLength(), element);
                 }
-            } else {
-                insertStringCR(this.getLength(), element);
+                cpos += element.length();
             }
-            cpos += element.length();
-        }
-        if (cpos < placeHolderStyleText.length()) {
-            insertStringCR(this.getLength(), placeHolderStyleText.substring(cpos, placeHolderStyleText.length()));
-        }
+            if (cpos < placeHolderStyleText.length()) {
+                insertStringCR(this.getLength(), placeHolderStyleText.substring(cpos, placeHolderStyleText.length()));
+            }
     }
-
-
 
     public void printComponentsInThisDoc() {
         int pos = 0;
@@ -841,20 +914,25 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
                 AttributeSet attrSet = elm.getAttributes();
                 if (attrSet != null) {
                     String styleName = "";
+
                     // I can get StyleName and Component from the AttributeSet at last!
                     Object name = attrSet.getAttribute(AttributeSet.NameAttribute);
                     if (name != null) {
+                        // character's styleName is overwrited each calling setCharacterAttributes.
+                        // so below styleName is changed from original.
                         styleName = CastUtils.castToType(name);
                     }
                     Component compo = StyleConstants.getComponent(attrSet);
                     if (compo != null) {
                         if (compo instanceof ChunkJbutton) {
                             ChunkJbutton button = CastUtils.castToType(compo);
+                            styleName = button.getStyleName();// must get original styleName
                             LOGGER4J.debug("pos:" + pos +" style:[" + styleName + "] chunk partno:" + button.getPartNo() + " chunksize=" + button.getChunk().length);
                             PlaceHolderStyleChunk placeHolderStyleChunk = new PlaceHolderStyleChunk(pos, styleName, button.getPartNo(), button.getChunk());
                             listOfPlaceHolderStyleChunk.add(placeHolderStyleChunk);
-                        } else if (compo instanceof JLabel) {
-                            JLabel jLabel = CastUtils.castToType(compo);
+                        } else if (compo instanceof InterfaceCompoStyleName) {
+                            InterfaceCompoStyleName compoStyle = (InterfaceCompoStyleName) compo;
+                            styleName = compoStyle.getStyleName();
                             LOGGER4J.debug("pos:" + pos + " style:[" + styleName + "]");
                             PlaceHolderStyle placeHolderStyle = new PlaceHolderStyle(pos, styleName);
                             listOfPlaceHolderStyleChunk.add(placeHolderStyle);
@@ -867,11 +945,29 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
     }
 
     /**
+     * is PlaceHolderComponet exist between startPos and endPos.
+     *
+     * @param startPos
+     * @param endPos
+     * @return
+     */
+    public boolean isExistPlaceHolderBetweenStartEndPos(int startPos, int endPos) {
+        List<InterfacePlaceHolderStyle> placeHolderStyles = getListOfPlaceHolderStyle();
+        for(InterfacePlaceHolderStyle placeHolderStyle: placeHolderStyles) {
+            int placeHolderPos = placeHolderStyle.getPos();
+            if (startPos <= placeHolderPos && placeHolderPos < endPos) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      *  get PlaceHolderStyleText from this content.
      *
      * @return PLaceHolderStyleText
      */
-    public String getPlaceHolderStyleText() {
+    public String getPlaceHolderStyledText() {
         try {
             StringBuffer resultBuffer = new StringBuffer();
             String originalText = this.getText(0, getLength());
@@ -902,24 +998,81 @@ public class StyledDocumentWithChunk extends DefaultStyledDocument {
         return null;
     }
 
-    /**
-     * apply PLaceHolderStyle to this StyleDocument.
-     * usecase is to restore the PlaceHolder CharacterAttributes after clearing CharacterAttributes
-     *
-     * @param listOfPlaceHolderStyle
-     */
-    public void applyPlaceHolderStyle(List<InterfacePlaceHolderStyle> listOfPlaceHolderStyle) {
-        for(InterfacePlaceHolderStyle placeHolderStyle: listOfPlaceHolderStyle) {
-            String styleName = placeHolderStyle.getStyleName();
-            int pos = placeHolderStyle.getPos();
-            if (styleName != null) {
-                Style innerStyle = this.getStyle(styleName);
-                LOGGER4J.debug("apply placeHolderstyle pos:" + pos);
-                this.setCharacterAttributes(pos, 1, innerStyle, false);
+
+    private String applyCustomConverter(boolean encode) {
+        // convert decoded area to CustomEncode data
+        String placeHolderStyleText = ZapUtil.urlDecodePartOfCustomEncodedText(this.getPlaceHolderStyledText());
+        List<StartEndPosition> decodedAreaList =  DecoderTag.getDecodedStringList(placeHolderStyleText);
+        StringBuffer encodedRequestText =  new StringBuffer();
+        int outRangeStart = 0;
+        for(StartEndPosition decodedArea: decodedAreaList) {
+            if (outRangeStart < decodedArea.start) {
+                encodedRequestText.append(placeHolderStyleText.substring(outRangeStart, decodedArea.start));
             }
+            String decodedString = placeHolderStyleText.substring(decodedArea.start, decodedArea.end);
+            String encodedString = decodedString;
+            if (encode) {
+                encodedString = CustomTagConverter.customEncode(decodedString);
+            } else {
+                encodedString = CustomTagConverter.customDecode(decodedString);
+            }
+            LOGGER4J.debug("original[" + decodedString + "] " + (encode?"encoded":"decoded") + "[" + encodedString + "]");
+            encodedRequestText.append(encodedString);
+            outRangeStart = decodedArea.end;
         }
+        if (outRangeStart < placeHolderStyleText.length()) {
+            encodedRequestText.append(placeHolderStyleText.substring(outRangeStart, placeHolderStyleText.length()));
+        }
+        return encodedRequestText.toString();
     }
 
+
+    /**
+     * get CustomDeocded PlaceHolderStyledText
+     * @return custom decoded PLaceHolderStyledText
+     */
+    public String getDecodedPlaceHolderStyledText() {
+        return applyCustomConverter(false);
+    }
+
+    /**
+     * get CustomEncoded PLaceHolderStyledText
+     * @return custom encoded PlaceHolderStyledText
+     */
+    public String getEncodedPlaceHolderStyledText() {
+        return applyCustomConverter(true);
+    }
+
+    /**
+     * get Original Encoded PRequest
+     *
+     * @param pRequest
+     * @return
+     */
+    public PRequest getOriginalEncodedPRequest(PRequest pRequest) {
+
+        enc = pRequest.getPageEnc();
+        host = pRequest.getHost();
+        port = pRequest.getPort();
+        isSSL = pRequest.isSSL();
+        updateRequest(pRequest);
+
+        Encode enc = pRequest.getPageEnc();
+
+        String placeHolderStyledText = getDecodedPlaceHolderStyledText();
+        String originalEncodedPlaceHolderStyledText = DecoderTag.getOriginalEncodedString(placeHolderStyledText, enc);
+
+
+        return reBuildPRequestFromDocTextAndChunks(originalEncodedPlaceHolderStyledText);
+    }
+
+    public Encode getEnc() {
+        return this.enc;
+    }
+
+    public boolean getDocumentFilterMasked() {
+        return this.documentFilterMasked;
+    }
 }
 
 

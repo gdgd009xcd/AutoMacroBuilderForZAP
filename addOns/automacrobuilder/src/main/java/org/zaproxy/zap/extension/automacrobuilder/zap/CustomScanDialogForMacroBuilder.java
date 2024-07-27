@@ -18,8 +18,13 @@ package org.zaproxy.zap.extension.automacrobuilder.zap;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.List;
+
+import org.parosproxy.paros.model.SiteNode;
 import org.zaproxy.zap.extension.ascan.CustomScanDialog;
 import org.zaproxy.zap.extension.ascan.CustomScanPanel;
+import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.CustomVectorInserter;
+import org.zaproxy.zap.model.Target;
 
 /** @author gdgd009xcd */
 @SuppressWarnings("serial")
@@ -27,6 +32,8 @@ public class CustomScanDialogForMacroBuilder
         extends org.zaproxy.zap.extension.ascan.CustomScanDialog {
 
     private ExtensionActiveScanWrapper extensionwrapper = null;
+
+    private List<CustomScanPanel> customPanels = null;
 
     public static final String[] STD_TAB_LABELS_REF = CustomScanDialog.STD_TAB_LABELS;
 
@@ -37,7 +44,10 @@ public class CustomScanDialogForMacroBuilder
             Frame owner,
             Dimension dim) {
         super(ext, tabLabels, customPanels, owner, dim);
+        // disable default CustomVector Tab.
+        //this.setTabsVisible(new String[] {"ascan.custom.tab.custom"}, false);
         this.extensionwrapper = ext;
+        this.customPanels = customPanels;
     }
 
     /**
@@ -57,5 +67,17 @@ public class CustomScanDialogForMacroBuilder
         } else {
             super.setComboFields(fieldLabel, choices, value);
         }
+    }
+
+    @Override
+    public void init(Target target) {
+        super.init(target);
+        for(CustomScanPanel customScanPanel: this.customPanels) {
+            if (customScanPanel instanceof CustomVectorInserter) {
+                CustomVectorInserter customVectorInserter = CastUtils.castToType(customScanPanel);
+                customVectorInserter.updateInit(target);
+            }
+        }
+
     }
 }

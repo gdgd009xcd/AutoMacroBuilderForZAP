@@ -961,7 +961,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
-                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
+                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunksWithEncodeCustomTag();
                 if (prequest != null) {
                     pqr.updateRequest(
                             prequest.clone()); // update rlist with ui.MacroRequest contents.
@@ -990,7 +990,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
-                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
+                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunksWithEncodeCustomTag();
                 if (prequest != null) {
                     pqr.updateRequest(
                             prequest.clone()); // update rlist with ui.MacroRequest contents.
@@ -1015,7 +1015,7 @@ public class ParmGenMacroTrace extends ClientDependent {
         if ((pqr = getRequestResponseCurrentList(currentSelectedPos)) != null) {
             StyledDocumentWithChunk doc = ui.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
-                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunks();
+                PRequest prequest = doc.reBuildPRequestFromDocTextAndChunksWithEncodeCustomTag();
                 if (prequest != null) {
                     pqr.updateRequest(
                             prequest.clone()); // update rlist with ui.MacroRequest contents.
@@ -1362,6 +1362,10 @@ public class ParmGenMacroTrace extends ClientDependent {
 
     public int getRunningStepNo() {
         return this.runningStepNo;
+    }
+
+    public void restoreOrigialToRequestList() {
+        this.rlist = ListDeepCopy.listDeepCopyPRequestResponse(this.originalrlist);
     }
 
 

@@ -89,6 +89,7 @@ public class MyFirstSenderListener implements HttpSenderListener {
                 ThreadManagerProvider.getThreadManager().beginProcess(beforemacroprovider);
                 LOGGER4J.debug("beforemacro end threadid:" + Thread.currentThread().getId());
                 LOGGER4J.debug("Sender is originated from StartedActiveScan. senderid:" + arg2);
+                ZapUtil.updateOriginalEncodedHttpMessage(arg0);
             } else {
                 LOGGER4J.debug("onHttpRequestSend: no action. sender is not created by ExtensionActiveScanWrapper");
             }

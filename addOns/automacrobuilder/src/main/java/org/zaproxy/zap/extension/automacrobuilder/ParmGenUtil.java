@@ -95,7 +95,7 @@ public class ParmGenUtil {
     }
 
     public static String escapeRegexChars(String _d) {
-        _d = _d.replaceAll("([\\+\\{\\}\\[\\]\\(\\)\\*\\.\\<\\>\\?\\^\\$])", "\\\\$1");
+        _d = _d.replaceAll("([\\\\\\+\\{\\}\\[\\]\\(\\)\\*\\.\\<\\>\\?\\^\\$])", "\\\\$1");
         return _d;
     }
 

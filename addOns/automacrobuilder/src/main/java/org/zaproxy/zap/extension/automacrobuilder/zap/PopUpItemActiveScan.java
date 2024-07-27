@@ -16,6 +16,8 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JMenuItem;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
@@ -25,13 +27,16 @@ import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.SiteNode;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.zap.extension.ascan.CustomScanDialog;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTrace;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
 import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 import org.zaproxy.zap.extension.automacrobuilder.mdepend.ClientDependMessageContainer;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.CustomVectorInserter;
 import org.zaproxy.zap.extension.forceduser.ExtensionForcedUser;
+import org.zaproxy.zap.extension.ascan.CustomScanPanel;
 import org.zaproxy.zap.model.Target;
 
 /** @author gdgd009xcd */
@@ -211,13 +216,28 @@ public class PopUpItemActiveScan extends JMenuItem {
             // Work out the tabs
             String[] tabs = CustomScanDialogForMacroBuilder.STD_TAB_LABELS_REF;
 
+            List<CustomScanPanel> scanPanelList =  new ArrayList<>();
+
+            CustomVectorInserter customVectorInserter = new CustomVectorInserter(target, extension);
+            scanPanelList.add(customVectorInserter);
+
+            List<String> tabList = new ArrayList<>();
+            for (String str : tabs) {
+                tabList.add(str);
+            }
+            for (CustomScanPanel csp : scanPanelList) {
+                tabList.add(csp.getLabel());
+            }
+            tabs = tabList.toArray(new String[tabList.size()]);
+
             customScanDialog =
                     new CustomScanDialogForMacroBuilder(
                             extension,
                             tabs,
-                            null,
+                            scanPanelList,
                             View.getSingleton().getMainFrame(),
                             new Dimension(700, 500));
+            customVectorInserter.setCustomScanDialog(customScanDialog);
         }
         if (customScanDialog.isVisible()) {
             customScanDialog.requestFocus();
