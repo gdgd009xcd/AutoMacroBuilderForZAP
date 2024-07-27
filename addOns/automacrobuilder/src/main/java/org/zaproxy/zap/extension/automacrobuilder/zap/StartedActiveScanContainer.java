@@ -332,4 +332,6 @@ public class StartedActiveScanContainer {
         return this.pmtProvider;
     }
 
+    public MacroBuilderUI getMacroBuilderUI() {return this.mbui;}
+
 }

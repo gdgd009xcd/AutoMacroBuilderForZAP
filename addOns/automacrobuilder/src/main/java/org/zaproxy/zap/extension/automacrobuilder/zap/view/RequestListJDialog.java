@@ -10,7 +10,7 @@ import org.zaproxy.zap.extension.automacrobuilder.view.GridBagJDialog;
 import org.zaproxy.zap.extension.automacrobuilder.zap.AutoMacroBuilderAuthenticationMethodType;
 
 @SuppressWarnings("serial")
-public class RequestListJDialog extends GridBagJDialog {
+public class RequestListJDialog extends GridBagJDialog<Object> {
     AutoMacroBuilderAuthenticationMethodType.AutoMacroBuilderAuthenticationMethodOptionsPanel
             optionPanel;
 
@@ -93,7 +93,7 @@ public class RequestListJDialog extends GridBagJDialog {
     }
 
     @Override
-    protected Component createMainPanelContent() {
+    protected Component createMainPanelContent(Component mainPanel, Object optionalObject) {
         return createRequestListTabbedPaneFromMacroBuilderUI();
     }
 
@@ -111,5 +111,10 @@ public class RequestListJDialog extends GridBagJDialog {
     @Override
     protected void cancelBtnActionPerformed() {
         dispose();
+    }
+
+    @Override
+    public void disposeChild() {
+
     }
 }

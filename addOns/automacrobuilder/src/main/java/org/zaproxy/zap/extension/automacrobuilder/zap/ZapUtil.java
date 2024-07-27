@@ -1,7 +1,19 @@
 package org.zaproxy.zap.extension.automacrobuilder.zap;
 
+
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.Base64;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.Extension;
@@ -53,43 +65,32 @@ public class ZapUtil {
         return htmess;
     }
 
-    /**
-     * get PRequest from StyledDocumentWithChunk doc
-     *
-     * @param doc
-     * @return
-     */
-    public static HttpMessage getHttpMessage(StyledDocumentWithChunk doc) {
-        PRequest preq = doc.reBuildPRequestFromDocTextAndChunks();
-        if (preq != null) {
-            return getHttpMessage(preq);
-        }
-        return null;
-    }
 
     /**
-     * Get HttpMessage from PRequest
+     * Get  HttpMessage from PRequest
      *
-     * @param preq
+     * @param pRequest
      * @return
      */
-    public static HttpMessage getHttpMessage(PRequest preq) {
+    public static HttpMessage getHttpMessageFromPRequest(PRequest pRequest) {
+
         HttpMessage htmess = null;
 
-        String reqhstr = preq.getHeaderOnly();
-        byte[] reqBody = preq.getBodyBytes();
-        boolean isSSL = preq.isSSL();
+
+        String reqhstr = pRequest.getHeaderOnly();
+        byte[] reqBody = pRequest.getBodyBytes();
+        boolean isSSL = pRequest.isSSL();
 
         try {
             HttpRequestHeader httpReqHeader = new HttpRequestHeader(reqhstr, isSSL);
             HttpRequestBody mReqBody = new HttpRequestBody();
             // set PRequest Encoding Charset to request Body Charset
-            mReqBody.setCharset(preq.getPageEnc().getIANACharsetName());
+            mReqBody.setCharset(pRequest.getPageEnc().getIANACharsetName());
             // setup Content-Encoding handlers(gzip,deflate).
             HttpMessage.setContentEncodings(httpReqHeader, mReqBody);
             htmess = new HttpMessage(httpReqHeader, mReqBody);
             // update request body and apply properly encodings(based on Content-Encoding) to it.
-            updateRequestContent(htmess, preq.getBodyBytes());
+            updateRequestContent(htmess, pRequest.getBodyBytes());
         } catch (HttpMalformedHeaderException e) {
             LOGGER4J.error("reqhstr:" + reqhstr, e);
         }
@@ -97,12 +98,6 @@ public class ZapUtil {
         return htmess;
     }
 
-    /**
-     *
-     *
-     * @param mbui
-     * @return null or PRequest
-     */
     /**
      * Get PRequest from Contents of MacroRequest in mbui
      * @param mbui
@@ -122,8 +117,9 @@ public class ZapUtil {
 
             if (!isOriginalRequest) {
                 StyledDocumentWithChunk doc = mbui.getStyledDocumentOfSelectedMessageRequest();
+
                 if (doc != null) {
-                    PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks();
+                    PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunksWithEncodeCustomTag();
                     currentPRequestResponse.updateRequest(newrequest.clone());
                     return newrequest;
                 }
@@ -260,6 +256,13 @@ public class ZapUtil {
         }
         return ZapUtil.extensionCustomActive;
     }
+
+    public static Extension getExtensionByName(String extensionName) {
+        return Control.getSingleton()
+                .getExtensionLoader()
+                .getExtension(extensionName);
+    }
+
     private static ClassLoader getClassLoaderCustomActiveScan() {
         Extension extension = getExtensionAscanRules();
         if (ZapUtil.classLoaderCustomActive == null) {
@@ -279,6 +282,20 @@ public class ZapUtil {
             }
         }
         return ZapUtil.classLoaderCustomActive;
+    }
+
+    public static AddOn getAddOnWithinExtension(String extensionName) {
+        Extension extension = getExtensionByName(extensionName);
+            if (extension != null) {
+                Package extPackage = extension.getClass().getPackage();
+                String extensionPackage = extPackage != null ? extPackage.getName() + "." : "";
+                LOGGER4J.info("extensionPackage:" + extensionPackage);
+                AddOn addon = extension.getAddOn();
+                return addon;
+            } else {
+                LOGGER4J.error("extension not found.");
+            }
+        return null;
     }
 
     public static boolean callCustomActiveScanMethod(Object object, String packageName, String methodName, Class<?>[] clazzArray, Object[] objectArray) {
@@ -394,5 +411,95 @@ public class ZapUtil {
             return;
         }
         message.getRequestHeader().setContentLength(bodyLength);
+    }
+
+    private static final Pattern BASE64_PATTERN = Pattern.compile("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
+    public static boolean isBase64(String value) {
+        return (BASE64_PATTERN.matcher(value).matches() && ((value.length() % 4) == 0));
+    }
+
+    public static String decodeBase64(String value, Encode enc) {
+        return new String(Base64.getDecoder().decode(value), enc.getIANACharset());
+    }
+
+    public static String encodeBase64(String value, Encode enc) {
+        return new String(Base64.getEncoder().encode(value.getBytes(enc.getIANACharset())));
+    }
+
+    public static String decodeURL(String value, Encode enc) {
+        try {
+            String decoded = URLDecoder.decode(value, enc.getIANACharset());
+            return decoded;
+        } catch (Exception ex) {
+            LOGGER4J.error(ex.getMessage(), ex);
+        }
+        return value;
+    }
+
+    public static String encodeURL(String value, Encode enc) {
+        return URLEncoder.encode(value, enc.getIANACharset());
+    }
+
+    private static final Pattern URL_PATTERN = Pattern.compile("%[0-9a-fA-F][0-9a-fA-F]");
+    public static boolean isURLencoded(String value) {
+        return URL_PATTERN.matcher(value).find();
+    }
+
+    public static String getSystemClipBoardString() {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable object = clipboard.getContents(null);
+        String str = null;
+        try {
+            str = (String)object.getTransferData(DataFlavor.stringFlavor);
+            return str;
+        } catch(UnsupportedFlavorException e){
+            LOGGER4J.error(e.getMessage(), e);
+        } catch (IOException e) {
+            LOGGER4J.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public static boolean hasSystemClipBoardString() {
+        String clipString = getSystemClipBoardString();
+        if (clipString != null && !clipString.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void updateOriginalEncodedHttpMessage(HttpMessage decodedHttpMessage) {
+        HttpRequestBody requestBody =  decodedHttpMessage.getRequestBody();
+        String bodyCharsetString = requestBody.getCharset();
+        Encode enc =  Encode.getEnum(bodyCharsetString);
+        PRequest decodedPRequest = getPRequest(decodedHttpMessage, enc);
+        StyledDocumentWithChunk doc =  new StyledDocumentWithChunk();
+        PRequest originalEncodedPRequest = doc.getOriginalEncodedPRequest(decodedPRequest);
+        HttpMessage encodedHttpMessage = getHttpMessageFromPRequest(originalEncodedPRequest);
+
+        decodedHttpMessage.setRequestHeader(encodedHttpMessage.getRequestHeader());
+        updateRequestContent(decodedHttpMessage, encodedHttpMessage.getRequestBody().getBytes());
+    }
+
+    public static String urlDecodePartOfCustomEncodedText(String text) {
+        List<StartEndPosition> positions = DecoderTag.getUrledDecodedStringList(text);
+        if (!positions.isEmpty()) {
+            int textLen = text != null ? text.length() : 0;
+            int lastEnd = 0;
+            StringBuffer decodedTextBuff = new StringBuffer();
+            for (StartEndPosition position : positions) {
+                if (lastEnd < position.start) {
+                    decodedTextBuff.append(text.substring(lastEnd, position.start));
+                }
+                decodedTextBuff.append(ZapUtil.decodeURL(text.substring(position.start, position.end), Encode.UTF_8));
+                lastEnd = position.end;
+            }
+            if (lastEnd < textLen) {
+                decodedTextBuff.append(text.substring(lastEnd));
+            }
+
+            return decodedTextBuff.toString();
+        }
+        return text;
     }
 }

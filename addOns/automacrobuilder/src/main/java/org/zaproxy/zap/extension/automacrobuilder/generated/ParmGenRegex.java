@@ -5,6 +5,8 @@
  */
 package org.zaproxy.zap.extension.automacrobuilder.generated;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
@@ -44,8 +46,6 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
     UndoManager um;
     UndoManager original_um;
-    int fidx;
-    ArrayList<Integer> findplist;
     String curr_regex;
     String curr_orig;
     InterfaceRegex parentwin =null;
@@ -64,13 +64,11 @@ public class ParmGenRegex extends javax.swing.JDialog {
     private static  DefaultComboBoxModel<String> comboModel_columnpolicy = null;
     
     private void init(String regex, String orig){
-        findplist.clear();
-        fidx = -1;
         curr_regex = regex;
         curr_orig = orig;
     }
     
-    // new される前に初期化。
+    // initialize before calling constructor
     static{
         if(comboModel_regextype==null){
             comboModel_regextype = new javax.swing.DefaultComboBoxModel<String>(new String[] { 
@@ -134,7 +132,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         }
     }
     /**
-     * Creates new form sampleFrame
+     * Regex Dialog for configuring tracking parameter manually
      */
     public ParmGenRegex(InterfaceRegex _parentwin, boolean showrequest) {
         initComponents();
@@ -143,7 +141,6 @@ public class ParmGenRegex extends javax.swing.JDialog {
         To.setEnabled(false);
         parentwin = _parentwin;
         regexactionwin = null;
-        findplist = new ArrayList<Integer>();
         init(null, null);
         this.setModal(true);
         RegexText.setText(parentwin.getRegex());
@@ -161,7 +158,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
         Document rexdoc = RegexText.getDocument();
         
         foundTextAttrPos = new ArrayList<>();
-        
+
+        addFocusListerToOriginalText();
+
         //RegexTextのUndo/Redo
         rexdoc.addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
@@ -169,10 +168,10 @@ public class ParmGenRegex extends javax.swing.JDialog {
 				um.addEdit(e.getEdit());
 			}
 		});
-        StyledDocument origdoc = OriginalText.getStyledDocument();
+        ManagedStyledDocument origdoc = CastUtils.castToType(OriginalText.getStyledDocument());
         createStyles(origdoc);
 
-        clearAllCharacterAttributesExceptPlaceHolderStyles(origdoc);
+        SwingStyle.clearAllCharacterAttributes(origdoc, OriginalText);
 
         //RegexTextのUndo/Redo
         origdoc.addUndoableEditListener(new UndoableEditListener() {
@@ -182,9 +181,21 @@ public class ParmGenRegex extends javax.swing.JDialog {
 			}
 		});
     }
-    
-    public ParmGenRegex(InterfaceParmGenRegexSaveCancelAction _actionwin, String _reg, StyledDocumentWithChunk chunkDoc){
+
+    /**
+     * Regex dialog for messageView
+     *
+     * @param dialogTitle
+     * @param _actionwin
+     * @param _reg
+     * @param chunkDoc
+     */
+    public ParmGenRegex(String dialogTitle,
+            InterfaceParmGenRegexSaveCancelAction _actionwin,
+            String _reg,
+            StyledDocumentWithChunk chunkDoc){
         initComponents();
+        setTitle(dialogTitle);
 
         this.chunkDoc = chunkDoc;
         um = new UndoManager();
@@ -192,7 +203,6 @@ public class ParmGenRegex extends javax.swing.JDialog {
         To.setEnabled(false);
         parentwin = null;
         regexactionwin = _actionwin;
-        findplist = new ArrayList<Integer>();
         init(null, null);
         this.setModal(true);
         RegexText.setText(_reg);
@@ -200,7 +210,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         OriginalText.setStyledDocument(this.chunkDoc);
         createStyles(this.chunkDoc );
 
-        clearAllCharacterAttributesExceptPlaceHolderStyles(this.chunkDoc);
+        SwingStyle.clearAllCharacterAttributes(this.chunkDoc, OriginalText);
 
         OriginalText.setCaretPosition(0);
 
@@ -223,11 +233,13 @@ public class ParmGenRegex extends javax.swing.JDialog {
             });
         }
 
-        if(hasBinaryContents) {
-            RegexTest.setEnabled(false);
-        }
+        JScrollPane hexDataScroller = addHexView(isLabelSaveBtn);
 
-        addHexView(isLabelSaveBtn);
+        if(hasBinaryContents) {
+            //RegexTest.setEnabled(false);
+            //RegexText.setEnabled(false);
+            TextTab.setSelectedComponent(hexDataScroller);
+        }
 
         if (this.chunkDoc != null) {
             byte[] hexdata = this.chunkDoc.getBytes();
@@ -235,7 +247,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
                 hexModel.setData(hexdata);
             }
         }
-        
+
+        addFocusListerToOriginalText();
+
         foundTextAttrPos = new ArrayList<>();
         if(regexactionwin!=null){
             Save.setText(regexactionwin.getParmGenRegexSaveBtnText(isLabelSaveBtn));
@@ -258,6 +272,27 @@ public class ParmGenRegex extends javax.swing.JDialog {
 				original_um.addEdit(e.getEdit());
 			}
 		});
+    }
+
+    private void addFocusListerToOriginalText() {
+        OriginalText.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (foundTextAttrPos != null && !foundTextAttrPos.isEmpty()) {
+                    SwingStyle.clearAllCharacterAttributes(chunkDoc, OriginalText);
+                    RegexSelectedTextPos lastSelectedPos = foundTextAttrPos.get(foundTextAttrPos.size() - 1);
+                    LOGGER4J.debug("last=" + lastSelectedPos.getStartPos() + "," + lastSelectedPos.getEndPos());
+                    OriginalText.setSelectionStart(lastSelectedPos.getStartPos());
+                    OriginalText.setSelectionEnd(lastSelectedPos.getEndPos());
+                    foundTextAttrPos.clear();
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+
+            }
+        });
     }
 
     public static String EscapeSpecials(String _d){
@@ -335,9 +370,9 @@ public class ParmGenRegex extends javax.swing.JDialog {
         String regex = RegexText.getText();
 
         //String original = OriginalText.getText();
-        StyledDocument doc = OriginalText.getStyledDocument();
+        ManagedStyledDocument doc = CastUtils.castToType(OriginalText.getStyledDocument());
 
-        clearAllCharacterAttributesExceptPlaceHolderStyles(doc);
+        SwingStyle.clearAllCharacterAttributes(doc, OriginalText);
 
         foundTextAttrPos.clear();
 
@@ -388,6 +423,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         int cpt = 0;
         
         int fcount=0;
+        int lastSearchedTextCaretPosition = -1;
         while (m.find()) {
             found = true;
             fcount++;
@@ -429,34 +465,31 @@ public class ParmGenRegex extends javax.swing.JDialog {
 
                     if (ept0 > spt0) {
                         Style outerStyle = doc.getStyle(GROUP_OUTER_STYLENAME);
-                        doc.setCharacterAttributes(spt0, ept0-spt0, outerStyle, false);
+                        doc.setCharacterAttributeExceptComponents(spt0, ept0-spt0, outerStyle, false);
                         RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt0, ept0);
                         foundTextAttrPos.add(rpos);
                     }
 
                     if (ept > spt) {
                         Style innerStyle = doc.getStyle(GROUP_INNER_STYLENAME);
-                        doc.setCharacterAttributes(spt, ept-spt, innerStyle, false);
+                        doc.setCharacterAttributeExceptComponents(spt, ept-spt, innerStyle, false);
                         RegexSelectedTextPos rpos = new RegexSelectedTextPos(spt, ept);
                         foundTextAttrPos.add(rpos);
                     }
 
                     //int pos = OriginalText.getCaretPosition();
                     int pos = doc.getLength();
-                    findplist.add(ept0);
-                    if ( fidx == -1){
-                        fidx = 0;
-                    }
+                    lastSearchedTextCaretPosition = ept0;
                 } catch (Exception ex) {
                     LOGGER4J.error(ex.getMessage(), ex);
                 }
             }
         }
 
-        if ( fidx != -1){
-            OriginalText.setCaretPosition(findplist.get(fidx));
-            fidx++;
+        if ( lastSearchedTextCaretPosition != -1){
+            OriginalText.setCaretPosition(lastSearchedTextCaretPosition);
             JOptionPane.showMessageDialog(this, Integer.toString(fcount)+bundle.getString("ParmGenRegex.SearchResultMessage.text"), bundle.getString("ParmGenRegex.SearchResultTitle.text"), JOptionPane.INFORMATION_MESSAGE);
+
         }else{
             
             java.awt.Toolkit.getDefaultToolkit().beep();
@@ -464,7 +497,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
         }
     }
     
-    void addHexView(boolean editable) {
+    private JScrollPane addHexView(boolean editable) {
         hexModel = new CustomHttpPanelHexModel();
         hexModel.setEditable(editable);
         JTable hextable = new JTable();
@@ -492,10 +525,14 @@ public class ParmGenRegex extends javax.swing.JDialog {
                 if (this.chunkDoc != null){
                     switch(selIndex) {
                         case 1:
+                            RegexTest.setEnabled(false);
+                            RegexText.setEnabled(false);
                             hexdata = this.chunkDoc.getBytes();
                             hexModel.setData(hexdata);
                             break;
                         default:
+                            RegexTest.setEnabled(true);
+                            RegexText.setEnabled(true);
                             hexdata = hexModel.getData();
                             this.chunkDoc.updateStyleDocAndChunkFromHex(hexdata);
                             OriginalText.repaint();
@@ -504,6 +541,7 @@ public class ParmGenRegex extends javax.swing.JDialog {
                 }
             });
         }
+        return scrollPane;
     }
     
     /**
@@ -1094,17 +1132,6 @@ public class ParmGenRegex extends javax.swing.JDialog {
             RegexText.setText(regex);
         }
     }//GEN-LAST:event_SelectPatternActionPerformed
-
-    private void clearAllCharacterAttributesExceptPlaceHolderStyles(StyledDocument doc) {
-        if (doc instanceof StyledDocumentWithChunk) {
-            StyledDocumentWithChunk docWithChunk = (StyledDocumentWithChunk) doc;
-            List<InterfacePlaceHolderStyle> listOfPlaceHolderStyle = docWithChunk.getListOfPlaceHolderStyle();
-            SwingStyle.clearAllCharacterAttributes(docWithChunk);
-            docWithChunk.applyPlaceHolderStyle(listOfPlaceHolderStyle);
-        } else {
-            SwingStyle.clearAllCharacterAttributes(doc);
-        }
-    }
 
     public static class RegexSelectedTextPos {
         int st;

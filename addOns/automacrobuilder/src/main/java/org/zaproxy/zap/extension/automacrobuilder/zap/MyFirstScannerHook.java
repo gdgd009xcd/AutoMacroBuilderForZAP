@@ -30,6 +30,7 @@ import org.zaproxy.zap.extension.automacrobuilder.CastUtils;
 import org.zaproxy.zap.network.HttpRequestConfig;
 import org.zaproxy.zap.network.HttpRequestConfig.Builder;
 import org.zaproxy.zap.extension.automacrobuilder.ParmGenMacroTraceParams;
+import org.zaproxy.zap.extension.automacrobuilder.generated.MacroBuilderUI;
 
 public class MyFirstScannerHook implements ScannerHook {
 
@@ -108,6 +109,10 @@ public class MyFirstScannerHook implements ScannerHook {
 
         if (!called) {
             this.startedcon.clearCustomActiveScanPmtParamsByScanner();
+        }
+        MacroBuilderUI mbui = this.startedcon.getMacroBuilderUI();
+        if (mbui != null) {
+            mbui.setMessageRequestEditMode(false);
         }
 
     }

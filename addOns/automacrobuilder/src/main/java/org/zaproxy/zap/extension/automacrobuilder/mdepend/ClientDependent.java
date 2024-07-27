@@ -28,6 +28,7 @@ import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.automacrobuilder.PRequest;
 import org.zaproxy.zap.extension.automacrobuilder.PRequestResponse;
 import org.zaproxy.zap.extension.automacrobuilder.UUIDGenerator;
+import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
 import org.zaproxy.zap.network.HttpRequestConfig;
 
 /** @author gdgd009xcd */
@@ -177,6 +178,10 @@ public class ClientDependent {
         }
     }
 
+    /**
+     * create null RequestConfig which has No Sender Listeners.
+     * @return
+     */
     private HttpRequestConfig getHttpRequestConfig() {
         if (httpRequestConfig == null) {
             HttpRequestConfig.Builder builder = HttpRequestConfig.builder();
@@ -189,13 +194,21 @@ public class ClientDependent {
         return httpRequestConfig;
     }
 
+    /**
+     * send HttpMessage Without SenderListener and Authentication.
+     * @param sender
+     * @param msg
+     * @throws IOException
+     */
     public void send(HttpSender sender, HttpMessage msg) throws IOException {
         sender.setFollowRedirect(false);// No follow redirects
         msg.setRequestingUser(null);// No Authenticate
         sender.setUser(null);// No Authenticate
 
+        ZapUtil.updateOriginalEncodedHttpMessage(msg);
         sender.sendAndReceive(msg, getHttpRequestConfig());
     }
+
     public int getScanQuePercentage() {
 
         return -1;

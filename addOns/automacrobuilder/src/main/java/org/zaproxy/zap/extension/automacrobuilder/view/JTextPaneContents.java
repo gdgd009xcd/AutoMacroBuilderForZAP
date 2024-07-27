@@ -71,7 +71,7 @@ public class JTextPaneContents {
                 // System.out.println("Read: " + readByte + " Total: " + totalByte);
             }
         } catch (IOException ex) {
-            // Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER4J.error(ex.getMessage(), ex);
         }
         System.out.println("before LFinsert");
         // filestring = filestring.substring(0, 1024);
@@ -90,27 +90,8 @@ public class JTextPaneContents {
             // Editor.setText(filestring);
 
         } catch (Exception ex) {
-            // Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER4J.error(ex.getMessage(), ex);
         }
-    }
-
-    void save(byte[] bindata) {
-
-        if (bindata == null) return;
-
-        // ファイルオブジェクト作成
-        FileOutputStream fileOutStm = null;
-        try {
-            fileOutStm = new FileOutputStream("E:\\kkk\\bindata.txt");
-        } catch (FileNotFoundException e1) {
-            // System.out.println("ファイルが見つからなかった。");
-        }
-        try {
-            fileOutStm.write(bindata);
-        } catch (IOException e) {
-            // System.out.println("入出力エラー。");
-        }
-        // System.out.println("終了");
     }
 
     public void setText(String text) {
@@ -129,7 +110,7 @@ public class JTextPaneContents {
                 doc.remove(0, doc.getLength());
                 LOGGER4J.debug("done remove text");
             } catch (BadLocationException ex) {
-                Logger.getLogger(JTextPaneContents.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER4J.error(ex.getMessage(), ex);
             }
 
             try {
@@ -137,7 +118,7 @@ public class JTextPaneContents {
                 doc.insertString(0, text, null);
                 LOGGER4J.debug("insert  done");
             } catch (BadLocationException ex) {
-                Logger.getLogger(JTextPaneContents.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER4J.error(ex.getMessage(), ex);
             }
             LOGGER4J.debug("before setDocument");
             tcompo.setDocument(doc);
@@ -147,9 +128,26 @@ public class JTextPaneContents {
 
     /**
      * Set request contents. large binary data representation is image icon.
+     * this method apply to decode CustomTag
      *
      * @param prequest
      */
+    public void setRequestChunksWithDecodedCustomTag(PRequest prequest) {
+
+        if (tcompo == null) return;
+        StyledDocument blank = new DefaultStyledDocument();
+
+        // if you change or newly create Document in JEditorPane's Document, JEditorPane cannot
+        // display contents. this problem occur only ZAP.
+        // Thus you must get original Document from JEditorPane for Setting Text.
+        tcompo.setStyledDocument(blank);
+
+
+        StyledDocumentWithChunk requestdoc = new StyledDocumentWithChunk(prequest, true);
+        StyledDocument doc = requestdoc;
+        tcompo.setStyledDocument(doc);
+    }
+
     public void setRequestChunks(PRequest prequest) {
 
         if (tcompo == null) return;
@@ -161,7 +159,7 @@ public class JTextPaneContents {
         tcompo.setStyledDocument(blank);
 
 
-        StyledDocumentWithChunk requestdoc = new StyledDocumentWithChunk(prequest);
+        StyledDocumentWithChunk requestdoc = new StyledDocumentWithChunk(prequest, false);
         StyledDocument doc = requestdoc;
         tcompo.setStyledDocument(doc);
     }

@@ -7,11 +7,13 @@ import javax.swing.*;
  *
  */
 @SuppressWarnings({"unchecked", "serial"})
-public class ChunkJbutton extends JButton {
+public class ChunkJbutton extends JButton implements InterfaceCompoStyleName{
     private int partno;
     private byte[] chunk;
-    public ChunkJbutton(int partno, byte[] chunk) {
+    private String styleName;
+    public ChunkJbutton(String styleName, int partno, byte[] chunk) {
         super();
+        this.styleName = styleName;
         this.partno = partno;
         this.chunk = chunk;
     }
@@ -22,5 +24,15 @@ public class ChunkJbutton extends JButton {
 
     public byte[] getChunk() {
         return this.chunk;
+    }
+
+    @Override
+    public void setStyleName(String name) {
+        this.styleName = name;
+    }
+
+    @Override
+    public String getStyleName() {
+        return this.styleName;
     }
 }

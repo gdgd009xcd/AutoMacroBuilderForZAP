@@ -12,6 +12,7 @@ import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,11 +25,13 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import com.google.gson.JsonElement;
-import org.parosproxy.paros.network.HttpMessage;
+import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.zap.control.AddOn;
 import org.zaproxy.zap.extension.automacrobuilder.*;
 import org.zaproxy.zap.extension.automacrobuilder.view.CloseXbtnTabPanel;
 import org.zaproxy.zap.extension.automacrobuilder.view.JTextPaneContents;
@@ -36,7 +39,9 @@ import org.zaproxy.zap.extension.automacrobuilder.view.MyFontUtils;
 import org.zaproxy.zap.extension.automacrobuilder.view.StyledDocumentWithChunk;
 import org.zaproxy.zap.extension.automacrobuilder.zap.ExtensionAutoMacroBuilder;
 import org.zaproxy.zap.extension.automacrobuilder.zap.ZapUtil;
+import org.zaproxy.zap.extension.automacrobuilder.zap.view.DecoderSelector;
 import org.zaproxy.zap.extension.help.ExtensionHelp;
+import org.zaproxy.zap.utils.LocaleUtils;
 
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.JSONFileIANACharsetName;
 import static org.zaproxy.zap.extension.automacrobuilder.EnvironmentVariables.ZAP_ICONS;
@@ -372,7 +377,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             }
         }
 
-        displayInfo.clear();
+        displayInfo.clearAll();
 
         return pmt;
     }
@@ -387,12 +392,26 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             int cpos = requestJList.getSelectedIndex();
             if (cpos != -1) { // current cpos request is displayed in MacroRequest.
                 int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
-                displayInfo.clear();
+                displayInfo.clearAll();
                 displayInfo.selected_request_idx = cpos;
                 messageViewTabbedPaneSelectedContentsLoad(selectedTabIndex);
             }
         }
     }
+
+    public void updateCurrentSelectedRequestListDisplayContentsSpecific(boolean isRemainRequest, boolean isRemainResponse, boolean isRemainComment) {
+        JList<String> requestJList = getSelectedRequestJList();
+        if (requestJList != null) {
+            int cpos = requestJList.getSelectedIndex();
+            if (cpos != -1) { // current cpos request is displayed in MacroRequest.
+                int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
+                displayInfo.clearSpecific(isRemainRequest, isRemainResponse, isRemainComment);
+                displayInfo.selected_request_idx = cpos;
+                messageViewTabbedPaneSelectedContentsLoad(selectedTabIndex);
+            }
+        }
+    }
+
 
     private void Redraw() {
         //ListModel cmodel = RequestList.getModel();
@@ -423,11 +442,14 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         deleteRequest = new javax.swing.JMenuItem();
         showMessageView = new javax.swing.JMenuItem();
         RequestEdit = new javax.swing.JPopupMenu();
-        edit = new javax.swing.JMenuItem();
-        restore = new javax.swing.JMenuItem();
-        update = new javax.swing.JMenuItem();
+        editMenuItem = new javax.swing.JMenuItem();
+        restoreMenuItem = new javax.swing.JMenuItem();
+        updateMenuItem = new javax.swing.JMenuItem();
+        decodeMenuItem = new javax.swing.JMenuItem();
+        copyMenuItem = new javax.swing.JMenuItem(new DefaultEditorKit.CopyAction());
+        pasteMenuItem = new javax.swing.JMenuItem(new DefaultEditorKit.PasteAction());
         ResponseShow = new javax.swing.JPopupMenu();
-        show = new javax.swing.JMenuItem();
+        showMenuItem = new javax.swing.JMenuItem();
         jScrollPane2 = new javax.swing.JScrollPane();
         jPanel4 = new javax.swing.JPanel();
         messageView = new javax.swing.JTabbedPane();
@@ -479,6 +501,31 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             @Override
             public void actionPerformed(ActionEvent e) {
                 ExtensionHelp.showHelp("addon.automacrobuilder");
+                AddOn addon = ZapUtil.getAddOnWithinExtension("ExtensionAutoMacroBuilder");
+                if (addon != null) {
+                    AddOn.HelpSetData helpSetData = addon.getHelpSetData();
+                    if (helpSetData != null) {
+                        if( !helpSetData.isEmpty() ){
+                            LOGGER4J.info("baseName:" + helpSetData.getBaseName()
+                                    + " locale:" + helpSetData.getLocaleToken() );
+                        } else {
+                            LOGGER4J.info("helpSetData is Empty");
+                        }
+                        ClassLoader classLoader = addon.getClassLoader();
+                        URL helpSetUrl =
+                                LocaleUtils.findResource(
+                                        helpSetData.getBaseName(),
+                                        "hs",
+                                        helpSetData.getLocaleToken(),
+                                        Constant.getLocale(),
+                                        classLoader::getResource);
+                        if (helpSetUrl == null) {
+                            LOGGER4J.error("helpSetUrl is null");
+                        } else {
+                            LOGGER4J.info("helpSetUrl:" + helpSetUrl.toString());
+                        }
+                    }
+                }
             }
         });
 
@@ -549,39 +596,54 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         PopupMenuForRequestList.add(showMessageView);
 
 
-        edit.setText(bundle.getString("MacroBuilderUI.REQUESTEDIT.text")); // NOI18N
-        edit.addActionListener(new java.awt.event.ActionListener() {
+        editMenuItem.setText(bundle.getString("MacroBuilderUI.REQUESTEDIT.text")); // NOI18N
+        editMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editActionPerformed(evt);
             }
         });
-        RequestEdit.add(edit);
+        RequestEdit.add(editMenuItem);
 
-        restore.setText(bundle.getString("MacroBuilderUI.restore.text")); // NOI18N
-        restore.setToolTipText(bundle.getString("MacroBuilderUI.restore.tooltip.text"));
-        restore.addActionListener(new java.awt.event.ActionListener() {
+        restoreMenuItem.setText(bundle.getString("MacroBuilderUI.restore.text")); // NOI18N
+        restoreMenuItem.setToolTipText(bundle.getString("MacroBuilderUI.restore.tooltip.text"));
+        restoreMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreActionPerformed(evt);
             }
         });
-        RequestEdit.add(restore);
+        RequestEdit.add(restoreMenuItem);
 
-        update.setText(bundle.getString("MacroBuilderUI.update.text")); // NOI18N
-        update.setToolTipText(bundle.getString("MacroBuilderUI.update.tooltip.text"));
-        update.addActionListener(new java.awt.event.ActionListener() {
+        updateMenuItem.setText(bundle.getString("MacroBuilderUI.update.text")); // NOI18N
+        updateMenuItem.setToolTipText(bundle.getString("MacroBuilderUI.update.tooltip.text"));
+        updateMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 updateActionPerformed(evt);
             }
         });
-        RequestEdit.add(update);
+        RequestEdit.add(updateMenuItem);
 
-        show.setText(bundle.getString("MacroBuilderUI.RESPONSESHOW.text")); // NOI18N
-        show.addActionListener(new java.awt.event.ActionListener() {
+        decodeMenuItem.setText(bundle.getString("MacroBuilderUI.decode.text"));
+        decodeMenuItem.setToolTipText(bundle.getString("MacroBuilderUI.decode.tooltip.text"));
+        decodeMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DecodeMenuItemActionPerformed(e);
+            }
+        });
+        RequestEdit.add(decodeMenuItem);
+
+        copyMenuItem.setText(bundle.getString("MacroBuilderUI.copy.text"));
+        RequestEdit.add(copyMenuItem);
+        pasteMenuItem.setText(bundle.getString("MacroBuilderUI.paste.text"));
+        RequestEdit.add(pasteMenuItem);
+
+        showMenuItem.setText(bundle.getString("MacroBuilderUI.RESPONSESHOW.text")); // NOI18N
+        showMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showActionPerformed(evt);
             }
         });
-        ResponseShow.add(show);
+        ResponseShow.add(showMenuItem);
 
         setPreferredSize(new java.awt.Dimension(873, 850));
 
@@ -601,6 +663,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 messageViewStateChanged(evt);
             }
         });
+
 
         messageRequest.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -1120,7 +1183,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
     }//GEN-LAST:event_customActionPerformed
 
-    private void messageRequestLoadContents(int selectedTabIndexOfRequestList){
+    /**
+     * load content to messageRequest TextPane if it is needed.
+     *
+     * @param selectedTabIndexOfRequestList
+     * @return true - content is Newly loaded<BR>false - content is NOT loaded. the messageRequest remains with its current content.
+     */
+    private boolean messageRequestLoadContents(int selectedTabIndexOfRequestList){
         if (displayInfo != null && displayInfo.selected_request_idx!=-1&&!displayInfo.isLoadedMessageRequestContents) {
             
             List<PRequestResponse> prequestResponseList = getPRequestResponseListAtTabIndex(selectedTabIndexOfRequestList);
@@ -1128,24 +1197,15 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
             JTextPaneContents reqdoc = new JTextPaneContents(messageRequest);
 
-            reqdoc.setRequestChunks(pqr.request);
+            reqdoc.setRequestChunksWithDecodedCustomTag(pqr.request);
 
             displayInfo.isLoadedMessageRequestContents = true;
+            return true;
         }
+        return false;
     }
 
-    public void setHttpMessage2messageRequest(HttpMessage message){
-        ParmGenMacroTrace pmt = getSelectedParmGenMacroTrace();
-        if (pmt == null) return;
-        PRequestResponse pRequestResponse = ZapUtil.getPRequestResponse(message, pmt.getSequenceEncode());
-        JTextPaneContents reqdoc = new JTextPaneContents(messageRequest);
 
-        reqdoc.setRequestChunks(pRequestResponse.request);
-        messageResponse.setText("");
-
-        displayInfo.isLoadedMessageRequestContents = true;
-        displayInfo.isLoadedmessageResponseContents = true;
-    }
     
     private void messageResponseLoadContents(int selectedTabIndexOfRequestList){
         if (displayInfo != null && displayInfo.selected_request_idx!=-1&&!displayInfo.isLoadedmessageResponseContents) {
@@ -1209,7 +1269,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             LOGGER4J.debug("RequestListValueChanged selected pos:" + pos);
             //
             int selectedTabIndex = getSelectedTabIndexOfMacroRequestList();
-            displayInfo.clear();
+            displayInfo.clearAll();
             displayInfo.selected_request_idx = pos;
             messageViewTabbedPaneSelectedContentsLoad(selectedTabIndex);
         } else {
@@ -1780,7 +1840,8 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         // TODO add your handling code here:
         String reg = "";
         //String orig = MacroRequest.getText();
-        
+
+
     
         int tabIndex = getSelectedTabIndexOfMacroRequestList();
         JList<String> requestJList = getRequestJListAtTabIndex(tabIndex);
@@ -1790,12 +1851,17 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         
         ParmGenMacroTrace pmt = getParmGenMacroTraceAtTabIndex(tabIndex);
         if(pmt!=null){
+            if (!isMessageRequestEditable()) {
+                pmt.restoreOrigialToRequestList();
+                setMessageRequestEditMode(true);
+                updateCurrentSelectedRequestListDisplayContents();
+            }
             PRequestResponse pqr = pmt.getRequestResponseCurrentList(pos);
             if (pqr != null) {
                 StyledDocumentWithChunk chunkdoc = this.getStyledDocumentOfSelectedMessageRequest();
                 if (chunkdoc != null) {
                     StyledDocumentWithChunk newchunkdoc = new StyledDocumentWithChunk(chunkdoc); // newchunkdoc is newly created and independent from chunkdoc.
-                    new ParmGenRegex(this, reg, newchunkdoc).setVisible(true);
+                    new ParmGenRegex(bundle.getString("MacroBuilderUI.requestEditorTitle.text"),this, reg, newchunkdoc).setVisible(true);
                 }
             }
         }
@@ -1815,7 +1881,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 StyledDocument doc = messageResponse.getStyledDocument();
                 if (doc instanceof StyledDocumentWithChunk) {
                     StyledDocumentWithChunk newchunkdoc = new StyledDocumentWithChunk((StyledDocumentWithChunk) doc);
-                    new ParmGenRegex(this, reg, newchunkdoc).setVisible(true);
+                    new ParmGenRegex("Response", this, reg, newchunkdoc).setVisible(true);
                 }
             }
         }
@@ -2015,6 +2081,28 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         messageViewTabbedPaneSelectedContentsLoad(MacroRequestListTabsCurrentIndex); // must content load before RequestEdit.show
         if (evt.isPopupTrigger()) {
             LOGGER4J.debug("messageRequestMousePressed PopupTriggered.");
+            int startPos = this.messageRequest.getSelectionStart();
+            int endPos = this.messageRequest.getSelectionEnd();
+
+            if (startPos >= 0 && startPos < endPos) {
+                StyledDocumentWithChunk requestChunkDoc = getStyledDocumentOfSelectedMessageRequest();
+                if (requestChunkDoc != null
+                        && requestChunkDoc.isExistPlaceHolderBetweenStartEndPos(startPos, endPos)) {
+                    decodeMenuItem.setEnabled(false);
+                } else {
+                    decodeMenuItem.setEnabled(true);
+                }
+                copyMenuItem.setEnabled(true);
+            } else {
+                decodeMenuItem.setEnabled(false);
+                copyMenuItem.setEnabled(false);
+            }
+            if (ZapUtil.hasSystemClipBoardString()){
+                pasteMenuItem.setEnabled(true);
+            } else {
+                pasteMenuItem.setEnabled(false);
+            }
+            LOGGER4J.debug("selection start=" + startPos + " end=" + endPos);
             RequestEdit.show(evt.getComponent(), evt.getX(), evt.getY());
         }
         LOGGER4J.debug("messageRequestMousePressed...end");
@@ -2075,11 +2163,11 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                 PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
                 current.updateRequestResponse(prr.request.clone(), prr.response.clone());// clone original PRequestResponse to CurrentList(rlist)
                 JTextPaneContents reqdoc = new JTextPaneContents(messageRequest);
-                reqdoc.setRequestChunks(prr.request);
+                reqdoc.setRequestChunksWithDecodedCustomTag(prr.request);
                 JTextPaneContents resdoc = new JTextPaneContents(messageResponse);
                 resdoc.setResponseChunks(prr.response);
                 if (pmt != null) {
-                    pmt.nullfetchResValAndCookieMan();
+                    //pmt.nullfetchResValAndCookieMan();
                 }
             }
         }
@@ -2101,7 +2189,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
             PRequestResponse current = pmt.getRequestResponseCurrentList(idx);
             StyledDocumentWithChunk doc = this.getStyledDocumentOfSelectedMessageRequest();
             if (doc != null) {
-                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunks(); // request newly created from DocText and Chunks
+                PRequest newrequest = doc.reBuildPRequestFromDocTextAndChunksWithEncodeCustomTag(); // request newly created from DocText and Chunks
                 current.request = newrequest;
 
                 PRequestResponse original = pmt.getOriginalPRequestResponse(idx);
@@ -2175,17 +2263,17 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
                                 + displayInfo.selected_request_idx + "]");
                 return null;
             }
+            StyledDocumentWithChunk doc = CastUtils.castToType(messageRequest.getStyledDocument());
+
             messageRequestLoadContents(selectedTabIndex);
-            StyledDocument doc =  messageRequest.getStyledDocument();
-            if ( doc instanceof StyledDocumentWithChunk) {
-                return CastUtils.castToType(doc);
-            }
+
+            return doc;
         }
         return null;
     }
     
-    public String getMessageRequest() {
-        return messageRequest.getText();
+    public JTextPane getMessageRequest() {
+        return this.messageRequest;
     }
 
     /**
@@ -2465,18 +2553,28 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         public boolean isLoadedmessageResponseContents = false;
         
         DisplayInfoOfRequestListTab() {
-            clear();
+            clearAll();
         }
 
-        public void clear() {
+        public void clearAll() {
             selected_request_idx = -1;
-            clearViewFlags();
+            clearViewFlags(false, false, false);
         }
 
-        public void clearViewFlags() {
-            isLoadedMacroCommentContents = false;
-            isLoadedMessageRequestContents = false;
-            isLoadedmessageResponseContents = false;
+        public void clearSpecific(boolean isRemainRequest,
+                                  boolean isRemainResponse,
+                                  boolean isRemainComment){
+
+            selected_request_idx = -1;
+            clearViewFlags(isRemainRequest, isRemainResponse, isRemainComment);
+        }
+
+        public void clearViewFlags(boolean isRemainRequest,
+                                   boolean isRemainResponse,
+                                   boolean isRemainComment) {
+            isLoadedMacroCommentContents = isRemainComment;
+            isLoadedMessageRequestContents = isRemainRequest;
+            isLoadedmessageResponseContents = isRemainResponse;
         }
     }
 
@@ -2593,8 +2691,25 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
     }
 
+    private void DecodeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+        int startPos = this.messageRequest.getSelectionStart();
+        int endPos = this.messageRequest.getSelectionEnd();
+        if (startPos >= 0 && startPos < endPos) {
+
+            String selectedText = this.messageRequest.getSelectedText();
+            StyledDocumentWithChunk doc = CastUtils.castToType(this.messageRequest.getStyledDocument());
+            Encode enc = doc.getEnc();
+            if (selectedText.indexOf("\n") == -1) {
+                StartEndPosition startEndPosition = new StartEndPosition(startPos, endPos, selectedText);
+                DecoderSelector decoderSelector = new DecoderSelector(this, startEndPosition, enc);
+                decoderSelector.setVisible(true);
+            }
+
+        }
+    }
+
     public void clearDisplayInfoViewFlags() {
-        displayInfo.clearViewFlags();
+        displayInfo.clearViewFlags(false, false, false);
     }
 
     public JPanel getMessageViewPanel() {
@@ -2636,7 +2751,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
 
             if (selectedIndex == index) {
                 JTextPaneContents reqdoc = new JTextPaneContents(messageRequest);
-                reqdoc.setRequestChunks(prr.request);
+                reqdoc.setRequestChunksWithDecodedCustomTag(prr.request);
                 JTextPaneContents resdoc = new JTextPaneContents(messageResponse);
                 resdoc.setResponseChunks(prr.response);
                 if (pmt != null) {
@@ -2711,10 +2826,18 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
         }
     }
 
-
     public void clearMessageResponse() {
         this.messageResponse.setText("");
     }
+
+    public void setMessageRequestEditMode(boolean b) {
+        this.messageRequest.setEditable(b);
+    }
+
+    public boolean isMessageRequestEditable() {
+        return this.messageRequest.isEditable();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox CBinheritFromCache;
     private javax.swing.JButton ClearMacro;
@@ -2745,7 +2868,7 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JMenuItem deleteRequest;
     private javax.swing.JMenuItem showMessageView;
     private javax.swing.JMenuItem disableRequest;
-    private javax.swing.JMenuItem edit;
+    private javax.swing.JMenuItem editMenuItem;
     private javax.swing.JMenuItem enableRequest;
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
@@ -2773,10 +2896,13 @@ public class MacroBuilderUI  extends javax.swing.JPanel implements  InterfacePar
     private javax.swing.JPanel descriptionVacantArea;
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JLabel requestListNum;
-    private javax.swing.JMenuItem restore;
-    private javax.swing.JMenuItem show;
+    private javax.swing.JMenuItem restoreMenuItem;
+    private javax.swing.JMenuItem showMenuItem;
     private javax.swing.JTextField subSequenceScanLimit;
-    private javax.swing.JMenuItem update;
+    private javax.swing.JMenuItem updateMenuItem;
+    private javax.swing.JMenuItem decodeMenuItem;
+    private javax.swing.JMenuItem copyMenuItem;
+    private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JTextField waitsec;
     // End of variables declaration//GEN-END:variables
 
